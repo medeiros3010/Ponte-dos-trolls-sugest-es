@@ -1,7 +1,9 @@
-import { ItemRPG } from '../types';
+import { ItemRPG, UserProfile, ItemStatus } from '../types';
+import { SEED_USERS } from '../data/seedData';
 
 export const CLOUD_BIN_KEY = 'ponte_trolls_bin_id_v4';
 export const DEFAULT_BIN_ID = 'trolls-rpg-oficial';
+export const CURRENT_USER_KEY = 'ponte_trolls_current_user_v1';
 
 // Fallback host if opened offline via file:// or outside Cloud Run
 export const FALLBACK_SERVER_URL = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
@@ -36,6 +38,31 @@ export function saveBinId(binId: string): void {
   }
 }
 
+export function getStoredCurrentUser(): UserProfile | null {
+  try {
+    const raw = localStorage.getItem(CURRENT_USER_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.nome) return parsed;
+    }
+  } catch (e) {
+    console.warn('Error reading current user', e);
+  }
+  return null;
+}
+
+export function saveStoredCurrentUser(user: UserProfile | null): void {
+  try {
+    if (user) {
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(CURRENT_USER_KEY);
+    }
+  } catch (e) {
+    console.error('Error saving current user', e);
+  }
+}
+
 export function getShareableGroupLink(binId: string): string {
   if (typeof window === 'undefined') return '';
   const currentBin = (binId || DEFAULT_BIN_ID).trim();
@@ -57,7 +84,12 @@ function resolveEndpoint(binOrUrl: string): { url: string; isCustom: boolean } {
   return { url: `${base}/api/bin/${encodeURIComponent(clean)}`, isCustom: false };
 }
 
-export async function fetchItemsFromCloud(binOrUrl: string): Promise<ItemRPG[] | null> {
+export interface CloudPayloadData {
+  items: ItemRPG[];
+  users: UserProfile[];
+}
+
+export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData | null> {
   const { url } = resolveEndpoint(binOrUrl);
 
   try {
@@ -75,29 +107,42 @@ export async function fetchItemsFromCloud(binOrUrl: string): Promise<ItemRPG[] |
     const data = await res.json();
     if (!data) return null;
 
-    let rawList: any[] = [];
+    let rawItems: any[] = [];
     if (data.items && Array.isArray(data.items)) {
-      rawList = data.items;
+      rawItems = data.items;
     } else if (Array.isArray(data)) {
-      rawList = data;
+      rawItems = data;
     } else if (data.data && Array.isArray(data.data.items)) {
-      rawList = data.data.items;
+      rawItems = data.data.items;
     } else if (typeof data === 'object') {
-      rawList = Object.values(data);
+      rawItems = Object.values(data);
     }
 
-    if (rawList.length > 0) {
-      return normalizeCloudItems(rawList);
+    const items = rawItems.length > 0 ? normalizeCloudItems(rawItems) : [];
+
+    let users: UserProfile[] = SEED_USERS;
+    if (data.users && Array.isArray(data.users) && data.users.length > 0) {
+      users = data.users.map((u: any, idx: number) => ({
+        id: u.id || `usr-${idx}`,
+        nome: String(u.nome || '').trim(),
+        telefone: String(u.telefone || '').trim(),
+        email: String(u.email || '').trim(),
+        createdAt: u.createdAt || new Date().toISOString(),
+      }));
     }
+
+    return { items, users };
   } catch (err) {
-    console.error('fetchItemsFromCloud error:', err);
+    console.error('fetchCloudData error:', err);
     throw err;
   }
-
-  return null;
 }
 
-export async function pushItemsToCloud(binOrUrl: string, items: ItemRPG[]): Promise<boolean> {
+export async function pushCloudData(
+  binOrUrl: string,
+  items: ItemRPG[],
+  users: UserProfile[]
+): Promise<boolean> {
   const { url } = resolveEndpoint(binOrUrl);
 
   try {
@@ -106,6 +151,7 @@ export async function pushItemsToCloud(binOrUrl: string, items: ItemRPG[]): Prom
       name: 'A Ponte dos Trolls - Rateios RPG',
       updatedAt: new Date().toISOString(),
       items,
+      users,
     };
 
     const res = await fetch(url, {
@@ -119,12 +165,25 @@ export async function pushItemsToCloud(binOrUrl: string, items: ItemRPG[]): Prom
 
     return res.ok;
   } catch (err) {
-    console.error('pushItemsToCloud error:', err);
+    console.error('pushCloudData error:', err);
     throw err;
   }
 }
 
-export async function createNewCloudBin(initialItems: ItemRPG[]): Promise<string | null> {
+// Backwards-compatible aliases
+export async function fetchItemsFromCloud(binOrUrl: string): Promise<ItemRPG[] | null> {
+  const data = await fetchCloudData(binOrUrl);
+  return data ? data.items : null;
+}
+
+export async function pushItemsToCloud(binOrUrl: string, items: ItemRPG[]): Promise<boolean> {
+  return pushCloudData(binOrUrl, items, SEED_USERS);
+}
+
+export async function createNewCloudBin(
+  initialItems: ItemRPG[],
+  initialUsers: UserProfile[] = SEED_USERS
+): Promise<string | null> {
   try {
     const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
       ? window.location.origin
@@ -135,7 +194,7 @@ export async function createNewCloudBin(initialItems: ItemRPG[]): Promise<string
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ items: initialItems }),
+      body: JSON.stringify({ items: initialItems, users: initialUsers }),
     });
 
     if (res.ok) {
@@ -153,10 +212,14 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
     const rawValor = row.valor ? String(row.valor) : '';
     const rawAutor = row.sugestaoDe ? String(row.sugestaoDe) : (row.sugeridoPorNome || 'Membro do Grupo');
 
-    let status: 'Em Financiamento' | 'Finalizados' = 'Em Financiamento';
+    let status: ItemStatus = 'Sugestão';
     const sLower = String(row.status || '').toLowerCase();
     if (sLower.includes('financiado') || sLower.includes('drive') || sLower.includes('finalizado')) {
       status = 'Finalizados';
+    } else if (sLower.includes('em financiamento') || sLower.includes('vaquinha') || sLower.includes('andamento')) {
+      status = 'Em Financiamento';
+    } else {
+      status = 'Sugestão';
     }
 
     let apoiadores = [];
@@ -176,6 +239,7 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
       link: row.link || '',
       sugeridoPorNome: rawAutor,
       sugeridoPorTelefone: row.sugeridoPorTelefone || '',
+      sugeridoPorEmail: row.sugeridoPorEmail || '',
       moeda: rawValor.includes('R$') ? 'BRL' : (row.moeda || 'USD'),
       valorNumerico: typeof row.valorNumerico === 'number'
         ? row.valorNumerico

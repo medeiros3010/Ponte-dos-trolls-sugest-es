@@ -1,4 +1,8 @@
-export type MainCategory = 'Em Financiamento' | 'Finalizados';
+export type ItemStatus = 'Sugestão' | 'Em Financiamento' | 'Finalizados';
+
+export type SugestoesCategory = 'Sugestão' | 'Finalizados';
+
+export type AppView = 'home' | 'sugestoes' | 'financiamento' | 'catalogo';
 
 export type ProductType = 
   | 'Módulo Foundry'
@@ -6,15 +10,27 @@ export type ProductType =
   | 'Token'
   | 'Patreon'
   | 'Livro de Regras em PDF'
+  | 'Suplemento / Aventura em PDF'
+  | 'Bundle / Pacote de Mapas'
+  | 'Patreon Mensal'
   | 'Livro'
   | 'Outro';
 
 export type CurrencyType = 'USD' | 'BRL';
 
+export interface UserProfile {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  createdAt?: string;
+}
+
 export interface Apoiador {
   id: string;
   nome: string;
   telefone?: string;
+  email?: string;
   data?: string;
 }
 
@@ -29,10 +45,11 @@ export interface ItemRPG {
   imageUrl?: string;
   sugeridoPorNome: string;
   sugeridoPorTelefone: string;
+  sugeridoPorEmail?: string;
   moeda: CurrencyType;
   valorNumerico: number;
   observacaoValor?: string;
-  status: 'Em Financiamento' | 'Finalizados';
+  status: ItemStatus;
   apoiadores: Apoiador[];
 }
 

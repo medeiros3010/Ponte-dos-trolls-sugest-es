@@ -1,11 +1,11 @@
 import React from 'react';
-import { MainCategory } from '../types';
+import { SugestoesCategory } from '../types';
 import { Search, X, Filter } from 'lucide-react';
 
 interface NavigationTabsProps {
-  activeTab: MainCategory;
-  onTabChange: (tab: MainCategory) => void;
-  countEmFinanciamento: number;
+  activeTab: SugestoesCategory;
+  onTabChange: (tab: SugestoesCategory) => void;
+  countSugestoes: number;
   countFinalizados: number;
   searchQuery: string;
   onSearchChange: (query: string) => void;
@@ -17,7 +17,7 @@ interface NavigationTabsProps {
 export const NavigationTabs: React.FC<NavigationTabsProps> = ({
   activeTab,
   onTabChange,
-  countEmFinanciamento,
+  countSugestoes,
   countFinalizados,
   searchQuery,
   onSearchChange,
@@ -28,25 +28,25 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({
   return (
     <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-6">
       
-      {/* The 2 Main Prominent Tabs */}
+      {/* As 2 Abas Oficiais da Tela de Sugestões: 💡 Sugestão e ✅ Finalizados */}
       <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-[#122015] border border-[#203625] rounded-2xl shrink-0">
         <button
-          onClick={() => onTabChange('Em Financiamento')}
+          onClick={() => onTabChange('Sugestão')}
           className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-            activeTab === 'Em Financiamento'
+            activeTab === 'Sugestão'
               ? 'bg-[#d49e2a] text-[#122015] shadow-md shadow-black/30'
               : 'text-[#8ea090] hover:text-[#f4ecd8] hover:bg-[#182b1d]'
           }`}
         >
-          <span>🔥 Em Financiamento</span>
+          <span>💡 Sugestão</span>
           <span
             className={`text-xs px-2 py-0.5 rounded-full font-mono tabular-nums ${
-              activeTab === 'Em Financiamento'
+              activeTab === 'Sugestão'
                 ? 'bg-[#122015]/20 text-[#122015]'
                 : 'bg-[#182b1d] text-[#a4b5a6]'
             }`}
           >
-            {countEmFinanciamento}
+            {countSugestoes}
           </span>
         </button>
 
@@ -71,10 +71,10 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({
         </button>
       </div>
 
-      {/* Filter and Search Controls */}
+      {/* Filtro por Sistema e Busca */}
       <div className="flex items-center gap-2 flex-1 md:max-w-xl justify-end">
         
-        {/* RPG System Filter Dropdown */}
+        {/* Dropdown de Sistema */}
         <div className="relative shrink-0">
           <div className="relative">
             <select
@@ -97,7 +97,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({
           </div>
         </div>
 
-        {/* Clean Search Bar */}
+        {/* Barra de Busca */}
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-[#6e8070] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ItemRPG, SISTEMAS_PADRAO, ADMIN_PASSWORD } from '../types';
+import { ItemRPG, SISTEMAS_PADRAO, ADMIN_PASSWORD, ItemStatus, UserProfile } from '../types';
 import { formatPhone, getTodayISODate } from '../utils/helpers';
-import { X, Save, PlusCircle, Pencil, Lock, AlertCircle } from 'lucide-react';
+import { X, Save, PlusCircle, Pencil, Lock, AlertCircle, User } from 'lucide-react';
 
 interface ItemFormModalProps {
   isOpen: boolean;
   itemToEdit: ItemRPG | null;
+  currentUser: UserProfile | null;
   onClose: () => void;
   onSave: (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string }) => void;
 }
@@ -13,6 +14,7 @@ interface ItemFormModalProps {
 export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   isOpen,
   itemToEdit,
+  currentUser,
   onClose,
   onSave,
 }) => {
@@ -31,7 +33,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const [sugeridoPorNome, setSugeridoPorNome] = useState('');
   const [sugeridoPorTelefone, setSugeridoPorTelefone] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [status, setStatus] = useState<'Em Financiamento' | 'Finalizados'>('Em Financiamento');
+  const [status, setStatus] = useState<ItemStatus>('Sugestão');
   
   // Admin password state (only required when editing)
   const [adminPassword, setAdminPassword] = useState('');
@@ -58,7 +60,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setSugeridoPorNome(itemToEdit.sugeridoPorNome || '');
       setSugeridoPorTelefone(itemToEdit.sugeridoPorTelefone || '');
       setDescricao(itemToEdit.descricao || '');
-      setStatus(itemToEdit.status);
+      setStatus(itemToEdit.status || 'Sugestão');
     } else {
       setNome('');
       setSistema('PF2E');
@@ -68,12 +70,13 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setMoeda('USD');
       setValorNumerico('0.00');
       setObservacaoValor('');
-      setSugeridoPorNome('');
-      setSugeridoPorTelefone('');
+      // Auto-preenche com perfil logado
+      setSugeridoPorNome(currentUser?.nome || '');
+      setSugeridoPorTelefone(currentUser?.telefone || '');
       setDescricao('');
-      setStatus('Em Financiamento'); // Automatically Em Financiamento
+      setStatus('Sugestão'); // Entra automaticamente como Sugestão
     }
-  }, [itemToEdit, isOpen]);
+  }, [itemToEdit, isOpen, currentUser]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSugeridoPorTelefone(formatPhone(e.target.value));
@@ -103,10 +106,11 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       link: link.trim(),
       sugeridoPorNome: sugeridoPorNome.trim(),
       sugeridoPorTelefone: sugeridoPorTelefone.trim(),
+      sugeridoPorEmail: currentUser?.email || '',
       moeda,
       valorNumerico: finalValor,
       observacaoValor: observacaoValor.trim(),
-      status: isEditing ? status : 'Em Financiamento', // Always Em Financiamento when creating
+      status: isEditing ? status : 'Sugestão', // Novo entra sempre como Sugestão
       data: itemToEdit?.data || getTodayISODate(),
     });
 
@@ -153,7 +157,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             />
           </div>
 
-          {/* Sistema de RPG & (Se Editando) Status */}
+          {/* Sistema de RPG & (Se Editando) Status dos 3 Estágios */}
           <div className={`grid ${isEditing ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-3`}>
             <div>
               <label className="block text-[11px] font-medium text-[#8e9f90] mb-1">
@@ -177,15 +181,16 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             {isEditing && (
               <div>
                 <label className="block text-[11px] font-medium text-[#d49e2a] mb-1">
-                  Status do Item
+                  Estágio / Status do Item
                 </label>
                 <select
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as 'Em Financiamento' | 'Finalizados')}
+                  onChange={(e) => setStatus(e.target.value as ItemStatus)}
                   className="w-full bg-[#0d160f] border border-[#27442d] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
                 >
-                  <option value="Em Financiamento">🔥 Em Financiamento</option>
-                  <option value="Finalizados">✅ Finalizados / No Drive</option>
+                  <option value="Sugestão">💡 1. Sugestão (Recebendo apoios)</option>
+                  <option value="Em Financiamento">🔥 2. Em Financiamento (Vaquinha Aberta)</option>
+                  <option value="Finalizados">✅ 3. Finalizados (No Drive do Grupo)</option>
                 </select>
               </div>
             )}
@@ -260,33 +265,37 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
           </div>
 
           {/* Sugerido por (Nome + WhatsApp) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-semibold text-[#c2cbbe] mb-1">
-                Seu Nome / Apelido *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Ex: Augusto Sant'ana, Erick..."
-                value={sugeridoPorNome}
-                onChange={(e) => setSugeridoPorNome(e.target.value)}
-                className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] placeholder-[#506352] focus:outline-none focus:border-[#d49e2a]"
-              />
+          <div className="p-3 bg-[#0d160f] border border-[#1e3422] rounded-xl space-y-2">
+            <div className="flex items-center gap-1.5 text-[#d49e2a] font-semibold text-xs">
+              <User className="w-3.5 h-3.5" />
+              <span>Sugerido por (Perfil Vinculado):</span>
             </div>
-
-            <div>
-              <label className="block text-[11px] font-semibold text-[#c2cbbe] mb-1">
-                Seu WhatsApp (com DDD)
-              </label>
-              <input
-                type="text"
-                placeholder="(XX) XXXXX-XXXX"
-                value={sugeridoPorTelefone}
-                onChange={handlePhoneChange}
-                className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <input
+                  type="text"
+                  required
+                  placeholder="Seu Nome / Apelido *"
+                  value={sugeridoPorNome}
+                  onChange={(e) => setSugeridoPorNome(e.target.value)}
+                  className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-3 py-1.5 text-xs text-[#f3efe6] placeholder-[#506352] focus:outline-none focus:border-[#d49e2a]"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Seu WhatsApp (com DDD)"
+                  value={sugeridoPorTelefone}
+                  onChange={handlePhoneChange}
+                  className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-3 py-1.5 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
+                />
+              </div>
             </div>
+            {!isEditing && (
+              <p className="text-[10px] text-[#7a8e7d]">
+                Você entrará automaticamente como o 1º apoiador deste item na fila de sugestões.
+              </p>
+            )}
           </div>
 
           {/* Descrição Opcional */}

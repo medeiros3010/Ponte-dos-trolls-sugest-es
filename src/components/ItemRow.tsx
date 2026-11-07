@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ItemRPG } from '../types';
+import { ItemRPG, UserProfile } from '../types';
 import { convertToBRL, formatBRL, formatUSD, cleanPhoneForWhatsApp } from '../utils/helpers';
 import {
   ExternalLink,
@@ -12,11 +12,13 @@ import {
   Trash2,
   X,
   UserPlus,
+  CheckCircle,
 } from 'lucide-react';
 
 interface ItemRowProps {
   item: ItemRPG;
   exchangeRate: number;
+  currentUser?: UserProfile | null;
   onOpenApoiar: (item: ItemRPG) => void;
   onRemoveApoiador: (itemId: string, apoiadorId: string) => void;
   onCopyWhatsApp: (item: ItemRPG) => void;
@@ -27,6 +29,7 @@ interface ItemRowProps {
 export const ItemRow: React.FC<ItemRowProps> = ({
   item,
   exchangeRate,
+  currentUser,
   onOpenApoiar,
   onRemoveApoiador,
   onCopyWhatsApp,
@@ -41,6 +44,15 @@ export const ItemRow: React.FC<ItemRowProps> = ({
   const totalApoiadores = item.apoiadores?.length || 0;
   const isUnrevealed = item.valorNumerico === 0;
   const isFinalizado = item.status === 'Finalizados';
+
+  const isUserSupporting = Boolean(
+    currentUser &&
+      item.apoiadores?.some(
+        (ap) =>
+          ap.nome.toLowerCase() === currentUser.nome.toLowerCase() ||
+          (currentUser.telefone && ap.telefone && ap.telefone === currentUser.telefone)
+      )
+  );
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -198,13 +210,28 @@ export const ItemRow: React.FC<ItemRowProps> = ({
             )}
           </div>
 
-          {/* Botão Principal Dourado: 🙋‍♂️ Apoiar */}
+          {/* Botão Principal: 🙋‍♂️ Apoiar ou Apoiado */}
           {!isFinalizado ? (
             <button
               onClick={() => onOpenApoiar(item)}
-              className="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] flex items-center gap-1.5 transition-all shadow-md shadow-black/30 active:scale-95 whitespace-nowrap"
+              className={`py-2.5 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-md shadow-black/30 active:scale-95 whitespace-nowrap ${
+                isUserSupporting
+                  ? 'bg-[#183824] hover:bg-[#1f482e] text-[#6ee7b7] border border-[#34d399]/70'
+                  : 'bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015]'
+              }`}
+              title={isUserSupporting ? 'Você já está apoiando! Clique para gerenciar ou retirar apoio' : 'Entrar no rateio deste item'}
             >
-              <span>🙋‍♂️ Apoiar</span>
+              {isUserSupporting ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-[#34d399]" />
+                  <span>Apoiado ({totalApoiadores})</span>
+                </>
+              ) : (
+                <>
+                  <span>🙋‍♂️ Apoiar</span>
+                  {totalApoiadores > 0 && <span className="font-mono text-xs">({totalApoiadores})</span>}
+                </>
+              )}
             </button>
           ) : (
             <div className="py-2 px-3 rounded-xl bg-[#15291b] border border-[#264c30] text-[#52c27c] text-xs font-semibold flex items-center gap-1">

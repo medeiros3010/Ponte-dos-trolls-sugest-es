@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
-import { SEED_ITEMS } from './src/data/seedData';
+import { SEED_ITEMS, SEED_USERS } from './src/data/seedData';
 
 const app = express();
 const PORT = 3000;
@@ -15,14 +15,26 @@ if (!fs.existsSync(BINS_DIR)) {
 
 // Default bin seed file
 const defaultBinPath = path.join(BINS_DIR, 'trolls-rpg-oficial.json');
-if (!fs.existsSync(defaultBinPath)) {
-  fs.writeFileSync(defaultBinPath, JSON.stringify({
-    id: 'trolls-rpg-oficial',
-    name: 'A Ponte dos Trolls - Rateios RPG',
-    updatedAt: new Date().toISOString(),
-    items: SEED_ITEMS,
-  }, null, 2), 'utf-8');
+let existingDefaultData: any = null;
+if (fs.existsSync(defaultBinPath)) {
+  try {
+    existingDefaultData = JSON.parse(fs.readFileSync(defaultBinPath, 'utf-8'));
+  } catch (e) {}
 }
+
+const initialDefaultPayload = {
+  id: 'trolls-rpg-oficial',
+  name: 'A Ponte dos Trolls - Rateios RPG',
+  updatedAt: new Date().toISOString(),
+  items: (existingDefaultData && Array.isArray(existingDefaultData.items) && existingDefaultData.items.length > 0)
+    ? existingDefaultData.items
+    : SEED_ITEMS,
+  users: (existingDefaultData && Array.isArray(existingDefaultData.users) && existingDefaultData.users.length > 0)
+    ? existingDefaultData.users
+    : SEED_USERS,
+};
+
+fs.writeFileSync(defaultBinPath, JSON.stringify(initialDefaultPayload, null, 2), 'utf-8');
 
 // Body parsing with 10mb limit
 app.use(express.json({ limit: '10mb' }));
@@ -51,7 +63,7 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', serverTime: new Date().toISOString() });
 });
 
-// GET /api/bin/:binId - Carrega os itens do banco na nuvem
+// GET /api/bin/:binId - Carrega os itens e usuários do banco na nuvem
 app.get('/api/bin/:binId', (req: Request, res: Response) => {
   try {
     const rawId = req.params.binId;
@@ -61,16 +73,20 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf-8');
       const data = JSON.parse(content);
+      if (!data.users || !Array.isArray(data.users) || data.users.length === 0) {
+        data.users = SEED_USERS;
+      }
       return res.json(data);
     }
 
-    // Se o banco ainda não existe, cria automaticamente inicializado com os SEED_ITEMS
+    // Se o banco ainda não existe, cria automaticamente inicializado com os SEED_ITEMS e SEED_USERS
     const initialData = {
       id: binId,
       name: `A Ponte dos Trolls - ${binId}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       items: SEED_ITEMS,
+      users: SEED_USERS,
     };
 
     fs.writeFileSync(filePath, JSON.stringify(initialData, null, 2), 'utf-8');
@@ -81,29 +97,46 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/bin/:binId - Atualiza os itens do banco na nuvem
+// PUT /api/bin/:binId - Atualiza os itens e/ou usuários do banco na nuvem
 app.put('/api/bin/:binId', (req: Request, res: Response) => {
   try {
     const rawId = req.params.binId;
     const binId = sanitizeBinId(rawId);
     const filePath = path.join(BINS_DIR, `${binId}.json`);
 
+    let existingData: any = {};
+    if (fs.existsSync(filePath)) {
+      try {
+        existingData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      } catch (e) {}
+    }
+
     const body = req.body;
-    let itemsToSave: any[] = [];
+    let itemsToSave: any[] = existingData.items || SEED_ITEMS;
+    let usersToSave: any[] = existingData.users || SEED_USERS;
 
     if (Array.isArray(body)) {
       itemsToSave = body;
-    } else if (body && Array.isArray(body.items)) {
-      itemsToSave = body.items;
-    } else if (body && body.data && Array.isArray(body.data.items)) {
-      itemsToSave = body.data.items;
+    } else if (body) {
+      if (Array.isArray(body.items)) {
+        itemsToSave = body.items;
+      } else if (body.data && Array.isArray(body.data.items)) {
+        itemsToSave = body.data.items;
+      }
+
+      if (Array.isArray(body.users)) {
+        usersToSave = body.users;
+      } else if (body.data && Array.isArray(body.data.users)) {
+        usersToSave = body.data.users;
+      }
     }
 
     const payload = {
       id: binId,
-      name: body.name || `A Ponte dos Trolls - ${binId}`,
+      name: body.name || existingData.name || `A Ponte dos Trolls - ${binId}`,
       updatedAt: new Date().toISOString(),
       items: itemsToSave,
+      users: usersToSave,
     };
 
     fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf-8');
@@ -111,6 +144,7 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       success: true,
       id: binId,
       count: itemsToSave.length,
+      usersCount: usersToSave.length,
       updatedAt: payload.updatedAt,
     });
   } catch (err: any) {
@@ -127,13 +161,15 @@ app.post('/api/bin', (req: Request, res: Response) => {
 
     const body = req.body;
     const items = (body && Array.isArray(body.items)) ? body.items : SEED_ITEMS;
+    const users = (body && Array.isArray(body.users)) ? body.users : SEED_USERS;
 
     const payload = {
       id: binId,
-      name: body.name || `A Ponte dos Trolls - ${binId}`,
+      name: body?.name || `A Ponte dos Trolls - ${binId}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       items,
+      users,
     };
 
     fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf-8');

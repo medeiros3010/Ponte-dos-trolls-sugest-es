@@ -1,7 +1,39 @@
-import { ItemRPG } from '../types';
+import { ItemRPG, UserProfile } from '../types';
+
+export const SEED_USERS: UserProfile[] = [
+  { id: 'usr-1', nome: "Augusto F. Sant'ana", telefone: '(27) 99908-4467', email: '' },
+  { id: 'usr-2', nome: 'Erick Santos', telefone: '(19) 98151-2030', email: '' },
+  { id: 'usr-3', nome: 'Gustavo Mozer', telefone: '(27) 99818-7614', email: '' },
+  { id: 'usr-4', nome: 'Rafael Motta', telefone: '(71) 99196-0427', email: '' },
+  { id: 'usr-5', nome: 'Mateus de Medeiros (rato)', telefone: '(48) 99637-7018', email: '' },
+  { id: 'usr-6', nome: 'Ivan', telefone: '(43) 99952-8095', email: '' },
+  { id: 'usr-7', nome: 'Lomenha', telefone: '(21) 97668-4894', email: '' },
+  { id: 'usr-8', nome: 'Daniel Nach', telefone: '(31) 97234-7005', email: '' },
+  { id: 'usr-9', nome: 'Igor Santos', telefone: '(37) 99116-3440', email: '' },
+  { id: 'usr-10', nome: 'Fernando A T Brito', telefone: '(21) 99531-2089', email: '' },
+  { id: 'usr-11', nome: 'Ilan Mendes', telefone: '(21) 97951-2634', email: '' },
+  { id: 'usr-12', nome: 'Rodrigo Miranda', telefone: '(21) 98385-3177', email: '' },
+  { id: 'usr-13', nome: 'Nelson Neto', telefone: '(11) 95557-2486', email: '' },
+  { id: 'usr-14', nome: 'Murillo Duran', telefone: '(11) 99379-9630', email: '' },
+  { id: 'usr-15', nome: 'Matheus Bueno', telefone: '(11) 99523-4946', email: '' },
+  { id: 'usr-16', nome: 'Joalisson', telefone: '(84) 99473-5050', email: '' },
+  { id: 'usr-17', nome: 'Diego Santos', telefone: '(21) 97607-0637', email: '' },
+  { id: 'usr-18', nome: 'William', telefone: '(15) 99157-3318', email: '' },
+  { id: 'usr-19', nome: 'Rafael Lima', telefone: '(91) 98247-5432', email: '' },
+  { id: 'usr-20', nome: 'Henrique Müller', telefone: '(51) 99312-0758', email: '' },
+  { id: 'usr-21', nome: 'Luiz Eduardo Vilar (Duds)', telefone: '(32) 99818-9166', email: '' },
+  { id: 'usr-22', nome: 'Trizz', telefone: '(91) 98400-2651', email: '' },
+  { id: 'usr-23', nome: 'A. Oliveira', telefone: '(24) 99814-2803', email: '' },
+  { id: 'usr-24', nome: 'Rafael', telefone: '(11) 92747-5005', email: '' },
+  { id: 'usr-25', nome: 'Marcos', telefone: '(19) 99111-5613', email: '' },
+  { id: 'usr-26', nome: 'Daniel', telefone: '(96) 99124-5826', email: '' },
+  { id: 'usr-27', nome: 'Fernando Motta', telefone: '', email: '' },
+  { id: 'usr-28', nome: 'Henrique Andrade', telefone: '', email: '' },
+  { id: 'usr-29', nome: 'Felipe César', telefone: '', email: '' },
+];
 
 export const SEED_ITEMS: ItemRPG[] = [
-  // --- Em Financiamento ---
+  // --- Sugestão (Ideias enviadas aguardando abertura de vaquinha pelo Admin) ---
   {
     id: 'seed-1',
     data: '2026-02-10',
@@ -15,13 +47,53 @@ export const SEED_ITEMS: ItemRPG[] = [
     moeda: 'USD',
     valorNumerico: 89.98,
     observacaoValor: 'Pacote de Lançamento',
-    status: 'Em Financiamento',
+    status: 'Sugestão',
     apoiadores: [
       { id: 'ap-1', nome: "Augusto F. Sant'ana", telefone: '(27) 99908-4467' },
       { id: 'ap-2', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
       { id: 'ap-3', nome: 'Erick Santos', telefone: '(19) 98151-2030' },
     ],
   },
+  {
+    id: 'seed-4',
+    data: '2026-09-05',
+    nome: 'Symbaroum - Trilogia Trono de Espinhos',
+    produto: 'Módulo Foundry',
+    sistema: 'Symbaroum',
+    descricao: 'Pacote de campanhas de alta fantasia sombria da Free League com mapas e compêndios oficiais.',
+    link: 'https://freeleaguepublishing.com/games/symbaroum/',
+    sugeridoPorNome: 'Matheus Bueno',
+    sugeridoPorTelefone: '(11) 99523-4946',
+    moeda: 'USD',
+    valorNumerico: 20.71,
+    observacaoValor: 'Preço promocional',
+    status: 'Sugestão',
+    apoiadores: [
+      { id: 'ap-10', nome: 'Matheus Bueno', telefone: '(11) 99523-4946' },
+      { id: 'ap-11', nome: 'Ivan', telefone: '(43) 99952-8095' },
+    ],
+  },
+  {
+    id: 'seed-5',
+    data: '2026-09-10',
+    nome: 'Humblewood Campaign Setting - 5e D&D',
+    produto: 'Livro de Regras em PDF',
+    sistema: 'DnD5e',
+    descricao: 'Cenário fantástico e acolhedor de floresta para 5e com raças de animais antropomórficos e magia da natureza.',
+    link: 'https://hitpointpress.com/pages/humblewood',
+    sugeridoPorNome: 'Murillo Duran',
+    sugeridoPorTelefone: '(11) 99379-9630',
+    moeda: 'USD',
+    valorNumerico: 50.00,
+    observacaoValor: '',
+    status: 'Sugestão',
+    apoiadores: [
+      { id: 'ap-12', nome: 'Murillo Duran', telefone: '(11) 99379-9630' },
+      { id: 'ap-12b', nome: 'Lomenha', telefone: '(21) 97668-4894' },
+    ],
+  },
+
+  // --- Em Financiamento (Vaquinhas Abertas e Ativas pelo Admin) ---
   {
     id: 'seed-2',
     data: '2026-02-15',
@@ -60,47 +132,11 @@ export const SEED_ITEMS: ItemRPG[] = [
     apoiadores: [
       { id: 'ap-8', nome: 'Rodrigo Miranda', telefone: '(21) 98385-3177' },
       { id: 'ap-9', nome: 'Lomenha', telefone: '(21) 97668-4894' },
-    ],
-  },
-  {
-    id: 'seed-4',
-    data: '2026-09-05',
-    nome: 'Symbaroum - Trilogia Trono de Espinhos',
-    produto: 'Módulo Foundry',
-    sistema: 'Symbaroum',
-    descricao: 'Pacote de campanhas de alta fantasia sombria da Free League com mapas e compêndios oficiais.',
-    link: 'https://freeleaguepublishing.com/games/symbaroum/',
-    sugeridoPorNome: 'Matheus Bueno',
-    sugeridoPorTelefone: '(11) 99523-4946',
-    moeda: 'USD',
-    valorNumerico: 20.71,
-    observacaoValor: 'Preço promocional',
-    status: 'Em Financiamento',
-    apoiadores: [
-      { id: 'ap-10', nome: 'Matheus Bueno', telefone: '(11) 99523-4946' },
-      { id: 'ap-11', nome: 'Ivan', telefone: '' },
-    ],
-  },
-  {
-    id: 'seed-5',
-    data: '2026-09-10',
-    nome: 'Humblewood Campaign Setting - 5e D&D',
-    produto: 'Livro de Regras em PDF',
-    sistema: 'DnD5e',
-    descricao: 'Cenário fantástico e acolhedor de floresta para 5e com raças de animais antropomórficos e magia da natureza.',
-    link: 'https://hitpointpress.com/pages/humblewood',
-    sugeridoPorNome: 'Murillo Duran',
-    sugeridoPorTelefone: '(11) 99379-9630',
-    moeda: 'USD',
-    valorNumerico: 50.00,
-    observacaoValor: '',
-    status: 'Em Financiamento',
-    apoiadores: [
-      { id: 'ap-12', nome: 'Murillo Duran', telefone: '(11) 99379-9630' },
+      { id: 'ap-9b', nome: 'Fernando A T Brito', telefone: '(21) 99531-2089' },
     ],
   },
 
-  // --- Finalizados ---
+  // --- Finalizados (Acervo Já Comprado e Disponível no Drive) ---
   {
     id: 'seed-6',
     data: '2026-02-15',
@@ -119,8 +155,8 @@ export const SEED_ITEMS: ItemRPG[] = [
       { id: 'ap-13', nome: 'Erick Santos', telefone: '(19) 98151-2030' },
       { id: 'ap-14', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
       { id: 'ap-15', nome: 'Gustavo Mozer', telefone: '(27) 99818-7614' },
-      { id: 'ap-16', nome: 'rato', telefone: '' },
-      { id: 'ap-17', nome: 'Ivan', telefone: '' },
+      { id: 'ap-16', nome: 'Mateus de Medeiros (rato)', telefone: '(48) 99637-7018' },
+      { id: 'ap-17', nome: 'Ivan', telefone: '(43) 99952-8095' },
     ],
   },
   {
@@ -140,7 +176,7 @@ export const SEED_ITEMS: ItemRPG[] = [
     apoiadores: [
       { id: 'ap-18', nome: 'Igor Santos', telefone: '(37) 99116-3440' },
       { id: 'ap-19', nome: 'Daniel Nach', telefone: '(31) 97234-7005' },
-      { id: 'ap-20', nome: 'Fernando Brito', telefone: '(21) 99531-2089' },
+      { id: 'ap-20', nome: 'Fernando A T Brito', telefone: '(21) 99531-2089' },
       { id: 'ap-21', nome: 'Ilan Mendes', telefone: '(21) 97951-2634' },
     ],
   },
@@ -163,8 +199,8 @@ export const SEED_ITEMS: ItemRPG[] = [
       { id: 'ap-23', nome: 'Erick Santos', telefone: '(19) 98151-2030' },
       { id: 'ap-24', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
       { id: 'ap-25', nome: 'Lomenha', telefone: '(21) 97668-4894' },
-      { id: 'ap-26', nome: 'Nelson Neto', telefone: '' },
-      { id: 'ap-27', nome: 'rato', telefone: '' },
+      { id: 'ap-26', nome: 'Nelson Neto', telefone: '(11) 95557-2486' },
+      { id: 'ap-27', nome: 'Mateus de Medeiros (rato)', telefone: '(48) 99637-7018' },
     ],
   },
 ];

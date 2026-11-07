@@ -17,38 +17,6 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            forest: {
-              950: '#070d08',
-              900: '#0c150e',
-              850: '#101c13',
-              800: '#122015',
-              750: '#16271a',
-              700: '#1e3524',
-              600: '#27442d',
-            },
-            amberGold: {
-              300: '#f5cb5c',
-              400: '#e5b23d',
-              500: '#d49e2a',
-              600: '#b88219',
-            }
-          },
-          fontFamily: {
-            rpg: ['Cinzel', 'serif'],
-            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
-          }
-        }
-      }
-    }
-  </script>
-
   <style>
     body {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
@@ -65,28 +33,136 @@
 </head>
 <body class="bg-[#0c150e] text-[#f1ede4] min-h-screen flex flex-col selection:bg-[#d49e2a]/30 selection:text-[#f4ecd8]">
 
-  <!-- A. CABEÇALHO COMPACTO -->
-  <header class="border-b border-[#1f3524] bg-[#0c150e]/95 sticky top-0 z-30 backdrop-blur-md">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+  <!-- ==================== BLOQUEIO DE ENTRADA: MODAL OBRIGATÓRIO DE IDENTIFICAÇÃO ==================== -->
+  <div id="auth-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/95 backdrop-blur-md">
+    <div class="bg-[#122015] border-2 border-[#d49e2a]/70 rounded-3xl w-full max-w-lg shadow-[0_0_60px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col">
       
-      <!-- Avatar + Título -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a]">
-          <img src="/assets/aistudio/image_95654294.png" alt="A Ponte dos Trolls" class="w-full h-full object-cover">
+      <!-- Topo com Avatar Troll -->
+      <div class="p-6 bg-gradient-to-b from-[#182d1d] to-[#122015] border-b border-[#203625] text-center">
+        <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-lg shadow-black/60 mx-auto mb-3 bg-[#16271a]">
+          <img src="/troll-mascot.png" alt="A Ponte dos Trolls" class="w-full h-full object-cover">
         </div>
+        <h2 class="font-rpg text-xl sm:text-2xl font-bold tracking-wide text-[#f4ecd8]">
+          A Ponte dos Trolls
+        </h2>
+        <p class="text-xs text-[#a4b5a6] mt-1">
+          Identificação Obrigatória para Acessar a Central de Rateios RPG
+        </p>
+      </div>
+
+      <!-- Abas de Entrada -->
+      <div class="flex border-b border-[#203625] bg-[#0c150e] text-xs">
+        <button type="button" id="auth-tab-btn-existing" onclick="switchAuthTab('existing')" class="flex-1 py-3.5 px-3 font-bold flex items-center justify-center gap-2 border-b-2 border-[#d49e2a] text-[#d49e2a] bg-[#16271a] transition-all">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>Já estou na Lista</span>
+        </button>
+        <button type="button" id="auth-tab-btn-new" onclick="switchAuthTab('new')" class="flex-1 py-3.5 px-3 font-bold flex items-center justify-center gap-2 border-b-2 border-transparent text-[#7a8e7d] hover:text-[#f4ecd8] transition-all">
+          <i data-lucide="user-plus" class="w-4 h-4"></i>
+          <span>Primeiro Cadastro</span>
+        </button>
+      </div>
+
+      <!-- Formulários -->
+      <div class="p-5 sm:p-6 text-xs overflow-y-auto max-h-[70vh]">
+        
+        <!-- ABA 1: Já estou na lista da Ponte dos Trolls -->
+        <div id="auth-tab-existing" class="space-y-4">
+          <div class="p-3 bg-[#0c150e] border border-[#1e3422] rounded-xl text-[#9cb09e] text-[11px] leading-relaxed">
+            Selecione seu nome na lista da planilha do grupo. Se seu e-mail ainda não estiver cadastrado, complete-o abaixo para liberar a entrada.
+          </div>
+
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-[#556957] absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="auth-search-member" oninput="filterAuthMembers(this.value)" placeholder="Pesquisar seu nome na lista..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl pl-9 pr-3 py-2 text-xs text-[#f4ecd8] placeholder-[#556957] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Selecione seu Nome:</label>
+            <div id="auth-members-list" class="max-h-44 overflow-y-auto bg-[#0c150e] border border-[#1e3422] rounded-xl p-1.5 space-y-1"></div>
+          </div>
+
+          <!-- Campo obrigatório de e-mail caso não tenha salvo -->
+          <div id="auth-email-wrapper" class="hidden p-3 bg-[#16271a] border border-[#27442d] rounded-xl space-y-2">
+            <div class="flex items-center gap-1.5 text-[#d49e2a] font-bold text-xs">
+              <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+              <span>Complete seu E-mail para Confirmar Entrada *</span>
+            </div>
+            <input type="email" id="auth-existing-email" placeholder="seu.email@exemplo.com" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+            <p class="text-[10px] text-[#8a9d8c]">O e-mail será salvo no seu perfil para notificações de vaquinha e entrega de arquivos.</p>
+          </div>
+
+          <p id="auth-existing-error" class="text-xs text-[#ef4444] font-semibold bg-[#2b1414] p-2 rounded-lg border border-[#7f1d1d] hidden"></p>
+
+          <button type="button" id="auth-btn-enter" onclick="submitExistingUser()" class="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-lg shadow-black/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 stroke-[2.5]"></i>
+            <span>Entrar no Sistema</span>
+          </button>
+        </div>
+
+        <!-- ABA 2: Primeiro Cadastro (Novo Membro) -->
+        <form id="auth-tab-new" onsubmit="submitNewUser(event)" class="space-y-3.5 hidden">
+          <div class="p-3 bg-[#0c150e] border border-[#1e3422] rounded-xl text-[#9cb09e] text-[11px] leading-relaxed">
+            Preencha os 3 dados oficiais de entrada do grupo para se registrar na nuvem da Ponte dos Trolls.
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Nome Completo *</label>
+            <input type="text" id="new-user-nome" required placeholder="Ex: João da Silva" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Número de Telefone / WhatsApp *</label>
+            <input type="tel" id="new-user-telefone" required placeholder="(XX) XXXXX-XXXX" oninput="applyPhoneMask(this)" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f4ecd8] font-mono focus:outline-none focus:border-[#d49e2a]">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">E-mail *</label>
+            <input type="email" id="new-user-email" required placeholder="seu.email@exemplo.com" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+
+          <p id="auth-new-error" class="text-xs text-[#ef4444] font-semibold bg-[#2b1414] p-2 rounded-lg border border-[#7f1d1d] hidden"></p>
+
+          <button type="submit" class="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-lg shadow-black/40 transition-all flex items-center justify-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4 stroke-[2.5]"></i>
+            <span>Cadastrar e Entrar</span>
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CABEÇALHO COMPACTO ==================== -->
+  <header class="border-b border-[#1f3524] bg-[#0c150e]/95 sticky top-0 z-30 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+      
+      <!-- Avatar + Título + Usuário -->
+      <div class="flex items-center gap-3">
+        <button onclick="navigateTo('home')" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a] hover:scale-105 transition-transform" title="Voltar à Tela Inicial">
+          <img src="/assets/aistudio/image_95654294.png" alt="A Ponte dos Trolls" class="w-full h-full object-cover">
+        </button>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-rpg text-lg sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight">
+            <button onclick="navigateTo('home')" class="font-rpg text-base sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight hover:text-[#d49e2a] transition-colors text-left">
               A Ponte dos Trolls
-            </h1>
+            </button>
             <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-[#1e3422] text-[#d49e2a] border border-[#d49e2a]/30 rounded">
               Rateios RPG
             </span>
           </div>
-          <!-- Status Nuvem -->
-          <div class="flex items-center gap-1.5 text-[11px] text-[#6ee7b7] cursor-pointer hover:underline" onclick="openModal('settings-modal')">
-            <span id="cloud-indicator" class="w-2 h-2 rounded-full inline-block bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
-            <span id="cloud-status-text" class="font-medium">Nuvem: trolls-rpg-oficial</span>
+          
+          <!-- Usuário Conectado & Troca -->
+          <div class="flex items-center gap-2 text-[11px] mt-0.5">
+            <div id="header-user-display" class="flex items-center gap-1.5 text-[#d49e2a]">
+              <i data-lucide="user" class="w-3 h-3 text-[#d49e2a]"></i>
+              <span id="header-user-name" class="font-semibold truncate max-w-[120px] sm:max-w-[180px]">Membro</span>
+              <button onclick="logoutUser()" class="text-[10px] text-[#8a9d8c] hover:text-[#f4ecd8] underline ml-0.5" title="Trocar de usuário">[Trocar]</button>
+            </div>
+            <span class="hidden sm:inline text-[#3a523f]">·</span>
+            <button onclick="openModal('settings-modal')" class="hidden sm:inline-flex items-center gap-1.5 hover:underline" title="Gerenciar banco em nuvem">
+              <span class="w-2 h-2 rounded-full inline-block bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+              <span id="cloud-status-text" class="text-[#6ee7b7] font-medium text-[10px]">Nuvem: trolls-rpg-oficial</span>
+            </button>
           </div>
         </div>
       </div>
@@ -121,44 +197,158 @@
     </div>
   </header>
 
-  <!-- CONTEÚDO PRINCIPAL (max-w-5xl sem estatísticas) -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 w-full flex-1">
+  <!-- ==================== VIEW 1: HOME HUB (3 BOTÕES GIGANTES) ==================== -->
+  <div id="view-home" class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col justify-center">
+    
+    <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12 space-y-3">
+      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-xl shadow-black/60 mx-auto mb-2 bg-[#16271a] hover:scale-105 transition-transform">
+        <img src="/troll-mascot.png" alt="A Ponte dos Trolls" class="w-full h-full object-cover">
+      </div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#182c1d] border border-[#27442d] text-xs font-semibold text-[#d49e2a]">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        <span>Saudações, <span id="home-greeting-name">Aventureiro</span>! Bem-vindo à Ponte dos Trolls</span>
+      </div>
+      <h2 class="font-rpg text-2xl sm:text-3xl md:text-4xl font-bold text-[#f4ecd8] tracking-wide leading-tight">
+        Central de Compras Coletivas & Rateios RPG
+      </h2>
+      <p class="text-xs sm:text-sm text-[#8a9d8c] leading-relaxed">
+        Escolha uma das portas abaixo para sugerir materiais, participar das vaquinhas abertas da nossa mesa ou explorar os conteúdos já garantidos no Drive.
+      </p>
+    </div>
 
-    <!-- B. NAVEGAÇÃO ÚNICA (2 Abas + Filtro por Sistema + Busca) -->
-    <div class="bg-[#122015] border border-[#203625] rounded-2xl p-2.5 sm:p-3 mb-6 shadow-lg shadow-black/20">
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        
-        <!-- 2 Abas Oficiais -->
-        <div class="flex items-center gap-1.5 bg-[#0c150e] p-1 rounded-xl border border-[#1b2f20]">
-          <button id="tab-btn-financiamento" onclick="switchTab('Em Financiamento')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm">
-            <span>🔥 Em Financiamento</span>
-            <span id="badge-count-financiamento" class="px-1.5 py-0.5 rounded-full text-[10px] bg-[#27442d] text-[#f4ecd8]">0</span>
-          </button>
-          <button id="tab-btn-finalizados" onclick="switchTab('Finalizados')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all">
-            <span>✅ Finalizados</span>
-            <span id="badge-count-finalizados" class="px-1.5 py-0.5 rounded-full text-[10px] bg-[#182b1d] text-[#8a9d8c]">0</span>
-          </button>
-        </div>
-
-        <!-- Filtro por Sistema + Barra de Busca -->
-        <div class="flex items-center gap-2 flex-1 sm:max-w-md">
-          <select id="system-filter" onchange="handleSystemChange(this.value)" class="bg-[#0c150e] border border-[#1e3422] text-[#d49e2a] text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#d49e2a] cursor-pointer">
-            <option value="">Todos os Sistemas</option>
-          </select>
-
-          <div class="relative flex-1">
-            <i data-lucide="search" class="w-3.5 h-3.5 text-[#556957] absolute left-3 top-1/2 -translate-y-1/2"></i>
-            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Buscar por título, sistema ou autor..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl pl-8 pr-3 py-2 text-xs text-[#f4ecd8] placeholder-[#556957] focus:outline-none focus:border-[#d49e2a]">
+    <!-- 3 CARDS CLICÁVEIS DE DESTAQUE -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+      
+      <!-- 1. 🛍️ Sugerir Compras -->
+      <button onclick="navigateTo('sugestoes')" class="group relative text-left bg-gradient-to-b from-[#142318] to-[#0e1911] hover:from-[#1a2e20] hover:to-[#122216] border-2 border-[#203625] hover:border-[#d49e2a]/70 rounded-3xl p-6 sm:p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#d49e2a]/10 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="w-14 h-14 rounded-2xl bg-[#1b2f20] border border-[#2e5035] flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <i data-lucide="shopping-bag" class="w-7 h-7 text-[#d49e2a]"></i>
+            </div>
+            <span id="home-count-sugestoes" class="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-[#1c3222] text-[#d49e2a] border border-[#d49e2a]/30">0 ativas</span>
+          </div>
+          <div>
+            <h3 class="font-rpg text-xl font-bold text-[#f4ecd8] group-hover:text-[#d49e2a] transition-colors">
+              Sugerir Compras
+            </h3>
+            <p class="text-xs text-[#8a9d8c] mt-2 leading-relaxed">
+              Envie novas ideias de módulos, mapas ou livros e apoie sugestões da galera.
+            </p>
           </div>
         </div>
+        <div class="mt-6 pt-4 border-t border-[#1f3524] flex items-center justify-between text-xs font-bold text-[#d49e2a]">
+          <span>Acessar Sugestões</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </button>
 
+      <!-- 2. 🔥 Financiamento em Andamento -->
+      <button onclick="navigateTo('financiamento')" class="group relative text-left bg-gradient-to-b from-[#182a1c] to-[#101e13] hover:from-[#1e3422] hover:to-[#142618] border-2 border-[#d49e2a]/50 hover:border-[#d49e2a] rounded-3xl p-6 sm:p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#d49e2a]/20 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="w-14 h-14 rounded-2xl bg-[#203a27] border border-[#d49e2a]/50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <i data-lucide="flame" class="w-7 h-7 text-[#e5b23d] animate-pulse"></i>
+            </div>
+            <span id="home-count-financiamento" class="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-[#d49e2a] text-[#122015] shadow-sm">0 abertas</span>
+          </div>
+          <div>
+            <h3 class="font-rpg text-xl font-bold text-[#f4ecd8] group-hover:text-[#e5b23d] transition-colors">
+              Financiamento em Andamento
+            </h3>
+            <p class="text-xs text-[#8a9d8c] mt-2 leading-relaxed">
+              Vaquinhas abertas atualmente recolhendo o rateio para compra imediata.
+            </p>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-[#25462d] flex items-center justify-between text-xs font-bold text-[#e5b23d]">
+          <span>Ver Vaquinhas Abertas</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </button>
+
+      <!-- 3. 📚 Catálogo de Produtos -->
+      <button onclick="navigateTo('catalogo')" class="group relative text-left bg-gradient-to-b from-[#142318] to-[#0e1911] hover:from-[#1a2e20] hover:to-[#122216] border-2 border-[#203625] hover:border-[#43aa6a]/70 rounded-3xl p-6 sm:p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#43aa6a]/10 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="w-14 h-14 rounded-2xl bg-[#1b2f20] border border-[#2e5035] flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <i data-lucide="book-open" class="w-7 h-7 text-[#43aa6a]"></i>
+            </div>
+            <span id="home-count-catalogo" class="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-[#1a3824] text-[#52c27c] border border-[#2f5e3b]">0 no Drive</span>
+          </div>
+          <div>
+            <h3 class="font-rpg text-xl font-bold text-[#f4ecd8] group-hover:text-[#52c27c] transition-colors">
+              Catálogo de Produtos
+            </h3>
+            <p class="text-xs text-[#8a9d8c] mt-2 leading-relaxed">
+              Acervo completo de materiais já financiados e disponíveis no Drive do grupo.
+            </p>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-[#1f3524] flex items-center justify-between text-xs font-bold text-[#52c27c]">
+          <span>Explorar Acervo</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- ==================== VIEW 2: TELAS INTERNAS DE LISTAS ==================== -->
+  <main id="view-internal" class="max-w-5xl mx-auto px-4 sm:px-6 py-6 w-full flex-1 hidden">
+
+    <!-- BARRA SUPERIOR: ⬅️ VOLTAR AO MENU INICIAL -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-[#1b2f20]">
+      <button onclick="navigateTo('home')" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#142318] hover:bg-[#1a2f20] text-[#d49e2a] border border-[#27442d] transition-all hover:-translate-x-0.5 shadow-sm">
+        <i data-lucide="arrow-left" class="w-4 h-4 stroke-[2.5]"></i>
+        <span>Voltar ao Menu Inicial</span>
+      </button>
+
+      <!-- Título de Contexto -->
+      <div id="internal-context-badge" class="text-xs font-bold"></div>
+    </div>
+
+    <!-- Navegação por Abas (Exclusiva da tela 'sugestoes': 💡 Sugestão e ✅ Finalizados) -->
+    <div id="sugestoes-tabs-bar" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6 bg-[#122015] border border-[#203625] rounded-2xl p-2.5 sm:p-3">
+      <div class="flex items-center gap-1.5 bg-[#0c150e] p-1 rounded-xl border border-[#1b2f20]">
+        <button id="tab-btn-sugestao" onclick="switchSugestoesTab('Sugestão')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm">
+          <span>💡 Sugestão</span>
+          <span id="badge-count-sugestao" class="px-1.5 py-0.5 rounded-full text-[10px] bg-[#27442d] text-[#f4ecd8]">0</span>
+        </button>
+        <button id="tab-btn-finalizados" onclick="switchSugestoesTab('Finalizados')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all">
+          <span>✅ Finalizados</span>
+          <span id="badge-count-finalizados" class="px-1.5 py-0.5 rounded-full text-[10px] bg-[#182b1d] text-[#8a9d8c]">0</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 flex-1 sm:max-w-md justify-end">
+        <select id="system-filter" onchange="handleSystemChange(this.value)" class="bg-[#0c150e] border border-[#1e3422] text-[#d49e2a] text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#d49e2a] cursor-pointer">
+          <option value="">Todos os Sistemas</option>
+        </select>
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-[#556957] absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Buscar..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl pl-8 pr-3 py-2 text-xs text-[#f4ecd8] placeholder-[#556957] focus:outline-none focus:border-[#d49e2a]">
+        </div>
       </div>
     </div>
 
-    <!-- C. LISTA DE ITENS EM LINHAS HORIZONTAIS -->
-    <div id="items-list" class="space-y-3.5">
-      <!-- Inserido dinamicamente via JS -->
+    <!-- Barra de Filtros Direta (Para Financiamento e Catálogo) -->
+    <div id="general-filter-bar" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6 bg-[#122015] border border-[#203625] rounded-2xl p-3">
+      <div id="general-list-count" class="text-xs font-bold text-[#f4ecd8]">0 itens listados</div>
+      <div class="flex items-center gap-2 flex-1 sm:max-w-md justify-end">
+        <select id="system-filter-general" onchange="handleSystemChange(this.value)" class="bg-[#0c150e] border border-[#1e3422] text-[#d49e2a] text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#d49e2a] cursor-pointer">
+          <option value="">Todos os Sistemas</option>
+        </select>
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-[#556957] absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="search-input-general" oninput="handleSearch(this.value)" placeholder="Buscar por título ou autor..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl pl-8 pr-3 py-2 text-xs text-[#f4ecd8] placeholder-[#556957] focus:outline-none focus:border-[#d49e2a]">
+        </div>
+      </div>
     </div>
+
+    <!-- Lista de Itens -->
+    <div id="items-list" class="space-y-3.5"></div>
 
   </main>
 
@@ -170,18 +360,18 @@
         <span>A Ponte dos Trolls &copy; <span id="current-year"></span> · Rateios de RPG</span>
       </div>
       <div class="flex items-center gap-4 text-[#8a9d8c]">
-        <span id="footer-count">0 itens cadastrados</span>
+        <span id="footer-count">0 itens</span>
         <span>·</span>
-        <button onclick="copyGroupShareLink()" class="hover:text-[#d49e2a] transition-colors">Copiar Link do Grupo</button>
+        <button onclick="navigateTo('home')" class="hover:text-[#d49e2a] transition-colors">Menu Inicial</button>
         <span>·</span>
-        <button onclick="exportCSV()" class="hover:text-[#d49e2a] transition-colors">Baixar Planilha CSV</button>
+        <button onclick="copyGroupShareLink()" class="hover:text-[#d49e2a] transition-colors">Copiar Link</button>
+        <span>·</span>
+        <button onclick="exportCSV()" class="hover:text-[#d49e2a] transition-colors">Baixar CSV</button>
       </div>
     </div>
   </footer>
 
-  <!-- ==================== MODAIS ==================== -->
-
-  <!-- 1. MODAL DE CADASTRO / EDIÇÃO -->
+  <!-- ==================== MODAL DE CADASTRO / EDIÇÃO ==================== -->
   <div id="form-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
     <div class="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6">
       <div class="flex items-center justify-between pb-3 border-b border-[#1f3524]">
@@ -216,7 +406,7 @@
           </div>
           <div>
             <label class="block font-semibold text-[#c2cbbe] mb-1">Sistema de RPG *</label>
-            <input type="text" id="form-sistema" required placeholder="Ex: PF2E, DnD5e, Cthulhu" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+            <input type="text" id="form-sistema" required placeholder="Ex: PF2E, DnD5e, SWADE" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
           </div>
         </div>
 
@@ -239,51 +429,40 @@
           <input type="url" id="form-link" placeholder="https://..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
         </div>
 
-        <!-- Se for novo cadastro: seu nome/telefone -->
-        <div id="author-fields" class="grid grid-cols-2 gap-3 p-3 bg-[#0c150e] border border-[#1b2f20] rounded-xl">
-          <div>
-            <label class="block font-semibold text-[#d49e2a] mb-1">Seu Nome (1º Apoiador) *</label>
-            <input type="text" id="form-autor-nome" placeholder="Seu nome" class="w-full bg-[#122015] border border-[#1e3422] rounded-lg px-2.5 py-1.5 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
-          </div>
-          <div>
-            <label class="block font-semibold text-[#d49e2a] mb-1">Seu WhatsApp</label>
-            <input type="text" id="form-autor-telefone" placeholder="(99) 99999-9999" class="w-full bg-[#122015] border border-[#1e3422] rounded-lg px-2.5 py-1.5 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
-          </div>
-        </div>
-
         <div>
           <label class="block font-semibold text-[#c2cbbe] mb-1">Descrição Breve / Observações</label>
-          <textarea id="form-descricao" rows="2" placeholder="Informações úteis sobre o conteúdo ou desconto..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]"></textarea>
+          <textarea id="form-descricao" rows="2" placeholder="Informações úteis sobre o conteúdo..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]"></textarea>
         </div>
 
-        <!-- CAMPO EXCLUSIVO DE EDIÇÃO: Status e Senha de Admin -->
+        <!-- CAMPO EXCLUSIVO DE EDIÇÃO: 3 Estágios de Status e Senha de Admin -->
         <div id="edit-status-field" class="hidden p-3.5 bg-[#16271a] border border-[#27442d] rounded-xl space-y-3">
           <div>
-            <label class="block font-semibold text-[#d49e2a] mb-1">Status do Item (Exclusivo Admin)</label>
+            <label class="block font-semibold text-[#d49e2a] mb-1">Estágio / Status do Item</label>
             <select id="form-status" class="w-full bg-[#0c150e] border border-[#27442d] rounded-xl px-2.5 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
-              <option value="Em Financiamento">🔥 Em Financiamento</option>
-              <option value="Finalizados">✅ Finalizados</option>
+              <option value="Sugestão">💡 1. Sugestão (Recebendo apoios)</option>
+              <option value="Em Financiamento">🔥 2. Em Financiamento (Vaquinha Aberta)</option>
+              <option value="Finalizados">✅ 3. Finalizados (No Drive do Grupo)</option>
             </select>
           </div>
 
           <div>
-            <label class="block font-semibold text-[#f4ecd8] mb-1">Senha de Administrador (para salvar/mudar status) *</label>
+            <label class="block font-semibold text-[#f4ecd8] mb-1">Senha de Administrador para salvar/mudar status *</label>
             <input type="password" id="edit-admin-password" placeholder="Digite a senha de administrador" class="w-full bg-[#0c150e] border border-[#27442d] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
-            <p id="edit-password-error" class="text-xs text-[#ef4444] font-semibold mt-1 hidden">Senha incorreta! Digite a senha do admin.</p>
+            <p id="edit-password-error" class="text-xs text-[#ef4444] font-semibold mt-1 hidden">Senha incorreta! Não autorizado.</p>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#1f3524]">
           <button type="button" onclick="closeModal('form-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#c2cbbe] hover:bg-[#16271a] transition-colors">Cancelar</button>
-          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-md transition-all">Salvar Sugestão</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-md transition-all">Salvar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 2. MODAL DE APOIAR / RATEIO -->
+  <!-- ==================== MODAL DE RATEIO & APOIO ==================== -->
   <div id="rateio-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
-    <div class="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 text-xs">
+    <div class="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 text-xs space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-[#1f3524]">
         <div>
           <h3 class="font-bold text-base text-[#f4ecd8]">Entrar no Rateio</h3>
@@ -294,8 +473,7 @@
         </button>
       </div>
 
-      <!-- Resumo Valores e Divisão -->
-      <div class="my-4 p-3 bg-[#0c150e] border border-[#1b2f20] rounded-xl grid grid-cols-2 gap-3 text-center">
+      <div class="p-3 bg-[#0c150e] border border-[#1b2f20] rounded-xl grid grid-cols-2 gap-3 text-center">
         <div>
           <span class="text-[11px] text-[#7a8e7d]">Valor Total</span>
           <div id="rateio-val-total" class="font-mono font-bold text-sm text-[#f4ecd8]">R$ 0,00</div>
@@ -306,35 +484,28 @@
         </div>
       </div>
 
-      <!-- Formulário de Apoio Livre -->
-      <form id="rateio-form" onsubmit="handleAddApoiador(event)" class="space-y-3">
-        <input type="hidden" id="rateio-item-id">
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-semibold text-[#c2cbbe] mb-1">Seu Nome *</label>
-            <input type="text" id="rateio-nome" required placeholder="Seu nome" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
-          </div>
-          <div>
-            <label class="block font-semibold text-[#c2cbbe] mb-1">Seu WhatsApp</label>
-            <input type="text" id="rateio-telefone" placeholder="(99) 99999-9999" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
-          </div>
+      <!-- Ação de Apoio Direto com Perfil Conectado -->
+      <div class="p-3.5 rounded-xl bg-[#0c150e] border border-[#203725] space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-[#a4b5a6]">Perfil Atual: <strong id="rateio-current-user" class="text-[#f4ecd8]"></strong></span>
+          <span id="rateio-current-status-badge"></span>
         </div>
-        <button type="submit" class="w-full py-2.5 rounded-xl font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-md transition-all">
-          🙋‍♂️ Confirmar Apoio no Rateio
+        <button type="button" id="rateio-toggle-btn" onclick="toggleSupportFromModal()" class="w-full py-2.5 rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2">
+          Confirmar Apoio
         </button>
-      </form>
+      </div>
 
-      <!-- Lista de Apoiadores Atuais -->
-      <div class="mt-4 pt-3 border-t border-[#1f3524]">
+      <!-- Lista de Membros no Rateio -->
+      <div class="pt-2 border-t border-[#1f3524]">
         <h4 class="font-semibold text-[#8a9d8c] mb-2 flex items-center justify-between">
-          <span>Apoiadores Cadastrados (<span id="rateio-count">0</span>)</span>
+          <span>Apoiadores (<span id="rateio-count">0</span>)</span>
         </h4>
         <div id="rateio-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
       </div>
     </div>
   </div>
 
-  <!-- 3. MODAL DE CONFIRMAÇÃO DE EXCLUSÃO COM SENHA (SEM window.confirm) -->
+  <!-- ==================== MODAL DE EXCLUSÃO COM SENHA (SEM window.confirm) ==================== -->
   <div id="delete-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
     <div class="bg-[#122015] border border-[#7f1d1d] rounded-2xl w-full max-w-md shadow-2xl p-5 sm:p-6 text-xs space-y-4">
       <div class="flex items-center gap-2 text-[#ef4444]">
@@ -358,7 +529,7 @@
     </div>
   </div>
 
-  <!-- 4. MODAL DE NUVEM & BANCO DE DADOS -->
+  <!-- ==================== MODAL DE NUVEM & CSV ==================== -->
   <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
     <div class="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 text-xs space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-[#1f3524]">
@@ -409,7 +580,7 @@
   </div>
 
   <!-- TOAST FLUTUANTE -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-[#122015] border border-[#28462f] text-[#f4ecd8] px-4 py-2.5 rounded-xl shadow-2xl text-xs flex items-center gap-2 transition-all">
+  <div id="toast" class="fixed bottom-5 right-5 z-[110] hidden bg-[#122015] border border-[#28462f] text-[#f4ecd8] px-4 py-2.5 rounded-xl shadow-2xl text-xs flex items-center gap-2 transition-all">
     <i data-lucide="check-circle" class="w-4 h-4 text-[#34d399]"></i>
     <span id="toast-msg">Notificação</span>
   </div>
@@ -420,7 +591,54 @@
     const DEFAULT_RATE = 5.80;
     const DEFAULT_BIN_ID = 'trolls-rpg-oficial';
 
-    // Determina o Bin ID da URL (?bin=...) ou localStorage
+    // 29 Membros Oficiais da Planilha
+    const INITIAL_USERS = [
+      { id: 'usr-1', nome: "Augusto F. Sant'ana", telefone: "(27) 99908-4467", email: "" },
+      { id: 'usr-2', nome: "Erick Santos", telefone: "(19) 98151-2030", email: "" },
+      { id: 'usr-3', nome: "Gustavo Mozer", telefone: "(27) 99818-7614", email: "" },
+      { id: 'usr-4', nome: "Rafael Motta", telefone: "(71) 99196-0427", email: "" },
+      { id: 'usr-5', nome: "Mateus de Medeiros (rato)", telefone: "(48) 99637-7018", email: "" },
+      { id: 'usr-6', nome: "Ivan", telefone: "(43) 99952-8095", email: "" },
+      { id: 'usr-7', nome: "Lomenha", telefone: "(21) 97668-4894", email: "" },
+      { id: 'usr-8', nome: "Daniel Nach", telefone: "(31) 97234-7005", email: "" },
+      { id: 'usr-9', nome: "Igor Santos", telefone: "(37) 99116-3440", email: "" },
+      { id: 'usr-10', nome: "Fernando A T Brito", telefone: "(21) 99531-2089", email: "" },
+      { id: 'usr-11', nome: "Ilan Mendes", telefone: "(21) 97951-2634", email: "" },
+      { id: 'usr-12', nome: "Rodrigo Miranda", telefone: "(21) 98385-3177", email: "" },
+      { id: 'usr-13', nome: "Nelson Neto", telefone: "(11) 95557-2486", email: "" },
+      { id: 'usr-14', nome: "Murillo Duran", telefone: "(11) 99379-9630", email: "" },
+      { id: 'usr-15', nome: "Matheus Bueno", telefone: "(11) 99523-4946", email: "" },
+      { id: 'usr-16', nome: "Joalisson", telefone: "(84) 99473-5050", email: "" },
+      { id: 'usr-17', nome: "Diego Santos", telefone: "(21) 97607-0637", email: "" },
+      { id: 'usr-18', nome: "William", telefone: "(15) 99157-3318", email: "" },
+      { id: 'usr-19', nome: "Rafael Lima", telefone: "(91) 98247-5432", email: "" },
+      { id: 'usr-20', nome: "Henrique Müller", telefone: "(51) 99312-0758", email: "" },
+      { id: 'usr-21', nome: "Luiz Eduardo Vilar (Duds)", telefone: "(32) 99818-9166", email: "" },
+      { id: 'usr-22', nome: "Trizz", telefone: "(91) 98400-2651", email: "" },
+      { id: 'usr-23', nome: "A. Oliveira", telefone: "(24) 99814-2803", email: "" },
+      { id: 'usr-24', nome: "Rafael", telefone: "(11) 92747-5005", email: "" },
+      { id: 'usr-25', nome: "Marcos", telefone: "(19) 99111-5613", email: "" },
+      { id: 'usr-26', nome: "Daniel", telefone: "(96) 99124-5826", email: "" },
+      { id: 'usr-27', nome: "Fernando Motta", telefone: "", email: "" },
+      { id: 'usr-28', nome: "Henrique Andrade", telefone: "", email: "" },
+      { id: 'usr-29', nome: "Felipe César", telefone: "", email: "" }
+    ];
+
+    let users = [...INITIAL_USERS];
+    try {
+      const storedUsers = localStorage.getItem('trolls_users_v4');
+      if (storedUsers) {
+        const parsed = JSON.parse(storedUsers);
+        if (Array.isArray(parsed) && parsed.length > 0) users = parsed;
+      }
+    } catch (e) {}
+
+    let currentUser = null;
+    try {
+      const storedCur = localStorage.getItem('trolls_current_user_v4');
+      if (storedCur) currentUser = JSON.parse(storedCur);
+    } catch (e) {}
+
     function getActiveBinId() {
       const params = new URLSearchParams(window.location.search);
       const urlBin = params.get('bin') || params.get('db');
@@ -430,12 +648,14 @@
 
     let currentBinId = getActiveBinId();
     let exchangeRate = DEFAULT_RATE;
-    let activeTab = 'Em Financiamento';
+    let activeView = 'home'; // 'home' | 'sugestoes' | 'financiamento' | 'catalogo'
+    let sugestoesTab = 'Sugestão'; // 'Sugestão' | 'Finalizados'
     let searchQuery = '';
     let selectedSystem = '';
     let itemToDeleteId = null;
+    let rateioModalItemId = null;
+    let selectedAuthUserId = null;
 
-    // Itens semente para primeiro carregamento caso offline
     let items = [
       {
         id: 'seed-1',
@@ -445,16 +665,15 @@
         sistema: 'Outro',
         descricao: 'Daggerheart Core Book + Expansão Hope & Fear + Duality Dices oficiais configurados no Foundry VTT.',
         link: 'https://www.foundryvtt.store/bundles/daggerheart-bundle',
-        sugeridoPorNome: 'Augusto F. Sant\'ana',
+        sugeridoPorNome: "Augusto F. Sant'ana",
         sugeridoPorTelefone: '(27) 99908-4467',
         moeda: 'USD',
         valorNumerico: 89.98,
         observacaoValor: 'Pacote de Lançamento',
-        status: 'Em Financiamento',
+        status: 'Sugestão',
         apoiadores: [
-          { id: 'ap-1', nome: 'Augusto F. Sant\'ana', telefone: '(27) 99908-4467' },
-          { id: 'ap-2', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
-          { id: 'ap-3', nome: 'Erick Santos', telefone: '(19) 98151-2030' }
+          { id: 'ap-1', nome: "Augusto F. Sant'ana", telefone: '(27) 99908-4467' },
+          { id: 'ap-2', nome: 'Rafael Motta', telefone: '(71) 99196-0427' }
         ]
       },
       {
@@ -473,9 +692,7 @@
         status: 'Em Financiamento',
         apoiadores: [
           { id: 'ap-4', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
-          { id: 'ap-5', nome: 'Gustavo Mozer', telefone: '(27) 99818-7614' },
-          { id: 'ap-6', nome: 'Daniel Nach', telefone: '(31) 97234-7005' },
-          { id: 'ap-7', nome: 'Igor Santos', telefone: '(37) 99116-3440' }
+          { id: 'ap-5', nome: 'Gustavo Mozer', telefone: '(27) 99818-7614' }
         ]
       },
       {
@@ -499,16 +716,15 @@
       }
     ];
 
-    // Carrega dados salvos localmente
     try {
-      const stored = localStorage.getItem('trolls_rpg_items');
+      const stored = localStorage.getItem('trolls_rpg_items_v4');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) items = parsed;
       }
     } catch (e) {}
 
-    // Formatação de Moedas
+    // Formatação
     function formatBRL(v) {
       return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
     }
@@ -519,7 +735,7 @@
       return moeda === 'USD' ? v * exchangeRate : v;
     }
 
-    // Comunicação com a Nuvem (/api/bin/:binId)
+    // Comunicação com Nuvem
     function getApiEndpoint(bin) {
       const base = window.location.origin.startsWith('file:')
         ? 'https://ais-pre-4yygmmgjezaxwzwlfxcm7n-236036871357.us-east1.run.app'
@@ -532,11 +748,17 @@
         const res = await fetch(getApiEndpoint(currentBinId));
         if (res.ok) {
           const data = await res.json();
-          if (data && Array.isArray(data.items) && data.items.length > 0) {
-            items = data.items;
-            localStorage.setItem('trolls_rpg_items', JSON.stringify(items));
+          if (data) {
+            if (Array.isArray(data.items) && data.items.length > 0) {
+              items = data.items;
+              localStorage.setItem('trolls_rpg_items_v4', JSON.stringify(items));
+            }
+            if (Array.isArray(data.users) && data.users.length > 0) {
+              users = data.users;
+              localStorage.setItem('trolls_users_v4', JSON.stringify(users));
+            }
             render();
-            showToast(`Sincronizados ${items.length} itens do banco na nuvem!`);
+            showToast('Dados sincronizados com a nuvem!');
           }
         }
       } catch (err) {
@@ -549,7 +771,7 @@
         await fetch(getApiEndpoint(currentBinId), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items })
+          body: JSON.stringify({ items, users })
         });
       } catch (err) {
         console.warn('Erro ao salvar na nuvem', err);
@@ -557,12 +779,12 @@
     }
 
     function saveStateAndSync() {
-      localStorage.setItem('trolls_rpg_items', JSON.stringify(items));
+      localStorage.setItem('trolls_rpg_items_v4', JSON.stringify(items));
+      localStorage.setItem('trolls_users_v4', JSON.stringify(users));
       render();
       pushCloudData();
     }
 
-    // Link de compartilhamento
     function getShareLink() {
       const base = window.location.origin.startsWith('file:')
         ? 'https://ais-pre-4yygmmgjezaxwzwlfxcm7n-236036871357.us-east1.run.app'
@@ -581,49 +803,297 @@
       if (val) {
         currentBinId = val;
         localStorage.setItem('trolls_active_bin', val);
-        document.getElementById('cloud-status-text').innerText = `Nuvem: ${currentBinId}`;
-        document.getElementById('settings-shareable-url').innerText = getShareLink();
         pullCloudData();
         closeModal('settings-modal');
         showToast(`Conectado ao banco: ${currentBinId}`);
       }
     }
 
-    // Renderização da Interface
+    // ==================== AUTH & ENTRADA OBRIGATÓRIA ====================
+    function renderAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      if (!currentUser) {
+        modal.classList.remove('hidden');
+        renderAuthMembersList('');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function switchAuthTab(tab) {
+      const btnExisting = document.getElementById('auth-tab-btn-existing');
+      const btnNew = document.getElementById('auth-tab-btn-new');
+      const tabExisting = document.getElementById('auth-tab-existing');
+      const tabNew = document.getElementById('auth-tab-new');
+
+      if (tab === 'existing') {
+        btnExisting.className = 'flex-1 py-3.5 px-3 font-bold flex items-center justify-center gap-2 border-b-2 border-[#d49e2a] text-[#d49e2a] bg-[#16271a] transition-all';
+        btnNew.className = 'flex-1 py-3.5 px-3 font-bold flex items-center justify-center gap-2 border-b-2 border-transparent text-[#7a8e7d] hover:text-[#f4ecd8] transition-all';
+        tabExisting.classList.remove('hidden');
+        tabNew.classList.add('hidden');
+      } else {
+        btnNew.className = 'flex-1 py-3.5 px-3 font-bold flex items-center justify-center gap-2 border-b-2 border-[#d49e2a] text-[#d49e2a] bg-[#16271a] transition-all';
+        btnExisting.className = 'flex-1 py-3.5 px-3 font-bold flex items-center justify-center gap-2 border-b-2 border-transparent text-[#7a8e7d] hover:text-[#f4ecd8] transition-all';
+        tabNew.classList.remove('hidden');
+        tabExisting.classList.add('hidden');
+      }
+    }
+
+    function renderAuthMembersList(filter) {
+      const container = document.getElementById('auth-members-list');
+      const q = (filter || '').toLowerCase().trim();
+      const filtered = users.filter(u => u.nome.toLowerCase().includes(q) || (u.telefone && u.telefone.includes(q)));
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p class="text-center py-3 text-[#7a8e7d] italic text-[11px]">Nenhum membro encontrado. Mude para "Primeiro Cadastro".</p>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(u => {
+        const isSel = selectedAuthUserId === u.id;
+        return `
+          <button type="button" onclick="selectAuthMember('${u.id}')" class="w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors ${
+            isSel ? 'bg-[#1e3422] text-[#d49e2a] font-bold border border-[#d49e2a]/40' : 'text-[#e6decb] hover:bg-[#16271a]'
+          }">
+            <div class="truncate">
+              <span>${u.nome}</span>
+              ${u.telefone ? `<span class="block text-[10px] text-[#7a8e7d] font-mono">${u.telefone}</span>` : ''}
+            </div>
+            ${isSel ? '<i data-lucide="check-circle-2" class="w-4 h-4 text-[#d49e2a]"></i>' : ''}
+          </button>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function filterAuthMembers(val) {
+      renderAuthMembersList(val);
+    }
+
+    function selectAuthMember(id) {
+      selectedAuthUserId = id;
+      const u = users.find(x => x.id === id);
+      const emailWrapper = document.getElementById('auth-email-wrapper');
+      const emailInput = document.getElementById('auth-existing-email');
+      const err = document.getElementById('auth-existing-error');
+      err.classList.add('hidden');
+
+      if (u) {
+        emailWrapper.classList.remove('hidden');
+        emailInput.value = u.email || '';
+      }
+      renderAuthMembersList(document.getElementById('auth-search-member').value);
+    }
+
+    function submitExistingUser() {
+      const err = document.getElementById('auth-existing-error');
+      if (!selectedAuthUserId) {
+        err.innerText = 'Selecione seu nome na lista.';
+        err.classList.remove('hidden');
+        return;
+      }
+
+      const u = users.find(x => x.id === selectedAuthUserId);
+      if (!u) return;
+
+      const emailVal = document.getElementById('auth-existing-email').value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailVal || !emailRegex.test(emailVal)) {
+        err.innerText = 'Por favor, informe um e-mail válido para identificação no grupo.';
+        err.classList.remove('hidden');
+        return;
+      }
+
+      u.email = emailVal;
+      currentUser = u;
+      localStorage.setItem('trolls_current_user_v4', JSON.stringify(currentUser));
+      saveStateAndSync();
+      document.getElementById('auth-modal').classList.add('hidden');
+      showToast(`Bem-vindo, ${currentUser.nome}!`);
+      render();
+    }
+
+    function applyPhoneMask(input) {
+      let v = input.value.replace(/\D/g, '').substring(0, 11);
+      if (v.length > 2 && v.length <= 6) {
+        input.value = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+      } else if (v.length > 6 && v.length <= 10) {
+        input.value = `(${v.slice(0, 2)}) ${v.slice(2, 6)}-${v.slice(6)}`;
+      } else if (v.length > 10) {
+        input.value = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7, 11)}`;
+      } else {
+        input.value = v;
+      }
+    }
+
+    function submitNewUser(e) {
+      e.preventDefault();
+      const nome = document.getElementById('new-user-nome').value.trim();
+      const telefone = document.getElementById('new-user-telefone').value.trim();
+      const email = document.getElementById('new-user-email').value.trim();
+      const err = document.getElementById('auth-new-error');
+
+      if (nome.length < 3) {
+        err.innerText = 'Informe seu nome completo.';
+        err.classList.remove('hidden');
+        return;
+      }
+      if (telefone.replace(/\D/g, '').length < 10) {
+        err.innerText = 'Informe um WhatsApp com DDD válido.';
+        err.classList.remove('hidden');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        err.innerText = 'Informe um e-mail válido.';
+        err.classList.remove('hidden');
+        return;
+      }
+
+      const newUser = {
+        id: 'usr-' + Date.now(),
+        nome,
+        telefone,
+        email,
+        createdAt: new Date().toISOString()
+      };
+
+      users.push(newUser);
+      currentUser = newUser;
+      localStorage.setItem('trolls_current_user_v4', JSON.stringify(currentUser));
+      saveStateAndSync();
+      document.getElementById('auth-modal').classList.add('hidden');
+      showToast(`Cadastro realizado com sucesso! Bem-vindo, ${newUser.nome}.`);
+      render();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      localStorage.removeItem('trolls_current_user_v4');
+      renderAuthModal();
+    }
+
+    // ==================== NAVEGAÇÃO ENTRE TELAS ====================
+    function navigateTo(targetView) {
+      activeView = targetView;
+      searchQuery = '';
+      selectedSystem = '';
+
+      const viewHome = document.getElementById('view-home');
+      const viewInternal = document.getElementById('view-internal');
+      const sugestoesTabsBar = document.getElementById('sugestoes-tabs-bar');
+      const generalFilterBar = document.getElementById('general-filter-bar');
+      const contextBadge = document.getElementById('internal-context-badge');
+
+      if (targetView === 'home') {
+        viewHome.classList.remove('hidden');
+        viewInternal.classList.add('hidden');
+      } else {
+        viewHome.classList.add('hidden');
+        viewInternal.classList.remove('hidden');
+
+        if (targetView === 'sugestoes') {
+          sugestoesTabsBar.classList.remove('hidden');
+          generalFilterBar.classList.add('hidden');
+          contextBadge.innerHTML = '<span class="text-[#d49e2a] flex items-center gap-1.5"><i data-lucide="shopping-bag" class="w-4 h-4"></i><span>Sugerir Compras</span></span>';
+        } else if (targetView === 'financiamento') {
+          sugestoesTabsBar.classList.add('hidden');
+          generalFilterBar.classList.remove('hidden');
+          contextBadge.innerHTML = '<span class="text-[#e5b23d] flex items-center gap-1.5"><i data-lucide="flame" class="w-4 h-4"></i><span>Financiamento em Andamento (Vaquinhas Oficiais)</span></span>';
+        } else if (targetView === 'catalogo') {
+          sugestoesTabsBar.classList.add('hidden');
+          generalFilterBar.classList.remove('hidden');
+          contextBadge.innerHTML = '<span class="text-[#52c27c] flex items-center gap-1.5"><i data-lucide="book-open" class="w-4 h-4"></i><span>Catálogo de Produtos (No Drive)</span></span>';
+        }
+      }
+      render();
+    }
+
+    function switchSugestoesTab(tab) {
+      sugestoesTab = tab;
+      const btnSug = document.getElementById('tab-btn-sugestao');
+      const btnFin = document.getElementById('tab-btn-finalizados');
+      if (tab === 'Sugestão') {
+        btnSug.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm';
+        btnFin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all';
+      } else {
+        btnFin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm';
+        btnSug.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all';
+      }
+      render();
+    }
+
+    function handleSearch(q) {
+      searchQuery = q;
+      render();
+    }
+
+    function handleSystemChange(sys) {
+      selectedSystem = sys;
+      render();
+    }
+
+    // ==================== RENDERIZAÇÃO PRINCIPAL ====================
     function render() {
       document.getElementById('current-year').innerText = new Date().getFullYear();
       document.getElementById('cloud-status-text').innerText = `Nuvem: ${currentBinId}`;
       document.getElementById('settings-bin-input').value = currentBinId;
       document.getElementById('settings-shareable-url').innerText = getShareLink();
 
-      // Contadores das 2 Abas
-      const countFin = items.filter(i => i.status === 'Em Financiamento').length;
-      const countDone = items.filter(i => i.status === 'Finalizados').length;
-      document.getElementById('badge-count-financiamento').innerText = countFin;
-      document.getElementById('badge-count-finalizados').innerText = countDone;
+      if (currentUser) {
+        document.getElementById('header-user-name').innerText = currentUser.nome;
+        document.getElementById('home-greeting-name').innerText = currentUser.nome.split(' ')[0];
+      }
+
+      // Contadores
+      const cSug = items.filter(i => i.status === 'Sugestão').length;
+      const cFin = items.filter(i => i.status === 'Em Financiamento').length;
+      const cCat = items.filter(i => i.status === 'Finalizados').length;
+
+      document.getElementById('home-count-sugestoes').innerText = `${cSug} ativas`;
+      document.getElementById('home-count-financiamento').innerText = `${cFin} abertas`;
+      document.getElementById('home-count-catalogo').innerText = `${cCat} no Drive`;
+
+      document.getElementById('badge-count-sugestao').innerText = cSug;
+      document.getElementById('badge-count-finalizados').innerText = cCat;
       document.getElementById('footer-count').innerText = `${items.length} itens cadastrados`;
 
-      // Atualiza dropdown de sistemas
-      const sysSelect = document.getElementById('system-filter');
+      // Popula selects de sistema
       const systems = Array.from(new Set(items.map(i => i.sistema).filter(Boolean))).sort();
-      const currentSelected = selectedSystem;
-      sysSelect.innerHTML = '<option value="">Todos os Sistemas</option>' +
-        systems.map(s => `<option value="${s}" ${s === currentSelected ? 'selected' : ''}>${s}</option>`).join('');
+      const optionsHtml = '<option value="">Todos os Sistemas</option>' +
+        systems.map(s => `<option value="${s}" ${s === selectedSystem ? 'selected' : ''}>${s}</option>`).join('');
+      document.getElementById('system-filter').innerHTML = optionsHtml;
+      document.getElementById('system-filter-general').innerHTML = optionsHtml;
 
-      // Filtra itens
-      let list = items.filter(i => i.status === activeTab);
+      if (activeView === 'home') {
+        lucide.createIcons();
+        return;
+      }
+
+      // Determina itens da tela ativa
+      let list = [];
+      if (activeView === 'sugestoes') {
+        list = items.filter(i => i.status === sugestoesTab);
+      } else if (activeView === 'financiamento') {
+        list = items.filter(i => i.status === 'Em Financiamento');
+      } else if (activeView === 'catalogo') {
+        list = items.filter(i => i.status === 'Finalizados');
+      }
+
       if (selectedSystem) {
         list = list.filter(i => i.sistema.toLowerCase() === selectedSystem.toLowerCase());
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        list = list.filter(i => 
+        list = list.filter(i =>
           i.nome.toLowerCase().includes(q) ||
           i.sistema.toLowerCase().includes(q) ||
           (i.descricao && i.descricao.toLowerCase().includes(q)) ||
           (i.sugeridoPorNome && i.sugeridoPorNome.toLowerCase().includes(q))
         );
       }
+
+      document.getElementById('general-list-count').innerText = `${list.length} item(ns) listados`;
 
       const container = document.getElementById('items-list');
 
@@ -633,7 +1103,7 @@
             <i data-lucide="compass" class="w-10 h-10 text-[#d49e2a]/60 mx-auto mb-2"></i>
             <h3 class="text-base font-semibold text-[#f4ecd8] mb-1">Nenhum item encontrado</h3>
             <p class="text-xs text-[#7a8e7d] max-w-sm mx-auto mb-4">
-              Clique no botão "+ Sugerir Compra" no topo para abrir um novo rateio!
+              ${activeView === 'financiamento' ? 'Aguarde o administrador abrir a próxima vaquinha oficial ou sugira um novo item!' : 'Clique no botão "+ Sugerir Compra" no topo para sugerir um novo material!'}
             </p>
           </div>
         `;
@@ -641,18 +1111,44 @@
         return;
       }
 
-      // Renderiza Linhas Horizontais (SEM Foto e SEM "Valor por pessoa")
+      // Renderiza as Linhas Horizontais
       container.innerHTML = list.map(item => {
         const isUSD = item.moeda === 'USD';
         const valBRL = convertToBRL(item.valorNumerico, item.moeda);
         const apoios = (item.apoiadores || []).length;
-        const apoiarBtnLabel = apoios > 0 ? `🙋‍♂️ Apoiar (${apoios})` : '🙋‍♂️ Apoiar';
+        const isUserSupporting = currentUser && item.apoiadores?.some(
+          ap => ap.nome.toLowerCase() === currentUser.nome.toLowerCase() || (currentUser.telefone && ap.telefone === currentUser.telefone)
+        );
+
+        let apoiarButtonHtml = '';
+        if (item.status === 'Finalizados') {
+          apoiarButtonHtml = `
+            <div class="py-2 px-3 rounded-xl bg-[#15291b] border border-[#264c30] text-[#52c27c] text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Finalizado</span>
+            </div>
+          `;
+        } else if (isUserSupporting) {
+          apoiarButtonHtml = `
+            <button onclick="toggleSupportDirect('${item.id}')" class="py-2.5 px-3.5 rounded-xl text-xs font-bold bg-[#183824] hover:bg-[#1f482e] text-[#6ee7b7] border border-[#34d399]/70 flex items-center gap-1.5 transition-all shadow-md active:scale-95" title="Você já está apoiando! Clique para gerenciar ou retirar apoio">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-[#34d399]"></i>
+              <span>Apoiado (${apoios})</span>
+            </button>
+          `;
+        } else {
+          apoiarButtonHtml = `
+            <button onclick="openRateioModal('${item.id}')" class="py-2.5 px-3.5 rounded-xl text-xs font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] flex items-center gap-1.5 transition-all shadow-md active:scale-95">
+              <span>🙋‍♂️ Apoiar</span>
+              ${apoios > 0 ? `<span class="font-mono text-xs">(${apoios})</span>` : ''}
+            </button>
+          `;
+        }
 
         return `
           <div class="bg-[#122015] border border-[#203625] hover:border-[#2f4f34] rounded-2xl p-4 sm:p-5 transition-all shadow-md">
             <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
               
-              <!-- Esquerda: Informações Principais (Linha Ampla) -->
+              <!-- Linha Ampla sem Foto -->
               <div class="flex-1 min-w-0 pr-0 lg:pr-4">
                 <div class="flex flex-wrap items-center gap-2 mb-1.5">
                   <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase bg-[#182c1d] border border-[#27442d] text-[#d49e2a]">
@@ -670,10 +1166,9 @@
                 ${item.descricao ? `<p class="text-xs text-[#8a9d8c] line-clamp-2 leading-relaxed mb-1.5">${item.descricao}</p>` : ''}
               </div>
 
-              <!-- Direita: Valor Total + Botão Apoiar + Apenas 4 Botões de Ação -->
+              <!-- Direita: Valor Total + Botão Apoiar + Apenas 4 Botões -->
               <div class="flex flex-wrap sm:flex-nowrap items-center justify-between lg:justify-end gap-3 w-full lg:w-auto shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#1f3524]">
                 
-                <!-- Valor Total (SEM valor por pessoa) -->
                 <div class="text-left sm:text-right pr-2">
                   <span class="text-[10px] text-[#7a8e7d] block uppercase font-mono">Valor Total</span>
                   <div class="font-mono font-bold text-base text-[#f4ecd8]">
@@ -682,40 +1177,27 @@
                   ${isUSD ? `<div class="text-[11px] text-[#7a8e7d] font-mono">(~${formatBRL(valBRL)})</div>` : ''}
                 </div>
 
-                <!-- Botão Apoiar -->
-                <button onclick="openRateioModal('${item.id}')" class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                  apoios > 0
-                    ? 'bg-[#182d1d] hover:bg-[#203a27] text-[#d49e2a] border border-[#d49e2a]/40'
-                    : 'bg-[#16271a] hover:bg-[#1e3422] text-[#f4ecd8] border border-[#203625]'
-                }">
-                  ${apoiarBtnLabel}
-                </button>
+                ${apoiarButtonHtml}
 
-                <!-- APENAS 4 BOTÕES DE AÇÃO: WhatsApp (📋), Link (🔗), Editar (✏️), Excluir (🗑️) -->
+                <!-- APENAS 4 BOTÕES -->
                 <div class="flex items-center gap-1 border-l border-[#1f3524] pl-2">
-                  
-                  <!-- 1. Copiar WhatsApp -->
                   <button onclick="copyItemWhatsApp('${item.id}')" class="p-2 text-[#7a8e7d] hover:text-[#43aa6a] hover:bg-[#182b1d] rounded-lg transition-colors" title="Copiar resumo para WhatsApp">
                     <i data-lucide="clipboard" class="w-4 h-4"></i>
                   </button>
 
-                  <!-- 2. Abrir Link da Loja -->
                   ${item.link ? `
                     <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="p-2 text-[#7a8e7d] hover:text-[#d49e2a] hover:bg-[#182b1d] rounded-lg transition-colors" title="Abrir link do produto">
                       <i data-lucide="external-link" class="w-4 h-4"></i>
                     </a>
                   ` : ''}
 
-                  <!-- 3. Editar Item (Status & Edição com Senha) -->
                   <button onclick="openEditModal('${item.id}')" class="p-2 text-[#7a8e7d] hover:text-[#d49e2a] hover:bg-[#182b1d] rounded-lg transition-colors" title="Editar item ou alterar status (Requer Senha)">
                     <i data-lucide="pencil" class="w-4 h-4"></i>
                   </button>
 
-                  <!-- 4. Excluir (Modal com Senha Ponte#dos#trolls) -->
                   <button onclick="requestDelete('${item.id}')" class="p-2 text-[#7a8e7d] hover:text-[#ef4444] hover:bg-[#251515] rounded-lg transition-colors" title="Excluir item (Requer Senha)">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
-
                 </div>
 
               </div>
@@ -728,32 +1210,7 @@
       lucide.createIcons();
     }
 
-    // Alternar Abas
-    function switchTab(tab) {
-      activeTab = tab;
-      const btnFin = document.getElementById('tab-btn-financiamento');
-      const btnDone = document.getElementById('tab-btn-finalizados');
-      if (tab === 'Em Financiamento') {
-        btnFin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm';
-        btnDone.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all';
-      } else {
-        btnDone.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm';
-        btnFin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all';
-      }
-      render();
-    }
-
-    function handleSearch(q) {
-      searchQuery = q;
-      render();
-    }
-
-    function handleSystemChange(sys) {
-      selectedSystem = sys;
-      render();
-    }
-
-    // Modal Helpers
+    // ==================== MODAIS & OPERAÇÕES ====================
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
     }
@@ -761,31 +1218,25 @@
       document.getElementById(id).classList.add('hidden');
     }
 
-    // Novo Item (Sem status e sem senha)
     function openNewItemModal() {
       document.getElementById('form-item-id').value = '';
       document.getElementById('form-title').innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4 text-[#d49e2a]"></i><span>Nova Sugestão de Compra</span>';
-      document.getElementById('author-fields').classList.remove('hidden');
       document.getElementById('edit-status-field').classList.add('hidden');
       document.getElementById('form-nome').value = '';
       document.getElementById('form-sistema').value = '';
       document.getElementById('form-valor').value = '';
       document.getElementById('form-link').value = '';
       document.getElementById('form-descricao').value = '';
-      document.getElementById('form-autor-nome').value = '';
-      document.getElementById('form-autor-telefone').value = '';
       openModal('form-modal');
       lucide.createIcons();
     }
 
-    // Edição de Item (Exige senha Ponte#dos#trolls)
     function openEditModal(id) {
       const item = items.find(i => String(i.id) === String(id));
       if (!item) return;
 
       document.getElementById('form-item-id').value = item.id;
       document.getElementById('form-title').innerHTML = '<i data-lucide="pencil" class="w-4 h-4 text-[#d49e2a]"></i><span>Editar Item & Status</span>';
-      document.getElementById('author-fields').classList.add('hidden');
       document.getElementById('edit-status-field').classList.remove('hidden');
       document.getElementById('edit-admin-password').value = '';
       document.getElementById('edit-password-error').classList.add('hidden');
@@ -808,7 +1259,6 @@
       const editId = document.getElementById('form-item-id').value;
 
       if (editId) {
-        // Validação de Senha de Admin para Edição e Mudança de Status
         const pwd = document.getElementById('edit-admin-password').value;
         if (pwd !== ADMIN_PASSWORD) {
           document.getElementById('edit-password-error').classList.remove('hidden');
@@ -830,12 +1280,12 @@
           };
           closeModal('form-modal');
           saveStateAndSync();
-          showToast(`"${items[idx].nome}" atualizado com sucesso!`);
+          showToast(`"${items[idx].nome}" atualizado!`);
         }
       } else {
-        // Novo Cadastro Livre
-        const autorNome = document.getElementById('form-autor-nome').value.trim() || 'Membro do Grupo';
-        const autorTel = document.getElementById('form-autor-telefone').value.trim();
+        const authorNome = currentUser ? currentUser.nome : 'Membro do Grupo';
+        const authorTel = currentUser ? currentUser.telefone : '';
+        const authorEmail = currentUser ? currentUser.email : '';
 
         const newItem = {
           id: 'troll-' + Date.now(),
@@ -847,20 +1297,103 @@
           valorNumerico: parseFloat(document.getElementById('form-valor').value) || 0,
           link: document.getElementById('form-link').value.trim(),
           descricao: document.getElementById('form-descricao').value.trim(),
-          sugeridoPorNome: autorNome,
-          sugeridoPorTelefone: autorTel,
-          status: 'Em Financiamento',
-          apoiadores: [{ id: 'ap-' + Date.now(), nome: autorNome, telefone: autorTel }]
+          sugeridoPorNome: authorNome,
+          sugeridoPorTelefone: authorTel,
+          status: 'Sugestão',
+          apoiadores: [{ id: 'ap-' + Date.now(), nome: authorNome, telefone: authorTel, email: authorEmail }]
         };
 
         items.unshift(newItem);
         closeModal('form-modal');
         saveStateAndSync();
-        showToast(`"${newItem.nome}" adicionado com sucesso!`);
+        showToast(`"${newItem.nome}" adicionado em Sugestões!`);
+        navigateTo('sugestoes');
+        switchSugestoesTab('Sugestão');
       }
     }
 
-    // Modal de Exclusão (Senha Obrigatória Ponte#dos#trolls)
+    // Rateio & Apoio
+    function openRateioModal(id) {
+      const item = items.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      rateioModalItemId = id;
+      document.getElementById('rateio-item-name').innerText = item.nome;
+      document.getElementById('rateio-current-user').innerText = currentUser ? currentUser.nome : 'Não identificado';
+
+      const valBRL = convertToBRL(item.valorNumerico, item.moeda);
+      const apoios = (item.apoiadores || []).length;
+      document.getElementById('rateio-val-total').innerText = formatBRL(valBRL);
+      document.getElementById('rateio-val-pessoa').innerText = apoios > 0 ? formatBRL(valBRL / apoios) : formatBRL(valBRL);
+      document.getElementById('rateio-count').innerText = apoios;
+
+      const isSupporting = currentUser && item.apoiadores?.some(
+        ap => ap.nome.toLowerCase() === currentUser.nome.toLowerCase() || (currentUser.telefone && ap.telefone === currentUser.telefone)
+      );
+
+      const btn = document.getElementById('rateio-toggle-btn');
+      const badge = document.getElementById('rateio-current-status-badge');
+
+      if (isSupporting) {
+        badge.innerHTML = '<span class="text-[#6ee7b7] text-[11px] font-bold">Você está apoiando</span>';
+        btn.className = 'w-full py-2.5 rounded-xl font-bold text-xs bg-[#2b171a] hover:bg-[#3d1e22] text-[#e06c75] border border-[#7f1d1d] transition-all';
+        btn.innerText = 'Retirar Meu Apoio Deste Rateio';
+      } else {
+        badge.innerHTML = '';
+        btn.className = 'w-full py-2.5 rounded-xl font-bold text-xs bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-md transition-all';
+        btn.innerText = '🙋‍♂️ Confirmar Meu Apoio no Rateio';
+      }
+
+      const listDiv = document.getElementById('rateio-list');
+      if (apoios === 0) {
+        listDiv.innerHTML = '<p class="text-[11px] text-[#7a8e7d] italic">Nenhum apoiador ainda.</p>';
+      } else {
+        listDiv.innerHTML = item.apoiadores.map((ap, idx) => `
+          <div class="flex items-center justify-between p-2 bg-[#0c150e] border border-[#1b2f20] rounded-lg">
+            <span class="font-medium text-[#f4ecd8]">${idx + 1}. ${ap.nome}</span>
+            <span class="text-[10px] text-[#7a8e7d]">${ap.telefone || ''}</span>
+          </div>
+        `).join('');
+      }
+
+      openModal('rateio-modal');
+      lucide.createIcons();
+    }
+
+    function toggleSupportFromModal() {
+      if (!rateioModalItemId || !currentUser) return;
+      toggleSupportDirect(rateioModalItemId);
+      openRateioModal(rateioModalItemId);
+    }
+
+    function toggleSupportDirect(itemId) {
+      if (!currentUser) return;
+      const item = items.find(i => String(i.id) === String(itemId));
+      if (!item) return;
+
+      if (!item.apoiadores) item.apoiadores = [];
+      const existingIdx = item.apoiadores.findIndex(
+        ap => ap.nome.toLowerCase() === currentUser.nome.toLowerCase() || (currentUser.telefone && ap.telefone === currentUser.telefone)
+      );
+
+      if (existingIdx !== -1) {
+        item.apoiadores.splice(existingIdx, 1);
+        showToast(`Seu apoio em "${item.nome}" foi retirado.`);
+      } else {
+        item.apoiadores.push({
+          id: 'ap-' + Date.now(),
+          nome: currentUser.nome,
+          telefone: currentUser.telefone,
+          email: currentUser.email,
+          data: new Date().toISOString().split('T')[0]
+        });
+        showToast(`🤝 Você entrou no rateio de "${item.nome}"!`);
+      }
+
+      saveStateAndSync();
+    }
+
+    // Exclusão com Senha
     function requestDelete(id) {
       const item = items.find(i => String(i.id) === String(id));
       if (!item) return;
@@ -880,64 +1413,14 @@
       }
 
       if (itemToDeleteId) {
-        const item = items.find(i => String(i.id) === String(itemToDeleteId));
         items = items.filter(i => String(i.id) !== String(itemToDeleteId));
         closeModal('delete-modal');
         itemToDeleteId = null;
         saveStateAndSync();
-        showToast(`Item excluído com sucesso!`);
+        showToast('Item excluído com sucesso!');
       }
     }
 
-    // Modal de Rateio
-    function openRateioModal(id) {
-      const item = items.find(i => String(i.id) === String(id));
-      if (!item) return;
-
-      document.getElementById('rateio-item-id').value = item.id;
-      document.getElementById('rateio-item-name').innerText = item.nome;
-      document.getElementById('rateio-nome').value = '';
-      document.getElementById('rateio-telefone').value = '';
-
-      const valBRL = convertToBRL(item.valorNumerico, item.moeda);
-      const apoios = (item.apoiadores || []).length;
-      document.getElementById('rateio-val-total').innerText = formatBRL(valBRL);
-      document.getElementById('rateio-val-pessoa').innerText = apoios > 0 ? formatBRL(valBRL / apoios) : formatBRL(valBRL);
-      document.getElementById('rateio-count').innerText = apoios;
-
-      const listDiv = document.getElementById('rateio-list');
-      if (apoios === 0) {
-        listDiv.innerHTML = '<p class="text-[11px] text-[#7a8e7d] italic">Nenhum apoiador ainda. Seja o primeiro!</p>';
-      } else {
-        listDiv.innerHTML = item.apoiadores.map((ap, idx) => `
-          <div class="flex items-center justify-between p-2 bg-[#0c150e] border border-[#1b2f20] rounded-lg">
-            <span class="font-medium text-[#f4ecd8]">${idx + 1}. ${ap.nome}</span>
-            <span class="text-[10px] text-[#7a8e7d]">${ap.telefone || ''}</span>
-          </div>
-        `).join('');
-      }
-
-      openModal('rateio-modal');
-      lucide.createIcons();
-    }
-
-    function handleAddApoiador(e) {
-      e.preventDefault();
-      const itemId = document.getElementById('rateio-item-id').value;
-      const nome = document.getElementById('rateio-nome').value.trim();
-      const tel = document.getElementById('rateio-telefone').value.trim();
-
-      const item = items.find(i => String(i.id) === String(itemId));
-      if (item && nome) {
-        if (!item.apoiadores) item.apoiadores = [];
-        item.apoiadores.push({ id: 'ap-' + Date.now(), nome, telefone: tel });
-        closeModal('rateio-modal');
-        saveStateAndSync();
-        showToast(`${nome} entrou no rateio de "${item.nome}"!`);
-      }
-    }
-
-    // Copiar WhatsApp Formatado
     function copyItemWhatsApp(id) {
       const item = items.find(i => String(i.id) === String(id));
       if (!item) return;
@@ -968,7 +1451,6 @@
       showToast(`Resumo de "${item.nome}" copiado para o WhatsApp!`);
     }
 
-    // Exportar CSV
     function exportCSV() {
       const BOM = '\uFEFF';
       const headers = ['Data', 'Nome', 'Produto', 'Sistema', 'Descrição', 'Link', 'Sugestão de:', 'Valor', 'Status'];
@@ -996,7 +1478,6 @@
       showToast('Planilha CSV baixada com sucesso!');
     }
 
-    // Toast
     function showToast(msg) {
       const t = document.getElementById('toast');
       document.getElementById('toast-msg').innerText = msg;
@@ -1004,8 +1485,8 @@
       setTimeout(() => t.classList.add('hidden'), 3000);
     }
 
-    // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
+      renderAuthModal();
       render();
       pullCloudData();
     });

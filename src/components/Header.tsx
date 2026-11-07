@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Plus, Cloud, RefreshCw, MessageSquareShare, Link2, Check } from 'lucide-react';
+import { Plus, Cloud, RefreshCw, MessageSquareShare, Link2, Check, User, LogOut } from 'lucide-react';
+import { UserProfile } from '../types';
 import { getShareableGroupLink } from '../utils/cloudStorage';
 
 interface HeaderProps {
   binId: string;
+  currentUser: UserProfile | null;
+  onChangeUser: () => void;
+  onGoHome: () => void;
   exchangeRate: number;
   onExchangeRateChange: (rate: number) => void;
   onOpenNewItemModal: () => void;
@@ -15,6 +19,9 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   binId,
+  currentUser,
+  onChangeUser,
+  onGoHome,
   exchangeRate,
   onExchangeRateChange,
   onOpenNewItemModal,
@@ -47,33 +54,58 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="border-b border-[#1f3524] bg-[#0c150e]/95 sticky top-0 z-30 backdrop-blur-md">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
         <div className="flex items-center justify-between gap-3">
           
-          {/* Left: Avatar/Icon + Title + Cloud Bin Badge */}
+          {/* Left: Avatar/Icon + Title + User Badge */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a]">
+            <button
+              onClick={onGoHome}
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a] hover:scale-105 transition-transform"
+              title="Voltar ao Menu Inicial"
+            >
               <img
                 src="/assets/aistudio/image_95654294.png"
                 alt="A Ponte dos Trolls"
                 className="w-full h-full object-cover"
               />
-            </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-rpg text-lg sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight">
+                <button
+                  onClick={onGoHome}
+                  className="font-rpg text-base sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight hover:text-[#d49e2a] transition-colors text-left"
+                >
                   A Ponte dos Trolls
-                </h1>
+                </button>
                 <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-[#1e3422] text-[#d49e2a] border border-[#d49e2a]/30 rounded">
                   Rateios RPG
                 </span>
               </div>
               
-              {/* Cloud Sync Status Indicator with active bin */}
-              <div className="flex items-center gap-2 text-[11px]">
+              {/* User indicator & Cloud status */}
+              <div className="flex items-center gap-2.5 text-[11px] mt-0.5">
+                {currentUser && (
+                  <div className="flex items-center gap-1.5 text-[#d49e2a]">
+                    <User className="w-3 h-3 text-[#d49e2a]" />
+                    <span className="font-semibold truncate max-w-[120px] sm:max-w-[180px]">
+                      {currentUser.nome}
+                    </span>
+                    <button
+                      onClick={onChangeUser}
+                      className="text-[10px] text-[#8a9d8c] hover:text-[#f4ecd8] underline ml-0.5"
+                      title="Trocar de membro"
+                    >
+                      [Trocar]
+                    </button>
+                  </div>
+                )}
+
+                <span className="hidden sm:inline text-[#3a523f]">·</span>
+
                 <button
                   onClick={onOpenSettingsModal}
-                  className="inline-flex items-center gap-1.5 hover:underline"
+                  className="hidden sm:inline-flex items-center gap-1.5 hover:underline"
                   title="Clique para gerenciar o banco na nuvem e compartilhamento"
                 >
                   <span
@@ -83,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
                         : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
                     }`}
                   />
-                  <span className="text-[#6ee7b7] font-medium">
+                  <span className="text-[#6ee7b7] font-medium text-[10px]">
                     {isSyncing ? 'Sincronizando...' : `Nuvem: ${binId}`}
                   </span>
                 </button>
@@ -184,4 +216,3 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
-
