@@ -25,8 +25,6 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     }
   }, [isOpen, item]);
 
-  if (!isOpen || !item) return null;
-
   const handleConfirm = () => {
     if (password !== ADMIN_PASSWORD) {
       setErrorMessage('Senha incorreta! Digite a senha de administrador.');
@@ -34,6 +32,8 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     }
     onConfirm();
   };
+
+  if (!isOpen || !item) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">

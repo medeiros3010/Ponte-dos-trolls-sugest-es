@@ -269,6 +269,199 @@ export function parseSpreadsheetText(rawText: string): ItemRPG[] {
   return parsedItems;
 }
 
+export function generatePackageWhatsAppAnnouncement(pkg: FundingPackage): string {
+  const valorTotalStr = pkg.valorTotalBRL.toFixed(2).replace('.', ',');
+  const valorMaxStr = (pkg.valorMaximoPorPessoa || (pkg.valorTotalBRL / (pkg.minimoParticipantes || 1))).toFixed(2).replace('.', ',');
+  const dataFinalizarBR = formatDateDisplay(pkg.dataFinalizar);
+  const dataPagamentoBR = formatDateDisplay(pkg.dataPagamento);
+
+  let itensTexto = '';
+  if (pkg.itens && pkg.itens.length > 0) {
+    itensTexto = pkg.itens.map(it => `📜 *${it.nome} (${it.sistema})*\n🔗 ${it.link || 'Sem link'}`).join('\n\n');
+  } else if (pkg.itensInclusos && pkg.itensInclusos.length > 0) {
+    itensTexto = pkg.itensInclusos.map(it => `📜 *${it}*`).join('\n');
+  } else {
+    itensTexto = `📜 *${pkg.titulo}*`;
+  }
+
+  const apoiadores = pkg.apoiadores || [];
+  let listaParticipantes = 'Nenhum ainda. Seja o primeiro a participar!';
+  if (apoiadores.length > 0) {
+    listaParticipantes = apoiadores
+      .map((ap, i) => `${i + 1} - ${ap.nome}${ap.telefone ? ` (${ap.telefone})` : ''}`)
+      .join('\n');
+  }
+
+  return `*NOVO FINANCIAMENTO COLETIVO ABERTO!*
+📦 *Pacote de materiais:* ${pkg.titulo}
+
+${itensTexto}
+
+💰 *Valor total do pacote:* R$ ${valorTotalStr}
+
+📌 A compra SÓ será realizada caso *>>> ${pkg.minimoParticipantes} pessoas <<<* aderirem.
+*O valor individual será NO MÁXIMO de R$ ${valorMaxStr} por pessoa.*
+
+📋 *REGRAS IMPORTANTES DO FINANCIAMENTO*
+⏳ *Prazo para colocar o nome na lista:* até ${dataFinalizarBR}
+⏳ *Prazo para Pagamento:* até ${dataPagamentoBR}
+⚠️ *Atenção:* Pagamentos fora do prazo receberão 1 "strike". Ao acumular 3 strikes, o membro será removido do grupo de financiamento.
+
+✍️ *Participantes confirmados (${apoiadores.length}):*
+${listaParticipantes}`;
+}
+
+export function generateCatalogBuyMessage(pkg: FundingPackage, user: UserProfile): string {
+  const valorPacote = (pkg.valorCatalogoBRL || pkg.valorTotalBRL).toFixed(2).replace('.', ',');
+  
+  let itensLista = '';
+  if (pkg.itens && pkg.itens.length > 0) {
+    itensLista = pkg.itens.map(it => `${it.nome} (${it.sistema})`).join(', ');
+  } else if (pkg.itensInclusos && pkg.itensInclusos.length > 0) {
+    itensLista = pkg.itensInclusos.join(', ');
+  } else {
+    itensLista = pkg.titulo;
+  }
+
+  return `Olá mestre, gostaria de comprar esse financiamento:
+📦 Pacote: ${pkg.titulo}
+📜 Itens inclusos: ${itensLista}
+💰 Valor: R$ ${valorPacote}
+👤 Meu Nome: ${user.nome} (${user.telefone || 'Telefone não informado'})`;
+}
+
+export function exportFullDataToCSV(
+  users: UserProfile[],
+  items: ItemRPG[],
+  packages: FundingPackage[]
+): void {
+  const BOM = '\uFEFF';
+  const sep = ';';
+  const sections: string[] = [];
+
+  // SEÇÃO 1: USUÁRIOS
+  sections.push('=== SEÇÃO 1: USUÁRIOS / MEMBROS CADASTRADOS ===');
+  sections.push(['ID', 'Nome', 'Telefone', 'E-mail', 'Status', 'Data Cadastro', 'É Mestre'].join(sep));
+  users.forEach(u => {
+    sections.push([
+      `"${u.id}"`,
+      `"${u.nome.replace(/"/g, '""')}"`,
+      `"${(u.telefone || '').replace(/"/g, '""')}"`,
+      `"${(u.email || '').replace(/"/g, '""')}"`,
+      `"${(u.status || 'aprovado').replace(/"/g, '""')}"`,
+      `"${(u.createdAt || '').replace(/"/g, '""')}"`,
+      `"${u.isMaster ? 'SIM' : 'NÃO'}"`,
+    ].join(sep));
+  });
+
+  sections.push('');
+  // SEÇÃO 2: SUGESTÕES DE COMPRA
+  sections.push('=== SEÇÃO 2: SUGESTÕES DE COMPRA DA COMUNIDADE ===');
+  sections.push(['ID', 'Data', 'Nome', 'Produto', 'Sistema', 'Descrição', 'Link', 'Sugerido Por', 'Telefone', 'Moeda', 'Valor', 'Apoiadores (Qtd)', 'Lista Apoiadores'].join(sep));
+  items.forEach(it => {
+    const apoios = (it.apoiadores || []).map(a => a.nome).join(' | ');
+    sections.push([
+      `"${it.id}"`,
+      `"${formatDateDisplay(it.data)}"`,
+      `"${it.nome.replace(/"/g, '""')}"`,
+      `"${it.produto}"`,
+      `"${it.sistema}"`,
+      `"${(it.descricao || '').replace(/"/g, '""')}"`,
+      `"${(it.link || '').replace(/"/g, '""')}"`,
+      `"${it.sugeridoPorNome.replace(/"/g, '""')}"`,
+      `"${(it.sugeridoPorTelefone || '').replace(/"/g, '""')}"`,
+      `"${it.moeda}"`,
+      `"${it.valorNumerico.toFixed(2).replace('.', ',')}"`,
+      `"${(it.apoiadores || []).length}"`,
+      `"${apoios.replace(/"/g, '""')}"`,
+    ].join(sep));
+  });
+
+  sections.push('');
+  // SEÇÃO 3: PACOTES EM FINANCIAMENTO E CATÁLOGO
+  sections.push('=== SEÇÃO 3: PACOTES (FINANCIAMENTO & CATÁLOGO) ===');
+  sections.push([
+    'ID',
+    'Status',
+    'Título',
+    'Sistema Principal',
+    'Valor Total (R$)',
+    'Valor Catálogo (R$)',
+    'Mínimo Participantes',
+    'Valor Máx / Pessoa (R$)',
+    'Prazo Finalizar',
+    'Prazo Pagamento',
+    'Qtd Itens',
+    'Itens Detalhados',
+    'Link Loja',
+    'Link Drive',
+    'Participantes (Qtd)',
+    'Lista Participantes',
+  ].join(sep));
+
+  packages.forEach(pkg => {
+    const itensStr = (pkg.itens || []).map(it => `${it.nome} [${it.sistema}]: R$${it.precoBRL.toFixed(2)}`).join(' | ');
+    const partsStr = (pkg.apoiadores || []).map(a => `${a.nome} (${a.telefone || ''})`).join(' | ');
+
+    sections.push([
+      `"${pkg.id}"`,
+      `"${pkg.status}"`,
+      `"${pkg.titulo.replace(/"/g, '""')}"`,
+      `"${(pkg.sistema || 'Outro').replace(/"/g, '""')}"`,
+      `"${pkg.valorTotalBRL.toFixed(2).replace('.', ',')}"`,
+      `"${(pkg.valorCatalogoBRL || pkg.valorTotalBRL).toFixed(2).replace('.', ',')}"`,
+      `"${pkg.minimoParticipantes || 35}"`,
+      `"${(pkg.valorMaximoPorPessoa || (pkg.valorTotalBRL / (pkg.minimoParticipantes || 1))).toFixed(2).replace('.', ',')}"`,
+      `"${formatDateDisplay(pkg.dataFinalizar)}"`,
+      `"${formatDateDisplay(pkg.dataPagamento)}"`,
+      `"${(pkg.itens || []).length}"`,
+      `"${itensStr.replace(/"/g, '""')}"`,
+      `"${(pkg.linkLoja || '').replace(/"/g, '""')}"`,
+      `"${(pkg.linkDrive || '').replace(/"/g, '""')}"`,
+      `"${(pkg.apoiadores || []).length}"`,
+      `"${partsStr.replace(/"/g, '""')}"`,
+    ].join(sep));
+  });
+
+  const content = BOM + sections.join('\r\n');
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ponte_dos_trolls_dados_completos_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export function exportFullBackupJSON(
+  users: UserProfile[],
+  items: ItemRPG[],
+  packages: FundingPackage[],
+  binId: string
+): void {
+  const data = {
+    binId,
+    name: 'A Ponte dos Trolls - Rateios RPG Backup',
+    exportedAt: new Date().toISOString(),
+    users,
+    items,
+    packages,
+  };
+
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ponte_dos_trolls_backup_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 export function exportToCSV(items: ItemRPG[]): void {
   const BOM = '\uFEFF';
   const headers = ['Data', 'Nome', 'Produto', 'Sistema', 'Descrição', 'Link', 'Sugestão de:', 'Valor', 'Status'];

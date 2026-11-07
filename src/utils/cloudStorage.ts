@@ -1,9 +1,9 @@
-import { ItemRPG, UserProfile, ItemStatus } from '../types';
-import { SEED_USERS } from '../data/seedData';
+import { ItemRPG, UserProfile, ItemStatus, FundingPackage } from '../types';
+import { SEED_USERS, SEED_PACKAGES } from '../data/seedData';
 
 export const CLOUD_BIN_KEY = 'ponte_trolls_bin_id_v4';
 export const DEFAULT_BIN_ID = 'trolls-rpg-oficial';
-export const CURRENT_USER_KEY = 'ponte_trolls_current_user_v1';
+export const CURRENT_USER_KEY = 'ponte_trolls_current_user_v2';
 
 // Fallback host if opened offline via file:// or outside Cloud Run
 export const FALLBACK_SERVER_URL = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
@@ -87,6 +87,7 @@ function resolveEndpoint(binOrUrl: string): { url: string; isCustom: boolean } {
 export interface CloudPayloadData {
   items: ItemRPG[];
   users: UserProfile[];
+  packages: FundingPackage[];
 }
 
 export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData | null> {
@@ -128,10 +129,17 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
         telefone: String(u.telefone || '').trim(),
         email: String(u.email || '').trim(),
         createdAt: u.createdAt || new Date().toISOString(),
+        isMaster: Boolean(u.isMaster),
+        status: (u.status as any) || 'aprovado',
       }));
     }
 
-    return { items, users };
+    let packages: FundingPackage[] = SEED_PACKAGES;
+    if (data.packages && Array.isArray(data.packages) && data.packages.length > 0) {
+      packages = normalizeCloudPackages(data.packages);
+    }
+
+    return { items, users, packages };
   } catch (err) {
     console.error('fetchCloudData error:', err);
     throw err;
@@ -141,7 +149,8 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
 export async function pushCloudData(
   binOrUrl: string,
   items: ItemRPG[],
-  users: UserProfile[]
+  users: UserProfile[],
+  packages: FundingPackage[]
 ): Promise<boolean> {
   const { url } = resolveEndpoint(binOrUrl);
 
@@ -152,6 +161,7 @@ export async function pushCloudData(
       updatedAt: new Date().toISOString(),
       items,
       users,
+      packages,
     };
 
     const res = await fetch(url, {
@@ -177,7 +187,7 @@ export async function fetchItemsFromCloud(binOrUrl: string): Promise<ItemRPG[] |
 }
 
 export async function pushItemsToCloud(binOrUrl: string, items: ItemRPG[]): Promise<boolean> {
-  return pushCloudData(binOrUrl, items, SEED_USERS);
+  return pushCloudData(binOrUrl, items, SEED_USERS, SEED_PACKAGES);
 }
 
 export async function createNewCloudBin(
@@ -247,6 +257,72 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
       observacaoValor: row.observacaoValor || (rawValor.includes('(') ? rawValor : ''),
       status,
       apoiadores,
+      packageId: row.packageId || undefined,
     };
   });
 }
+
+function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
+  return rawList.map((pkg, idx) => {
+    let status: 'Financiamento' | 'Catálogo' = 'Financiamento';
+    const sLower = String(pkg.status || '').toLowerCase();
+    if (sLower.includes('catálogo') || sLower.includes('catalogo') || sLower.includes('finalizado') || sLower.includes('drive')) {
+      status = 'Catálogo';
+    } else {
+      status = 'Financiamento';
+    }
+
+    const valorTotalBRL = typeof pkg.valorTotalBRL === 'number'
+      ? pkg.valorTotalBRL
+      : (parseFloat(pkg.valorTotalBRL) || 0);
+
+    const minimoParticipantes = typeof pkg.minimoParticipantes === 'number' && pkg.minimoParticipantes > 0
+      ? pkg.minimoParticipantes
+      : 35;
+
+    const valorMaximoPorPessoa = typeof pkg.valorMaximoPorPessoa === 'number' && pkg.valorMaximoPorPessoa > 0
+      ? pkg.valorMaximoPorPessoa
+      : Number((valorTotalBRL / minimoParticipantes).toFixed(2));
+
+    const itensInclusos: string[] = Array.isArray(pkg.itensInclusos) ? pkg.itensInclusos : [];
+
+    const itens = (Array.isArray(pkg.itens) && pkg.itens.length > 0)
+      ? pkg.itens.map((it: any, itIdx: number) => ({
+          id: it.id || `it-${itIdx}`,
+          nome: it.nome || 'Item',
+          sistema: it.sistema || pkg.sistema || 'Foundry VTT Geral',
+          link: it.link || pkg.linkLoja || '',
+          precoBRL: typeof it.precoBRL === 'number' ? it.precoBRL : (parseFloat(it.precoBRL) || 0),
+        }))
+      : itensInclusos.map((itName: string, itIdx: number) => ({
+          id: `it-${itIdx}`,
+          nome: String(itName),
+          sistema: pkg.sistema || 'Foundry VTT Geral',
+          link: pkg.linkLoja || '',
+          precoBRL: 0,
+        }));
+
+    return {
+      id: pkg.id || `pack-${Date.now()}-${idx}`,
+      titulo: pkg.titulo || 'Pacote de RPG',
+      sistema: pkg.sistema || 'Outro',
+      descricao: pkg.descricao || '',
+      itens,
+      valorTotalBRL,
+      minimoParticipantes,
+      valorMaximoPorPessoa,
+      valorCatalogoBRL: typeof pkg.valorCatalogoBRL === 'number' ? pkg.valorCatalogoBRL : valorTotalBRL,
+      dataFinalizar: pkg.dataFinalizar || '2026-03-25',
+      dataPagamento: pkg.dataPagamento || '2026-03-30',
+      linkLoja: pkg.linkLoja || '',
+      linkDrive: pkg.linkDrive || '',
+      itensInclusos: itensInclusos.length > 0 ? itensInclusos : itens.map((it) => it.nome),
+      sugestoesIds: Array.isArray(pkg.sugestoesIds) ? pkg.sugestoesIds : [],
+      status,
+      apoiadores: Array.isArray(pkg.apoiadores) ? pkg.apoiadores : [],
+      criadoEm: pkg.criadoEm || new Date().toISOString().split('T')[0],
+      finalizadoEm: pkg.finalizadoEm || undefined,
+    };
+  });
+}
+

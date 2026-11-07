@@ -51,8 +51,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   onToast,
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'cloud' | 'import' | 'export'>('cloud');
   const [pastedText, setPastedText] = useState('');
   const [parsedPreview, setParsedPreview] = useState<ItemRPG[]>([]);
@@ -189,6 +187,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setIsLoadingCloud(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">

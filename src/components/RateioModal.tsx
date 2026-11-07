@@ -22,30 +22,37 @@ export const RateioModal: React.FC<RateioModalProps> = ({
   onRemoveApoiador,
   onToast,
 }) => {
-  if (!item) return null;
-
-  const valorBRL = convertToBRL(item.valorNumerico, item.moeda, exchangeRate);
-  const totalApoiadores = item.apoiadores?.length || 0;
-  const isUnrevealed = item.valorNumerico === 0;
-
-  const valorRealPorPessoa = totalApoiadores > 0 && !isUnrevealed
-    ? valorBRL / totalApoiadores
-    : 0;
-
-  const [simulatedCount, setSimulatedCount] = useState<number>(
-    Math.max(item.apoiadores.length || 1, 3)
+  const [simulatedCount, setSimulatedCount] = useState<number>(() =>
+    Math.max(item?.apoiadores?.length || 1, 3)
   );
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [showManualForm, setShowManualForm] = useState(false);
   const [manualNome, setManualNome] = useState('');
   const [manualTelefone, setManualTelefone] = useState('');
 
+  React.useEffect(() => {
+    if (item) {
+      setSimulatedCount(Math.max(item.apoiadores?.length || 1, 3));
+      setShowManualForm(false);
+      setManualNome('');
+      setManualTelefone('');
+    }
+  }, [item?.id]);
+
+  const valorBRL = item ? convertToBRL(item.valorNumerico, item.moeda, exchangeRate) : 0;
+  const totalApoiadores = item?.apoiadores?.length || 0;
+  const isUnrevealed = item ? item.valorNumerico === 0 : false;
+
+  const valorRealPorPessoa = totalApoiadores > 0 && !isUnrevealed
+    ? valorBRL / totalApoiadores
+    : 0;
+
   const valorSimuladoPorPessoa = simulatedCount > 0 && !isUnrevealed
     ? valorBRL / simulatedCount
     : 0;
 
   // Verifica se o usuário atual já apoia este item
-  const userApoiador = currentUser
+  const userApoiador = currentUser && item
     ? item.apoiadores?.find(
         (ap) =>
           ap.nome.toLowerCase() === currentUser.nome.toLowerCase() ||
@@ -56,7 +63,7 @@ export const RateioModal: React.FC<RateioModalProps> = ({
   const isUserSupporting = Boolean(userApoiador);
 
   const handleToggleCurrentUserSupport = () => {
-    if (!currentUser) return;
+    if (!currentUser || !item) return;
 
     if (isUserSupporting && userApoiador) {
       onRemoveApoiador(item.id, userApoiador.id);
@@ -74,7 +81,7 @@ export const RateioModal: React.FC<RateioModalProps> = ({
 
   const handleManualAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!manualNome.trim()) return;
+    if (!manualNome.trim() || !item) return;
 
     onAddApoiador(item.id, {
       nome: manualNome.trim(),
@@ -89,6 +96,7 @@ export const RateioModal: React.FC<RateioModalProps> = ({
   };
 
   const handleCopyInvite = () => {
+    if (!item) return;
     const porPessoaTexto = valorRealPorPessoa > 0
       ? `\n💰 Valor atual: *${formatBRL(valorRealPorPessoa)}* para cada um (${totalApoiadores} confirmados)`
       : '';
@@ -106,6 +114,8 @@ Quem tiver interesse em rachar, avisa aqui ou entra pelo app!
     setTimeout(() => setCopiedInvite(false), 2000);
     onToast('Texto de convite copiado para o WhatsApp!');
   };
+
+  if (!item) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">

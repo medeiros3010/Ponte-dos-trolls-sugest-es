@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
-import { SEED_ITEMS, SEED_USERS } from './src/data/seedData';
+import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './src/data/seedData';
 
 const app = express();
 const PORT = 3000;
@@ -32,6 +32,9 @@ const initialDefaultPayload = {
   users: (existingDefaultData && Array.isArray(existingDefaultData.users) && existingDefaultData.users.length > 0)
     ? existingDefaultData.users
     : SEED_USERS,
+  packages: (existingDefaultData && Array.isArray(existingDefaultData.packages) && existingDefaultData.packages.length > 0)
+    ? existingDefaultData.packages
+    : SEED_PACKAGES,
 };
 
 fs.writeFileSync(defaultBinPath, JSON.stringify(initialDefaultPayload, null, 2), 'utf-8');
@@ -63,7 +66,7 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', serverTime: new Date().toISOString() });
 });
 
-// GET /api/bin/:binId - Carrega os itens e usuários do banco na nuvem
+// GET /api/bin/:binId - Carrega os itens, usuários e pacotes do banco na nuvem
 app.get('/api/bin/:binId', (req: Request, res: Response) => {
   try {
     const rawId = req.params.binId;
@@ -76,10 +79,13 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
       if (!data.users || !Array.isArray(data.users) || data.users.length === 0) {
         data.users = SEED_USERS;
       }
+      if (!data.packages || !Array.isArray(data.packages) || data.packages.length === 0) {
+        data.packages = SEED_PACKAGES;
+      }
       return res.json(data);
     }
 
-    // Se o banco ainda não existe, cria automaticamente inicializado com os SEED_ITEMS e SEED_USERS
+    // Se o banco ainda não existe, cria automaticamente inicializado com os SEEDs
     const initialData = {
       id: binId,
       name: `A Ponte dos Trolls - ${binId}`,
@@ -87,6 +93,7 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
       updatedAt: new Date().toISOString(),
       items: SEED_ITEMS,
       users: SEED_USERS,
+      packages: SEED_PACKAGES,
     };
 
     fs.writeFileSync(filePath, JSON.stringify(initialData, null, 2), 'utf-8');
@@ -97,7 +104,7 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/bin/:binId - Atualiza os itens e/ou usuários do banco na nuvem
+// PUT /api/bin/:binId - Atualiza os itens, usuários e/ou pacotes do banco na nuvem
 app.put('/api/bin/:binId', (req: Request, res: Response) => {
   try {
     const rawId = req.params.binId;
@@ -114,6 +121,7 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
     const body = req.body;
     let itemsToSave: any[] = existingData.items || SEED_ITEMS;
     let usersToSave: any[] = existingData.users || SEED_USERS;
+    let packagesToSave: any[] = existingData.packages || SEED_PACKAGES;
 
     if (Array.isArray(body)) {
       itemsToSave = body;
@@ -129,6 +137,12 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       } else if (body.data && Array.isArray(body.data.users)) {
         usersToSave = body.data.users;
       }
+
+      if (Array.isArray(body.packages)) {
+        packagesToSave = body.packages;
+      } else if (body.data && Array.isArray(body.data.packages)) {
+        packagesToSave = body.data.packages;
+      }
     }
 
     const payload = {
@@ -137,6 +151,7 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       updatedAt: new Date().toISOString(),
       items: itemsToSave,
       users: usersToSave,
+      packages: packagesToSave,
     };
 
     fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf-8');

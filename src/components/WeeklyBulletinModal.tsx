@@ -18,10 +18,8 @@ export const WeeklyBulletinModal: React.FC<WeeklyBulletinModalProps> = ({
   onClose,
   onToast,
 }) => {
-  if (!isOpen) return null;
-
   const [copied, setCopied] = useState(false);
-  const bulletinText = generateWeeklyBulletin(items, exchangeRate);
+  const bulletinText = React.useMemo(() => generateWeeklyBulletin(items, exchangeRate), [items, exchangeRate]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(bulletinText);
@@ -32,8 +30,14 @@ export const WeeklyBulletinModal: React.FC<WeeklyBulletinModalProps> = ({
 
   const handleOpenWhatsApp = () => {
     const encoded = encodeURIComponent(bulletinText);
-    window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+    const link = document.createElement('a');
+    link.href = `https://api.whatsapp.com/send?text=${encoded}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.click();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
