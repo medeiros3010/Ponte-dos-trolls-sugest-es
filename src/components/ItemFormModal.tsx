@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ItemRPG, SISTEMAS_PADRAO, ADMIN_PASSWORD, ItemStatus, UserProfile, OFFICIAL_PRODUCT_TYPES } from '../types';
+import { ItemRPG, SISTEMAS_PADRAO, ADMIN_PASSWORD, ItemStatus, UserProfile, OFFICIAL_PRODUCT_TYPES, ProductType } from '../types';
 import { formatPhone, getTodayISODate } from '../utils/helpers';
-import { X, Save, PlusCircle, Pencil, Lock, AlertCircle, User } from 'lucide-react';
+import { X, Save, PlusCircle, Pencil, Lock, AlertCircle, User, Image as ImageIcon, Upload, Trash2 } from 'lucide-react';
 
 interface ItemFormModalProps {
   isOpen: boolean;
@@ -19,13 +19,17 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   onSave,
 }) => {
   const isEditing = Boolean(itemToEdit);
+  const isMaster = Boolean(currentUser?.isMaster);
 
   const [nome, setNome] = useState('');
-  const [produto, setProduto] = useState('Mapas para VTT');
+  const [produto, setProduto] = useState<ProductType>('Material para VTT');
   const [sistema, setSistema] = useState('PF2E');
   const [customSistema, setCustomSistema] = useState('');
   const [isCustomSistema, setIsCustomSistema] = useState(false);
   const [link, setLink] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [moeda, setMoeda] = useState<'USD' | 'BRL'>('USD');
   const [valorNumerico, setValorNumerico] = useState<string>('0.00');
   const [observacaoValor, setObservacaoValor] = useState('');
@@ -41,9 +45,10 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   useEffect(() => {
     setAdminPassword('');
     setPasswordError('');
+    setUploadError('');
     if (itemToEdit) {
       setNome(itemToEdit.nome);
-      setProduto(itemToEdit.produto || 'Mapas para VTT');
+      setProduto((itemToEdit.produto as ProductType) || 'Material para VTT');
       if (SISTEMAS_PADRAO.includes(itemToEdit.sistema)) {
         setSistema(itemToEdit.sistema);
         setIsCustomSistema(false);
@@ -54,6 +59,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
         setCustomSistema(itemToEdit.sistema);
       }
       setLink(itemToEdit.link || '');
+      setImageUrl(itemToEdit.imageUrl || '');
       setMoeda(itemToEdit.moeda);
       setValorNumerico(itemToEdit.valorNumerico.toString());
       setObservacaoValor(itemToEdit.observacaoValor || '');
@@ -63,11 +69,12 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setStatus(itemToEdit.status || 'Sugestão');
     } else {
       setNome('');
-      setProduto('Mapas para VTT');
+      setProduto('Material para VTT');
       setSistema('PF2E');
       setIsCustomSistema(false);
       setCustomSistema('');
       setLink('');
+      setImageUrl('');
       setMoeda('USD');
       setValorNumerico('0.00');
       setObservacaoValor('');
@@ -81,6 +88,25 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSugeridoPorTelefone(formatPhone(e.target.value));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingImage(true);
+      setUploadError('');
+      // Dynamically import upload helper
+      const { uploadImageFile } = await import('../utils/cloudStorage');
+      const res = await uploadImageFile(file);
+      if (res && res.url) {
+        setImageUrl(res.url);
+      }
+    } catch (err: any) {
+      setUploadError(err.message || 'Erro ao fazer upload da imagem');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -105,6 +131,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       sistema: finalSistema,
       descricao: descricao.trim(),
       link: link.trim(),
+      imageUrl: imageUrl.trim() || undefined,
       sugeridoPorNome: sugeridoPorNome.trim(),
       sugeridoPorTelefone: sugeridoPorTelefone.trim(),
       sugeridoPorEmail: currentUser?.email || '',
@@ -241,6 +268,72 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               onChange={(e) => setLink(e.target.value)}
               className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
             />
+          </div>
+
+          {/* Imagem do Item (Gerenciada pelo Mestre ou Sugestão) */}
+          <div className="p-3 bg-[#0d160f] border border-[#1e3422] rounded-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-semibold text-[#f4ecd8] flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-[#d49e2a]" />
+                <span>Imagem Ilustrativa / Capa do Material (Opcional)</span>
+              </label>
+              {imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => setImageUrl('')}
+                  className="text-[10px] text-red-400 hover:text-red-300 flex items-center gap-0.5"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Remover</span>
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+              <div className="sm:col-span-8">
+                <input
+                  type="url"
+                  placeholder="https://exemplo.com/capa.jpg"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-2.5 py-1.5 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
+                />
+              </div>
+
+              {isMaster && (
+                <div className="sm:col-span-4">
+                  <label className="inline-flex items-center justify-center gap-1.5 w-full py-1.5 px-2 bg-[#1b2f20] hover:bg-[#25422b] text-[#d49e2a] hover:text-[#f4ecd8] border border-[#2e5035] rounded-lg text-xs font-semibold cursor-pointer transition-colors">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{isUploadingImage ? 'Enviando...' : 'Upload Arquivo'}</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="hidden"
+                      disabled={isUploadingImage}
+                      onChange={handleFileUpload}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {uploadError && (
+              <p className="text-[10px] text-red-400 font-medium">{uploadError}</p>
+            )}
+
+            {imageUrl && (
+              <div className="mt-2 flex items-center gap-3 p-2 bg-[#142318] rounded-lg border border-[#203625]">
+                <img
+                  src={imageUrl}
+                  alt="Prévia"
+                  className="w-16 h-12 rounded object-cover border border-[#27442d]"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="40" viewBox="0 0 60 40"><rect fill="%231a2f20" width="60" height="40"/><text fill="%238a9d8c" x="50%" y="55%" text-anchor="middle" font-size="8">Erro URL</text></svg>';
+                  }}
+                />
+                <span className="text-[10px] text-[#8a9d8c] truncate max-w-xs">{imageUrl}</span>
+              </div>
+            )}
           </div>
 
           {/* Valor, Moeda & Obs de Promoção */}

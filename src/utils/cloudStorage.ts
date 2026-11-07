@@ -1,5 +1,5 @@
-import { ItemRPG, UserProfile, ItemStatus, FundingPackage, PackageSubItem } from '../types';
-import { SEED_USERS, SEED_PACKAGES } from '../data/seedData';
+import { ItemRPG, UserProfile, ItemStatus, FundingPackage, PackageSubItem, FundingStage, ParticipantPaymentInfo, normalizeProductType } from '../types';
+import { SEED_USERS, SEED_PACKAGES, SEED_ITEMS } from '../data/seedData';
 
 export const CLOUD_BIN_KEY = 'ponte_trolls_bin_id_v4';
 export const DEFAULT_BIN_ID = 'trolls-rpg-oficial';
@@ -125,7 +125,7 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
     const items = rawItems.length > 0 ? normalizeCloudItems(rawItems) : [];
 
     let users: UserProfile[] = SEED_USERS;
-    if (data.users && Array.isArray(data.users) && data.users.length > 0) {
+    if (data.users && Array.isArray(data.users)) {
       users = data.users.map((u: any, idx: number) => ({
         id: u.id || `usr-${idx}`,
         nome: String(u.nome || '').trim(),
@@ -139,7 +139,7 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
     }
 
     let packages: FundingPackage[] = SEED_PACKAGES;
-    if (data.packages && Array.isArray(data.packages) && data.packages.length > 0) {
+    if (data.packages && Array.isArray(data.packages)) {
       packages = normalizeCloudPackages(data.packages);
     }
 
@@ -223,6 +223,159 @@ export async function createNewCloudBin(
   return null;
 }
 
+/**
+ * Upload de arquivo de imagem para o servidor
+ * Salva no disco com URL permanente /uploads/... evitando base64 gigante no JSON compartilhado.
+ */
+export async function uploadImageFile(file: File): Promise<{ url: string } | null> {
+  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowed.includes(file.type)) {
+    throw new Error('Tipo de imagem não suportado. Por favor, selecione um arquivo JPG, PNG, WebP ou GIF.');
+  }
+
+  // Máximo 5MB
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('A imagem é muito pesada (máximo permitido: 5MB).');
+  }
+
+  const base64Data = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/upload`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fileData: base64Data,
+      fileName: file.name,
+    }),
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || `Erro no upload (HTTP ${res.status})`);
+  }
+
+  const json = await res.json();
+  return { url: json.url };
+}
+
+/**
+ * Atualização atômica de pagamento pelo membro ou mestre
+ */
+export async function apiUpdatePackagePayment(
+  binId: string,
+  packageId: string,
+  memberId: string,
+  informouPagamento: boolean,
+  adminPassword?: string
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/pagamento`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ memberId, informouPagamento, adminPassword }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Erro ao registrar declaração de pagamento');
+  }
+
+  return await res.json();
+}
+
+/**
+ * Atualização atômica da etapa de financiamento pelo Mestre
+ */
+export async function apiUpdatePackageStage(
+  binId: string,
+  packageId: string,
+  etapa: FundingStage,
+  adminPassword?: string
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/etapa`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ etapa, adminPassword }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Erro ao alterar etapa do financiamento');
+  }
+
+  return await res.json();
+}
+
+/**
+ * Atualização atômica do link do Google Drive
+ */
+export async function apiUpdatePackageDriveLink(
+  binId: string,
+  packageId: string,
+  linkDrive: string,
+  adminPassword?: string
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/drive-link`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ linkDrive, adminPassword }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Erro ao atualizar link do Drive');
+  }
+
+  return await res.json();
+}
+
+/**
+ * Atualização atômica de participação em pacote
+ */
+export async function apiTogglePackageSupport(
+  binId: string,
+  packageId: string,
+  user: UserProfile,
+  adminPassword?: string
+): Promise<{ success: boolean; package?: FundingPackage; apoiadores?: any[] }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/apoio`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user, adminPassword }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Erro ao atualizar participação');
+  }
+
+  return await res.json();
+}
+
 function normalizeCloudItems(rawList: any[]): ItemRPG[] {
   return rawList.map((row, idx) => {
     const rawValor = row.valor ? String(row.valor) : '';
@@ -245,14 +398,17 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
       apoiadores = [{ id: `ap-${idx}`, nome: rawAutor }];
     }
 
+    const { tipo, sistema } = normalizeProductType(row.produto, row.sistema);
+
     return {
       id: row.id || `cloud-${Date.now()}-${idx}`,
       data: row.data ? String(row.data) : new Date().toISOString().split('T')[0],
       nome: row.nome || 'Item',
-      produto: row.produto || 'Módulo Foundry',
-      sistema: row.sistema || 'Outro',
+      produto: tipo,
+      sistema: row.sistema || sistema,
       descricao: row.descricao || '',
       link: row.link || '',
+      imageUrl: row.imageUrl || undefined,
       sugeridoPorNome: rawAutor,
       sugeridoPorTelefone: row.sugeridoPorTelefone || '',
       sugeridoPorEmail: row.sugeridoPorEmail || '',
@@ -292,27 +448,64 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
 
     const itensInclusos: string[] = Array.isArray(pkg.itensInclusos) ? pkg.itensInclusos : [];
 
-    const itens = (Array.isArray(pkg.itens) && pkg.itens.length > 0)
-      ? pkg.itens.map((it: any, itIdx: number) => ({
-          id: it.id || `it-${itIdx}`,
-          nome: it.nome || 'Item',
-          sistema: it.sistema || pkg.sistema || 'Foundry VTT Geral',
-          link: it.link || pkg.linkLoja || '',
-          precoBRL: typeof it.precoBRL === 'number' ? it.precoBRL : (parseFloat(it.precoBRL) || 0),
-        }))
+    const norm = normalizeProductType(pkg.tipo || pkg.produto, pkg.sistema);
+
+    const itens: PackageSubItem[] = (Array.isArray(pkg.itens) && pkg.itens.length > 0)
+      ? pkg.itens.map((it: any, itIdx: number) => {
+          const itemNorm = normalizeProductType(it.tipo || it.produto, it.sistema);
+          return {
+            id: it.id || `it-${itIdx}`,
+            nome: it.nome || 'Item',
+            sistema: it.sistema || pkg.sistema || 'Foundry VTT Geral',
+            tipo: it.tipo || itemNorm.tipo,
+            link: it.link || pkg.linkLoja || '',
+            precoBRL: typeof it.precoBRL === 'number' ? it.precoBRL : (parseFloat(it.precoBRL) || 0),
+            imageUrl: it.imageUrl || undefined,
+          };
+        })
       : itensInclusos.map((itName: string, itIdx: number) => ({
           id: `it-${itIdx}`,
           nome: String(itName),
           sistema: pkg.sistema || 'Foundry VTT Geral',
+          tipo: 'Material para VTT' as const,
           link: pkg.linkLoja || '',
           precoBRL: 0,
         }));
 
+    // Ensure pagamentos record exists and maps any existing declaration
+    const pagamentos: Record<string, ParticipantPaymentInfo> = pkg.pagamentos && typeof pkg.pagamentos === 'object'
+      ? { ...pkg.pagamentos }
+      : {};
+
+    const apoiadores = Array.isArray(pkg.apoiadores) ? pkg.apoiadores.map((a: any) => {
+      const isPaid = Boolean(a.pagamentoInformado || (pagamentos[a.id] && pagamentos[a.id].informouPagamento));
+      const payDate = a.dataPagamentoInformado || (pagamentos[a.id] && pagamentos[a.id].dataPagamentoInformado);
+      if (isPaid && !pagamentos[a.id]) {
+        pagamentos[a.id] = {
+          memberId: a.id,
+          nome: a.nome,
+          informouPagamento: true,
+          dataPagamentoInformado: payDate,
+        };
+      }
+      return {
+        id: a.id,
+        nome: a.nome,
+        telefone: a.telefone || '',
+        email: a.email || '',
+        data: a.data,
+        pagamentoInformado: isPaid,
+        dataPagamentoInformado: payDate,
+      };
+    }) : [];
+
     return {
       id: pkg.id || `pack-${Date.now()}-${idx}`,
       titulo: pkg.titulo || 'Pacote de RPG',
-      sistema: pkg.sistema || 'Outro',
+      sistema: pkg.sistema || norm.sistema || 'Outro',
+      tipo: pkg.tipo || norm.tipo,
       descricao: pkg.descricao || '',
+      imageUrl: pkg.imageUrl || undefined,
       itens,
       valorTotalBRL,
       minimoParticipantes,
@@ -325,7 +518,9 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
       itensInclusos: itensInclusos.length > 0 ? itensInclusos : itens.map((it: PackageSubItem) => it.nome),
       sugestoesIds: Array.isArray(pkg.sugestoesIds) ? pkg.sugestoesIds : [],
       status,
-      apoiadores: Array.isArray(pkg.apoiadores) ? pkg.apoiadores : [],
+      etapaFinanciamento: pkg.etapaFinanciamento === 'PAGAMENTO' ? 'PAGAMENTO' : 'COLETA',
+      pagamentos,
+      apoiadores,
       criadoEm: pkg.criadoEm || new Date().toISOString().split('T')[0],
       finalizadoEm: pkg.finalizadoEm || undefined,
     };
