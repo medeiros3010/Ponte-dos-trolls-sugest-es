@@ -1,0 +1,8 @@
+{
+  "name": "Central de Compras Coletivas RPG",
+  "description": "Central de vaquinhas, rateios e financiamentos coletivos de materiais digitais e módulos Foundry VTT para grupos de RPG.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

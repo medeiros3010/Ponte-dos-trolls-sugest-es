@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Ponte dos Trolls - Rateios RPG</title>
+  <meta name="description" content="Central de Compras Coletivas e Financiamentos de RPG de Mesa e Foundry VTT">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              950: '#070d08',
+              900: '#0c150e',
+              850: '#101c13',
+              800: '#122015',
+              750: '#16271a',
+              700: '#1e3524',
+              600: '#27442d',
+            },
+            amberGold: {
+              300: '#f5cb5c',
+              400: '#e5b23d',
+              500: '#d49e2a',
+              600: '#b88219',
+            }
+          },
+          fontFamily: {
+            rpg: ['Cinzel', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background-color: #0c150e;
+      color: #f1ede4;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-rpg { font-family: 'Cinzel', serif; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0c150e; }
+    ::-webkit-scrollbar-thumb { background: #1e3524; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #27442d; }
+  </style>
+</head>
+<body class="bg-[#0c150e] text-[#f1ede4] min-h-screen flex flex-col selection:bg-[#d49e2a]/30 selection:text-[#f4ecd8]">
+
+  <!-- A. CABEÇALHO COMPACTO -->
+  <header class="border-b border-[#1f3524] bg-[#0c150e]/95 sticky top-0 z-30 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      
+      <!-- Avatar + Título -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a]">
+          <img src="/assets/aistudio/image_95654294.png" alt="A Ponte dos Trolls" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-rpg text-lg sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight">
+              A Ponte dos Trolls
+            </h1>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-[#1e3422] text-[#d49e2a] border border-[#d49e2a]/30 rounded">
+              Rateios RPG
+            </span>
+          </div>
+          <!-- Status Nuvem -->
+          <div class="flex items-center gap-1.5 text-[11px] text-[#6ee7b7] cursor-pointer hover:underline" onclick="openModal('settings-modal')">
+            <span id="cloud-indicator" class="w-2 h-2 rounded-full inline-block bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+            <span id="cloud-status-text" class="font-medium">Nuvem: trolls-rpg-oficial</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações do Cabeçalho -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Cotação USD -->
+        <div class="hidden lg:flex items-center gap-1.5 bg-[#122015] px-2.5 py-1.5 rounded-xl border border-[#203625] text-xs">
+          <span class="text-[#7a8e7d] text-[11px]">1 USD =</span>
+          <span id="header-rate-display" class="font-mono font-bold text-[#d49e2a]">R$ 5,80</span>
+        </div>
+
+        <!-- 🔗 Copiar Link Sincronizado para o Grupo -->
+        <button onclick="copyGroupShareLink()" class="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border border-[#2e5035] bg-[#16271a] hover:bg-[#1f3724] text-[#d49e2a] transition-all flex items-center gap-1.5" title="Copiar link com o banco sincronizado para colar no WhatsApp">
+          <i data-lucide="link-2" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Copiar Link</span>
+        </button>
+
+        <!-- ⚙️ Nuvem / CSV -->
+        <button onclick="openModal('settings-modal')" class="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border border-[#203625] bg-[#122015] text-[#a4b5a6] hover:text-[#f4ecd8] hover:bg-[#182b1d] transition-colors flex items-center gap-1.5" title="Gerenciar banco na nuvem e exportar CSV">
+          <i data-lucide="cloud" class="w-4 h-4 text-[#d49e2a]"></i>
+          <span class="hidden md:inline">Nuvem / CSV</span>
+        </button>
+
+        <!-- + Sugerir Compra -->
+        <button onclick="openNewItemModal()" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold text-[#122015] bg-[#d49e2a] hover:bg-[#e5b23d] rounded-xl shadow-md shadow-black/30 transition-all active:scale-95 whitespace-nowrap">
+          <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+          <span>Sugerir Compra</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL (max-w-5xl sem estatísticas) -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 w-full flex-1">
+
+    <!-- B. NAVEGAÇÃO ÚNICA (2 Abas + Filtro por Sistema + Busca) -->
+    <div class="bg-[#122015] border border-[#203625] rounded-2xl p-2.5 sm:p-3 mb-6 shadow-lg shadow-black/20">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        
+        <!-- 2 Abas Oficiais -->
+        <div class="flex items-center gap-1.5 bg-[#0c150e] p-1 rounded-xl border border-[#1b2f20]">
+          <button id="tab-btn-financiamento" onclick="switchTab('Em Financiamento')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm">
+            <span>🔥 Em Financiamento</span>
+            <span id="badge-count-financiamento" class="px-1.5 py-0.5 rounded-full text-[10px] bg-[#27442d] text-[#f4ecd8]">0</span>
+          </button>
+          <button id="tab-btn-finalizados" onclick="switchTab('Finalizados')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all">
+            <span>✅ Finalizados</span>
+            <span id="badge-count-finalizados" class="px-1.5 py-0.5 rounded-full text-[10px] bg-[#182b1d] text-[#8a9d8c]">0</span>
+          </button>
+        </div>
+
+        <!-- Filtro por Sistema + Barra de Busca -->
+        <div class="flex items-center gap-2 flex-1 sm:max-w-md">
+          <select id="system-filter" onchange="handleSystemChange(this.value)" class="bg-[#0c150e] border border-[#1e3422] text-[#d49e2a] text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#d49e2a] cursor-pointer">
+            <option value="">Todos os Sistemas</option>
+          </select>
+
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-[#556957] absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Buscar por título, sistema ou autor..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl pl-8 pr-3 py-2 text-xs text-[#f4ecd8] placeholder-[#556957] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- C. LISTA DE ITENS EM LINHAS HORIZONTAIS -->
+    <div id="items-list" class="space-y-3.5">
+      <!-- Inserido dinamicamente via JS -->
+    </div>
+
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer class="border-t border-[#1a2d1f] bg-[#09100a] py-6 text-center text-xs text-[#6e8070] mt-auto">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <i data-lucide="trees" class="w-4 h-4 text-[#43aa6a]"></i>
+        <span>A Ponte dos Trolls &copy; <span id="current-year"></span> · Rateios de RPG</span>
+      </div>
+      <div class="flex items-center gap-4 text-[#8a9d8c]">
+        <span id="footer-count">0 itens cadastrados</span>
+        <span>·</span>
+        <button onclick="copyGroupShareLink()" class="hover:text-[#d49e2a] transition-colors">Copiar Link do Grupo</button>
+        <span>·</span>
+        <button onclick="exportCSV()" class="hover:text-[#d49e2a] transition-colors">Baixar Planilha CSV</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODAIS ==================== -->
+
+  <!-- 1. MODAL DE CADASTRO / EDIÇÃO -->
+  <div id="form-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1f3524]">
+        <h3 id="form-title" class="font-bold text-base text-[#f4ecd8] flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-[#d49e2a]"></i>
+          <span>Nova Sugestão de Compra</span>
+        </h3>
+        <button onclick="closeModal('form-modal')" class="text-[#738776] hover:text-[#f4ecd8] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="item-form" onsubmit="handleFormSubmit(event)" class="mt-4 space-y-3.5 text-xs">
+        <input type="hidden" id="form-item-id">
+
+        <div>
+          <label class="block font-semibold text-[#c2cbbe] mb-1">Nome do Material / Módulo *</label>
+          <input type="text" id="form-nome" required placeholder="Ex: Season of Ghosts Remastered" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Tipo de Produto *</label>
+            <select id="form-produto" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-2.5 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+              <option value="Módulo Foundry">Módulo Foundry</option>
+              <option value="Livro de Regras em PDF">Livro de Regras em PDF</option>
+              <option value="Suplemento / Aventura em PDF">Suplemento / Aventura em PDF</option>
+              <option value="Bundle / Pacote de Mapas">Bundle / Pacote de Mapas</option>
+              <option value="Patreon Mensal">Patreon Mensal</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Sistema de RPG *</label>
+            <input type="text" id="form-sistema" required placeholder="Ex: PF2E, DnD5e, Cthulhu" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Moeda *</label>
+            <select id="form-moeda" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-2.5 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+              <option value="USD">USD ($)</option>
+              <option value="BRL">BRL (R$)</option>
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Valor Total *</label>
+            <input type="number" step="0.01" min="0" id="form-valor" required placeholder="0.00" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] font-mono focus:outline-none focus:border-[#d49e2a]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-[#c2cbbe] mb-1">Link da Loja / Produto</label>
+          <input type="url" id="form-link" placeholder="https://..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+        </div>
+
+        <!-- Se for novo cadastro: seu nome/telefone -->
+        <div id="author-fields" class="grid grid-cols-2 gap-3 p-3 bg-[#0c150e] border border-[#1b2f20] rounded-xl">
+          <div>
+            <label class="block font-semibold text-[#d49e2a] mb-1">Seu Nome (1º Apoiador) *</label>
+            <input type="text" id="form-autor-nome" placeholder="Seu nome" class="w-full bg-[#122015] border border-[#1e3422] rounded-lg px-2.5 py-1.5 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+          <div>
+            <label class="block font-semibold text-[#d49e2a] mb-1">Seu WhatsApp</label>
+            <input type="text" id="form-autor-telefone" placeholder="(99) 99999-9999" class="w-full bg-[#122015] border border-[#1e3422] rounded-lg px-2.5 py-1.5 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-[#c2cbbe] mb-1">Descrição Breve / Observações</label>
+          <textarea id="form-descricao" rows="2" placeholder="Informações úteis sobre o conteúdo ou desconto..." class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]"></textarea>
+        </div>
+
+        <!-- CAMPO EXCLUSIVO DE EDIÇÃO: Status e Senha de Admin -->
+        <div id="edit-status-field" class="hidden p-3.5 bg-[#16271a] border border-[#27442d] rounded-xl space-y-3">
+          <div>
+            <label class="block font-semibold text-[#d49e2a] mb-1">Status do Item (Exclusivo Admin)</label>
+            <select id="form-status" class="w-full bg-[#0c150e] border border-[#27442d] rounded-xl px-2.5 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+              <option value="Em Financiamento">🔥 Em Financiamento</option>
+              <option value="Finalizados">✅ Finalizados</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#f4ecd8] mb-1">Senha de Administrador (para salvar/mudar status) *</label>
+            <input type="password" id="edit-admin-password" placeholder="Digite a senha de administrador" class="w-full bg-[#0c150e] border border-[#27442d] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+            <p id="edit-password-error" class="text-xs text-[#ef4444] font-semibold mt-1 hidden">Senha incorreta! Digite a senha do admin.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#1f3524]">
+          <button type="button" onclick="closeModal('form-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#c2cbbe] hover:bg-[#16271a] transition-colors">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-md transition-all">Salvar Sugestão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MODAL DE APOIAR / RATEIO -->
+  <div id="rateio-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1f3524]">
+        <div>
+          <h3 class="font-bold text-base text-[#f4ecd8]">Entrar no Rateio</h3>
+          <p id="rateio-item-name" class="text-xs text-[#d49e2a] font-semibold truncate max-w-xs"></p>
+        </div>
+        <button onclick="closeModal('rateio-modal')" class="text-[#738776] hover:text-[#f4ecd8] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Resumo Valores e Divisão -->
+      <div class="my-4 p-3 bg-[#0c150e] border border-[#1b2f20] rounded-xl grid grid-cols-2 gap-3 text-center">
+        <div>
+          <span class="text-[11px] text-[#7a8e7d]">Valor Total</span>
+          <div id="rateio-val-total" class="font-mono font-bold text-sm text-[#f4ecd8]">R$ 0,00</div>
+        </div>
+        <div>
+          <span class="text-[11px] text-[#d49e2a]">Valor Por Apoiador</span>
+          <div id="rateio-val-pessoa" class="font-mono font-bold text-sm text-[#d49e2a]">R$ 0,00</div>
+        </div>
+      </div>
+
+      <!-- Formulário de Apoio Livre -->
+      <form id="rateio-form" onsubmit="handleAddApoiador(event)" class="space-y-3">
+        <input type="hidden" id="rateio-item-id">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Seu Nome *</label>
+            <input type="text" id="rateio-nome" required placeholder="Seu nome" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+          <div>
+            <label class="block font-semibold text-[#c2cbbe] mb-1">Seu WhatsApp</label>
+            <input type="text" id="rateio-telefone" placeholder="(99) 99999-9999" class="w-full bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#d49e2a]">
+          </div>
+        </div>
+        <button type="submit" class="w-full py-2.5 rounded-xl font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-md transition-all">
+          🙋‍♂️ Confirmar Apoio no Rateio
+        </button>
+      </form>
+
+      <!-- Lista de Apoiadores Atuais -->
+      <div class="mt-4 pt-3 border-t border-[#1f3524]">
+        <h4 class="font-semibold text-[#8a9d8c] mb-2 flex items-center justify-between">
+          <span>Apoiadores Cadastrados (<span id="rateio-count">0</span>)</span>
+        </h4>
+        <div id="rateio-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MODAL DE CONFIRMAÇÃO DE EXCLUSÃO COM SENHA (SEM window.confirm) -->
+  <div id="delete-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-[#122015] border border-[#7f1d1d] rounded-2xl w-full max-w-md shadow-2xl p-5 sm:p-6 text-xs space-y-4">
+      <div class="flex items-center gap-2 text-[#ef4444]">
+        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        <h3 class="font-bold text-base text-[#f4ecd8]">Excluir Item do Catálogo</h3>
+      </div>
+      <p class="text-[#a4b5a6]">
+        Tem certeza que deseja remover o item <strong id="delete-item-name" class="text-[#f4ecd8]"></strong>?
+      </p>
+
+      <div class="space-y-1">
+        <label class="block font-semibold text-[#f4ecd8]">Senha de Administrador para confirmar exclusão *</label>
+        <input type="password" id="delete-admin-password" placeholder="Digite a senha de administrador" class="w-full bg-[#0c150e] border border-[#7f1d1d] rounded-xl px-3 py-2 text-[#f4ecd8] focus:outline-none focus:border-[#ef4444]">
+        <p id="delete-password-error" class="text-xs text-[#ef4444] font-semibold mt-1 hidden">Senha incorreta! Não autorizado a excluir.</p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" onclick="closeModal('delete-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#c2cbbe] hover:bg-[#16271a] transition-colors">Cancelar</button>
+        <button type="button" onclick="confirmDelete()" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#dc2626] hover:bg-[#ef4444] text-white shadow-md transition-all">Sim, Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. MODAL DE NUVEM & BANCO DE DADOS -->
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 text-xs space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1f3524]">
+        <div class="flex items-center gap-2">
+          <i data-lucide="database" class="w-4 h-4 text-[#d49e2a]"></i>
+          <h3 class="font-bold text-base text-[#f4ecd8]">Banco de Dados na Nuvem</h3>
+        </div>
+        <button onclick="closeModal('settings-modal')" class="text-[#738776] hover:text-[#f4ecd8] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-3 bg-[#16271a] border border-[#2e5035] rounded-xl space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-[#f4ecd8]">🔗 Link Sincronizado do Grupo</span>
+          <button onclick="copyGroupShareLink()" class="px-2.5 py-1 text-xs font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] rounded-lg">Copiar Link</button>
+        </div>
+        <p class="text-[11px] text-[#8e9f90]">Qualquer pessoa com este link acessará o mesmo banco atualizado em tempo real:</p>
+        <div id="settings-shareable-url" class="bg-[#0c150e] p-2 rounded text-[10px] font-mono text-[#a4b5a6] break-all border border-[#1f3524] select-all"></div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="block font-semibold text-[#c2cbbe]">ID do Banco Atual</label>
+        <div class="flex gap-2">
+          <input type="text" id="settings-bin-input" class="flex-1 bg-[#0c150e] border border-[#1e3422] rounded-xl px-3 py-2 text-[#f4ecd8] font-mono focus:outline-none focus:border-[#d49e2a]">
+          <button onclick="switchBinId()" class="px-3.5 py-2 font-bold bg-[#1b2f20] hover:bg-[#233f2a] text-[#d49e2a] border border-[#2b4d33] rounded-xl">Conectar</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button onclick="pullCloudData()" class="py-2.5 px-3 rounded-xl font-semibold bg-[#16271a] hover:bg-[#1e3422] text-[#52c27c] border border-[#25462d] flex items-center justify-center gap-1.5">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>Puxar da Nuvem</span>
+        </button>
+        <button onclick="pushCloudData()" class="py-2.5 px-3 rounded-xl font-semibold bg-[#16271a] hover:bg-[#1e3422] text-[#d49e2a] border border-[#25462d] flex items-center justify-center gap-1.5">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>Gravar na Nuvem</span>
+        </button>
+      </div>
+
+      <div class="border-t border-[#1f3524] pt-3">
+        <button onclick="exportCSV()" class="w-full py-2.5 px-3 rounded-xl font-semibold bg-[#122015] hover:bg-[#182b1d] text-[#f4ecd8] border border-[#203625] flex items-center justify-center gap-2">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-[#d49e2a]"></i>
+          <span>Exportar Planilha Oficial (.CSV) para Excel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST FLUTUANTE -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-[#122015] border border-[#28462f] text-[#f4ecd8] px-4 py-2.5 rounded-xl shadow-2xl text-xs flex items-center gap-2 transition-all">
+    <i data-lucide="check-circle" class="w-4 h-4 text-[#34d399]"></i>
+    <span id="toast-msg">Notificação</span>
+  </div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    const ADMIN_PASSWORD = 'Ponte#dos#trolls';
+    const DEFAULT_RATE = 5.80;
+    const DEFAULT_BIN_ID = 'trolls-rpg-oficial';
+
+    // Determina o Bin ID da URL (?bin=...) ou localStorage
+    function getActiveBinId() {
+      const params = new URLSearchParams(window.location.search);
+      const urlBin = params.get('bin') || params.get('db');
+      if (urlBin) return urlBin.trim();
+      return localStorage.getItem('trolls_active_bin') || DEFAULT_BIN_ID;
+    }
+
+    let currentBinId = getActiveBinId();
+    let exchangeRate = DEFAULT_RATE;
+    let activeTab = 'Em Financiamento';
+    let searchQuery = '';
+    let selectedSystem = '';
+    let itemToDeleteId = null;
+
+    // Itens semente para primeiro carregamento caso offline
+    let items = [
+      {
+        id: 'seed-1',
+        data: '2026-02-10',
+        nome: 'Daggerheart Bundle',
+        produto: 'Módulo Foundry',
+        sistema: 'Outro',
+        descricao: 'Daggerheart Core Book + Expansão Hope & Fear + Duality Dices oficiais configurados no Foundry VTT.',
+        link: 'https://www.foundryvtt.store/bundles/daggerheart-bundle',
+        sugeridoPorNome: 'Augusto F. Sant\'ana',
+        sugeridoPorTelefone: '(27) 99908-4467',
+        moeda: 'USD',
+        valorNumerico: 89.98,
+        observacaoValor: 'Pacote de Lançamento',
+        status: 'Em Financiamento',
+        apoiadores: [
+          { id: 'ap-1', nome: 'Augusto F. Sant\'ana', telefone: '(27) 99908-4467' },
+          { id: 'ap-2', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
+          { id: 'ap-3', nome: 'Erick Santos', telefone: '(19) 98151-2030' }
+        ]
+      },
+      {
+        id: 'seed-2',
+        data: '2026-02-15',
+        nome: 'Season Of Ghosts Remastered',
+        produto: 'Módulo Foundry',
+        sistema: 'PF2E',
+        descricao: 'Adventure Path completa da Paizo ambientada em Shenmen, 100% refeita para o remaster de Pathfinder 2e no Foundry.',
+        link: 'https://www.foundryvtt.store/products/pf2e-season-of-ghosts',
+        sugeridoPorNome: 'Rafael Motta',
+        sugeridoPorTelefone: '(71) 99196-0427',
+        moeda: 'USD',
+        valorNumerico: 64.99,
+        observacaoValor: '',
+        status: 'Em Financiamento',
+        apoiadores: [
+          { id: 'ap-4', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
+          { id: 'ap-5', nome: 'Gustavo Mozer', telefone: '(27) 99818-7614' },
+          { id: 'ap-6', nome: 'Daniel Nach', telefone: '(31) 97234-7005' },
+          { id: 'ap-7', nome: 'Igor Santos', telefone: '(37) 99116-3440' }
+        ]
+      },
+      {
+        id: 'seed-6',
+        data: '2026-02-15',
+        nome: 'Battlezoo Adventures: Release the Kraken! PF2e',
+        produto: 'Módulo Foundry',
+        sistema: 'PF2E',
+        descricao: 'Aventura de nível 5 com mapas dinâmicos e iluminação para enfrentar a fúria das profundezas.',
+        link: 'https://www.foundryvtt.store/products/battlezoo-release-the-kraken-pf2e',
+        sugeridoPorNome: 'Erick Santos',
+        sugeridoPorTelefone: '(19) 98151-2030',
+        moeda: 'USD',
+        valorNumerico: 20.00,
+        observacaoValor: 'Comprado pelo grupo',
+        status: 'Finalizados',
+        apoiadores: [
+          { id: 'ap-13', nome: 'Erick Santos', telefone: '(19) 98151-2030' },
+          { id: 'ap-14', nome: 'Rafael Motta', telefone: '(71) 99196-0427' }
+        ]
+      }
+    ];
+
+    // Carrega dados salvos localmente
+    try {
+      const stored = localStorage.getItem('trolls_rpg_items');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) items = parsed;
+      }
+    } catch (e) {}
+
+    // Formatação de Moedas
+    function formatBRL(v) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+    }
+    function formatUSD(v) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+    }
+    function convertToBRL(v, moeda) {
+      return moeda === 'USD' ? v * exchangeRate : v;
+    }
+
+    // Comunicação com a Nuvem (/api/bin/:binId)
+    function getApiEndpoint(bin) {
+      const base = window.location.origin.startsWith('file:')
+        ? 'https://ais-pre-4yygmmgjezaxwzwlfxcm7n-236036871357.us-east1.run.app'
+        : window.location.origin;
+      return `${base}/api/bin/${encodeURIComponent(bin)}`;
+    }
+
+    async function pullCloudData() {
+      try {
+        const res = await fetch(getApiEndpoint(currentBinId));
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.items) && data.items.length > 0) {
+            items = data.items;
+            localStorage.setItem('trolls_rpg_items', JSON.stringify(items));
+            render();
+            showToast(`Sincronizados ${items.length} itens do banco na nuvem!`);
+          }
+        }
+      } catch (err) {
+        console.warn('Erro ao consultar nuvem', err);
+      }
+    }
+
+    async function pushCloudData() {
+      try {
+        await fetch(getApiEndpoint(currentBinId), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items })
+        });
+      } catch (err) {
+        console.warn('Erro ao salvar na nuvem', err);
+      }
+    }
+
+    function saveStateAndSync() {
+      localStorage.setItem('trolls_rpg_items', JSON.stringify(items));
+      render();
+      pushCloudData();
+    }
+
+    // Link de compartilhamento
+    function getShareLink() {
+      const base = window.location.origin.startsWith('file:')
+        ? 'https://ais-pre-4yygmmgjezaxwzwlfxcm7n-236036871357.us-east1.run.app'
+        : window.location.origin;
+      return `${base}/?bin=${encodeURIComponent(currentBinId)}`;
+    }
+
+    function copyGroupShareLink() {
+      const link = getShareLink();
+      navigator.clipboard.writeText(link);
+      showToast('Link do grupo copiado! Cole no WhatsApp.');
+    }
+
+    function switchBinId() {
+      const val = document.getElementById('settings-bin-input').value.trim();
+      if (val) {
+        currentBinId = val;
+        localStorage.setItem('trolls_active_bin', val);
+        document.getElementById('cloud-status-text').innerText = `Nuvem: ${currentBinId}`;
+        document.getElementById('settings-shareable-url').innerText = getShareLink();
+        pullCloudData();
+        closeModal('settings-modal');
+        showToast(`Conectado ao banco: ${currentBinId}`);
+      }
+    }
+
+    // Renderização da Interface
+    function render() {
+      document.getElementById('current-year').innerText = new Date().getFullYear();
+      document.getElementById('cloud-status-text').innerText = `Nuvem: ${currentBinId}`;
+      document.getElementById('settings-bin-input').value = currentBinId;
+      document.getElementById('settings-shareable-url').innerText = getShareLink();
+
+      // Contadores das 2 Abas
+      const countFin = items.filter(i => i.status === 'Em Financiamento').length;
+      const countDone = items.filter(i => i.status === 'Finalizados').length;
+      document.getElementById('badge-count-financiamento').innerText = countFin;
+      document.getElementById('badge-count-finalizados').innerText = countDone;
+      document.getElementById('footer-count').innerText = `${items.length} itens cadastrados`;
+
+      // Atualiza dropdown de sistemas
+      const sysSelect = document.getElementById('system-filter');
+      const systems = Array.from(new Set(items.map(i => i.sistema).filter(Boolean))).sort();
+      const currentSelected = selectedSystem;
+      sysSelect.innerHTML = '<option value="">Todos os Sistemas</option>' +
+        systems.map(s => `<option value="${s}" ${s === currentSelected ? 'selected' : ''}>${s}</option>`).join('');
+
+      // Filtra itens
+      let list = items.filter(i => i.status === activeTab);
+      if (selectedSystem) {
+        list = list.filter(i => i.sistema.toLowerCase() === selectedSystem.toLowerCase());
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        list = list.filter(i => 
+          i.nome.toLowerCase().includes(q) ||
+          i.sistema.toLowerCase().includes(q) ||
+          (i.descricao && i.descricao.toLowerCase().includes(q)) ||
+          (i.sugeridoPorNome && i.sugeridoPorNome.toLowerCase().includes(q))
+        );
+      }
+
+      const container = document.getElementById('items-list');
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="bg-[#122015] border border-[#203625] rounded-2xl p-12 text-center my-6">
+            <i data-lucide="compass" class="w-10 h-10 text-[#d49e2a]/60 mx-auto mb-2"></i>
+            <h3 class="text-base font-semibold text-[#f4ecd8] mb-1">Nenhum item encontrado</h3>
+            <p class="text-xs text-[#7a8e7d] max-w-sm mx-auto mb-4">
+              Clique no botão "+ Sugerir Compra" no topo para abrir um novo rateio!
+            </p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      // Renderiza Linhas Horizontais (SEM Foto e SEM "Valor por pessoa")
+      container.innerHTML = list.map(item => {
+        const isUSD = item.moeda === 'USD';
+        const valBRL = convertToBRL(item.valorNumerico, item.moeda);
+        const apoios = (item.apoiadores || []).length;
+        const apoiarBtnLabel = apoios > 0 ? `🙋‍♂️ Apoiar (${apoios})` : '🙋‍♂️ Apoiar';
+
+        return `
+          <div class="bg-[#122015] border border-[#203625] hover:border-[#2f4f34] rounded-2xl p-4 sm:p-5 transition-all shadow-md">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              
+              <!-- Esquerda: Informações Principais (Linha Ampla) -->
+              <div class="flex-1 min-w-0 pr-0 lg:pr-4">
+                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                  <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase bg-[#182c1d] border border-[#27442d] text-[#d49e2a]">
+                    ${item.sistema}
+                  </span>
+                  <span class="text-[11px] text-[#7a8e7d]">
+                    Sugerido por <strong class="text-[#f4ecd8]">${item.sugeridoPorNome}</strong>
+                  </span>
+                </div>
+
+                <h3 class="text-base sm:text-lg font-bold text-[#f4ecd8] leading-tight mb-1 truncate">
+                  ${item.nome}
+                </h3>
+
+                ${item.descricao ? `<p class="text-xs text-[#8a9d8c] line-clamp-2 leading-relaxed mb-1.5">${item.descricao}</p>` : ''}
+              </div>
+
+              <!-- Direita: Valor Total + Botão Apoiar + Apenas 4 Botões de Ação -->
+              <div class="flex flex-wrap sm:flex-nowrap items-center justify-between lg:justify-end gap-3 w-full lg:w-auto shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#1f3524]">
+                
+                <!-- Valor Total (SEM valor por pessoa) -->
+                <div class="text-left sm:text-right pr-2">
+                  <span class="text-[10px] text-[#7a8e7d] block uppercase font-mono">Valor Total</span>
+                  <div class="font-mono font-bold text-base text-[#f4ecd8]">
+                    ${isUSD ? formatUSD(item.valorNumerico) : formatBRL(item.valorNumerico)}
+                  </div>
+                  ${isUSD ? `<div class="text-[11px] text-[#7a8e7d] font-mono">(~${formatBRL(valBRL)})</div>` : ''}
+                </div>
+
+                <!-- Botão Apoiar -->
+                <button onclick="openRateioModal('${item.id}')" class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  apoios > 0
+                    ? 'bg-[#182d1d] hover:bg-[#203a27] text-[#d49e2a] border border-[#d49e2a]/40'
+                    : 'bg-[#16271a] hover:bg-[#1e3422] text-[#f4ecd8] border border-[#203625]'
+                }">
+                  ${apoiarBtnLabel}
+                </button>
+
+                <!-- APENAS 4 BOTÕES DE AÇÃO: WhatsApp (📋), Link (🔗), Editar (✏️), Excluir (🗑️) -->
+                <div class="flex items-center gap-1 border-l border-[#1f3524] pl-2">
+                  
+                  <!-- 1. Copiar WhatsApp -->
+                  <button onclick="copyItemWhatsApp('${item.id}')" class="p-2 text-[#7a8e7d] hover:text-[#43aa6a] hover:bg-[#182b1d] rounded-lg transition-colors" title="Copiar resumo para WhatsApp">
+                    <i data-lucide="clipboard" class="w-4 h-4"></i>
+                  </button>
+
+                  <!-- 2. Abrir Link da Loja -->
+                  ${item.link ? `
+                    <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="p-2 text-[#7a8e7d] hover:text-[#d49e2a] hover:bg-[#182b1d] rounded-lg transition-colors" title="Abrir link do produto">
+                      <i data-lucide="external-link" class="w-4 h-4"></i>
+                    </a>
+                  ` : ''}
+
+                  <!-- 3. Editar Item (Status & Edição com Senha) -->
+                  <button onclick="openEditModal('${item.id}')" class="p-2 text-[#7a8e7d] hover:text-[#d49e2a] hover:bg-[#182b1d] rounded-lg transition-colors" title="Editar item ou alterar status (Requer Senha)">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                  </button>
+
+                  <!-- 4. Excluir (Modal com Senha Ponte#dos#trolls) -->
+                  <button onclick="requestDelete('${item.id}')" class="p-2 text-[#7a8e7d] hover:text-[#ef4444] hover:bg-[#251515] rounded-lg transition-colors" title="Excluir item (Requer Senha)">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // Alternar Abas
+    function switchTab(tab) {
+      activeTab = tab;
+      const btnFin = document.getElementById('tab-btn-financiamento');
+      const btnDone = document.getElementById('tab-btn-finalizados');
+      if (tab === 'Em Financiamento') {
+        btnFin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm';
+        btnDone.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all';
+      } else {
+        btnDone.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-[#1a2d1f] text-[#d49e2a] border border-[#2e5035] shadow-sm';
+        btnFin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-[#8a9d8c] hover:text-[#f4ecd8] transition-all';
+      }
+      render();
+    }
+
+    function handleSearch(q) {
+      searchQuery = q;
+      render();
+    }
+
+    function handleSystemChange(sys) {
+      selectedSystem = sys;
+      render();
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // Novo Item (Sem status e sem senha)
+    function openNewItemModal() {
+      document.getElementById('form-item-id').value = '';
+      document.getElementById('form-title').innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4 text-[#d49e2a]"></i><span>Nova Sugestão de Compra</span>';
+      document.getElementById('author-fields').classList.remove('hidden');
+      document.getElementById('edit-status-field').classList.add('hidden');
+      document.getElementById('form-nome').value = '';
+      document.getElementById('form-sistema').value = '';
+      document.getElementById('form-valor').value = '';
+      document.getElementById('form-link').value = '';
+      document.getElementById('form-descricao').value = '';
+      document.getElementById('form-autor-nome').value = '';
+      document.getElementById('form-autor-telefone').value = '';
+      openModal('form-modal');
+      lucide.createIcons();
+    }
+
+    // Edição de Item (Exige senha Ponte#dos#trolls)
+    function openEditModal(id) {
+      const item = items.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      document.getElementById('form-item-id').value = item.id;
+      document.getElementById('form-title').innerHTML = '<i data-lucide="pencil" class="w-4 h-4 text-[#d49e2a]"></i><span>Editar Item & Status</span>';
+      document.getElementById('author-fields').classList.add('hidden');
+      document.getElementById('edit-status-field').classList.remove('hidden');
+      document.getElementById('edit-admin-password').value = '';
+      document.getElementById('edit-password-error').classList.add('hidden');
+
+      document.getElementById('form-nome').value = item.nome;
+      document.getElementById('form-produto').value = item.produto;
+      document.getElementById('form-sistema').value = item.sistema;
+      document.getElementById('form-moeda').value = item.moeda;
+      document.getElementById('form-valor').value = item.valorNumerico;
+      document.getElementById('form-link').value = item.link || '';
+      document.getElementById('form-descricao').value = item.descricao || '';
+      document.getElementById('form-status').value = item.status;
+
+      openModal('form-modal');
+      lucide.createIcons();
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('form-item-id').value;
+
+      if (editId) {
+        // Validação de Senha de Admin para Edição e Mudança de Status
+        const pwd = document.getElementById('edit-admin-password').value;
+        if (pwd !== ADMIN_PASSWORD) {
+          document.getElementById('edit-password-error').classList.remove('hidden');
+          return;
+        }
+
+        const idx = items.findIndex(i => String(i.id) === String(editId));
+        if (idx !== -1) {
+          items[idx] = {
+            ...items[idx],
+            nome: document.getElementById('form-nome').value.trim(),
+            produto: document.getElementById('form-produto').value,
+            sistema: document.getElementById('form-sistema').value.trim(),
+            moeda: document.getElementById('form-moeda').value,
+            valorNumerico: parseFloat(document.getElementById('form-valor').value) || 0,
+            link: document.getElementById('form-link').value.trim(),
+            descricao: document.getElementById('form-descricao').value.trim(),
+            status: document.getElementById('form-status').value
+          };
+          closeModal('form-modal');
+          saveStateAndSync();
+          showToast(`"${items[idx].nome}" atualizado com sucesso!`);
+        }
+      } else {
+        // Novo Cadastro Livre
+        const autorNome = document.getElementById('form-autor-nome').value.trim() || 'Membro do Grupo';
+        const autorTel = document.getElementById('form-autor-telefone').value.trim();
+
+        const newItem = {
+          id: 'troll-' + Date.now(),
+          data: new Date().toISOString().split('T')[0],
+          nome: document.getElementById('form-nome').value.trim(),
+          produto: document.getElementById('form-produto').value,
+          sistema: document.getElementById('form-sistema').value.trim(),
+          moeda: document.getElementById('form-moeda').value,
+          valorNumerico: parseFloat(document.getElementById('form-valor').value) || 0,
+          link: document.getElementById('form-link').value.trim(),
+          descricao: document.getElementById('form-descricao').value.trim(),
+          sugeridoPorNome: autorNome,
+          sugeridoPorTelefone: autorTel,
+          status: 'Em Financiamento',
+          apoiadores: [{ id: 'ap-' + Date.now(), nome: autorNome, telefone: autorTel }]
+        };
+
+        items.unshift(newItem);
+        closeModal('form-modal');
+        saveStateAndSync();
+        showToast(`"${newItem.nome}" adicionado com sucesso!`);
+      }
+    }
+
+    // Modal de Exclusão (Senha Obrigatória Ponte#dos#trolls)
+    function requestDelete(id) {
+      const item = items.find(i => String(i.id) === String(id));
+      if (!item) return;
+      itemToDeleteId = id;
+      document.getElementById('delete-item-name').innerText = `"${item.nome}"`;
+      document.getElementById('delete-admin-password').value = '';
+      document.getElementById('delete-password-error').classList.add('hidden');
+      openModal('delete-modal');
+      lucide.createIcons();
+    }
+
+    function confirmDelete() {
+      const pwd = document.getElementById('delete-admin-password').value;
+      if (pwd !== ADMIN_PASSWORD) {
+        document.getElementById('delete-password-error').classList.remove('hidden');
+        return;
+      }
+
+      if (itemToDeleteId) {
+        const item = items.find(i => String(i.id) === String(itemToDeleteId));
+        items = items.filter(i => String(i.id) !== String(itemToDeleteId));
+        closeModal('delete-modal');
+        itemToDeleteId = null;
+        saveStateAndSync();
+        showToast(`Item excluído com sucesso!`);
+      }
+    }
+
+    // Modal de Rateio
+    function openRateioModal(id) {
+      const item = items.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      document.getElementById('rateio-item-id').value = item.id;
+      document.getElementById('rateio-item-name').innerText = item.nome;
+      document.getElementById('rateio-nome').value = '';
+      document.getElementById('rateio-telefone').value = '';
+
+      const valBRL = convertToBRL(item.valorNumerico, item.moeda);
+      const apoios = (item.apoiadores || []).length;
+      document.getElementById('rateio-val-total').innerText = formatBRL(valBRL);
+      document.getElementById('rateio-val-pessoa').innerText = apoios > 0 ? formatBRL(valBRL / apoios) : formatBRL(valBRL);
+      document.getElementById('rateio-count').innerText = apoios;
+
+      const listDiv = document.getElementById('rateio-list');
+      if (apoios === 0) {
+        listDiv.innerHTML = '<p class="text-[11px] text-[#7a8e7d] italic">Nenhum apoiador ainda. Seja o primeiro!</p>';
+      } else {
+        listDiv.innerHTML = item.apoiadores.map((ap, idx) => `
+          <div class="flex items-center justify-between p-2 bg-[#0c150e] border border-[#1b2f20] rounded-lg">
+            <span class="font-medium text-[#f4ecd8]">${idx + 1}. ${ap.nome}</span>
+            <span class="text-[10px] text-[#7a8e7d]">${ap.telefone || ''}</span>
+          </div>
+        `).join('');
+      }
+
+      openModal('rateio-modal');
+      lucide.createIcons();
+    }
+
+    function handleAddApoiador(e) {
+      e.preventDefault();
+      const itemId = document.getElementById('rateio-item-id').value;
+      const nome = document.getElementById('rateio-nome').value.trim();
+      const tel = document.getElementById('rateio-telefone').value.trim();
+
+      const item = items.find(i => String(i.id) === String(itemId));
+      if (item && nome) {
+        if (!item.apoiadores) item.apoiadores = [];
+        item.apoiadores.push({ id: 'ap-' + Date.now(), nome, telefone: tel });
+        closeModal('rateio-modal');
+        saveStateAndSync();
+        showToast(`${nome} entrou no rateio de "${item.nome}"!`);
+      }
+    }
+
+    // Copiar WhatsApp Formatado
+    function copyItemWhatsApp(id) {
+      const item = items.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      const valBRL = convertToBRL(item.valorNumerico, item.moeda);
+      const apoios = (item.apoiadores || []).length;
+      const porPessoa = apoios > 0 ? formatBRL(valBRL / apoios) : formatBRL(valBRL);
+
+      let text = `🎲 *RATEIO: ${item.nome.toUpperCase()}*\n`;
+      text += `📂 *Sistema:* ${item.sistema} | *Tipo:* ${item.produto}\n`;
+      text += `💰 *Valor Total:* ${item.moeda === 'USD' ? formatUSD(item.valorNumerico) : formatBRL(item.valorNumerico)} (~${formatBRL(valBRL)})\n`;
+      text += `👥 *Apoiadores (${apoios}):* ${porPessoa} / pessoa\n`;
+
+      if (item.apoiadores && item.apoiadores.length > 0) {
+        text += `\n*Fila de Apoiadores:*\n`;
+        item.apoiadores.forEach((ap, idx) => {
+          text += `${idx + 1}. ${ap.nome}\n`;
+        });
+      }
+
+      if (item.link) {
+        text += `\n🔗 *Link:* ${item.link}\n`;
+      }
+
+      text += `\n👉 *Acesse e apoie:* ${getShareLink()}`;
+
+      navigator.clipboard.writeText(text);
+      showToast(`Resumo de "${item.nome}" copiado para o WhatsApp!`);
+    }
+
+    // Exportar CSV
+    function exportCSV() {
+      const BOM = '\uFEFF';
+      const headers = ['Data', 'Nome', 'Produto', 'Sistema', 'Descrição', 'Link', 'Sugestão de:', 'Valor', 'Status'];
+      const rows = items.map(i => [
+        `"${i.data}"`,
+        `"${i.nome.replace(/"/g, '""')}"`,
+        `"${i.produto}"`,
+        `"${i.sistema}"`,
+        `"${(i.descricao || '').replace(/"/g, '""')}"`,
+        `"${(i.link || '').replace(/"/g, '""')}"`,
+        `"${i.sugeridoPorNome}"`,
+        `"${i.moeda} ${i.valorNumerico.toFixed(2)}"`,
+        `"${i.status}"`
+      ].join(';'));
+
+      const csv = BOM + [headers.join(';'), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ponte_dos_trolls_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('Planilha CSV baixada com sucesso!');
+    }
+
+    // Toast
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
+    }
+
+    // Inicialização
+    window.addEventListener('DOMContentLoaded', () => {
+      render();
+      pullCloudData();
+    });
+  </script>
+</body>
+</html>
