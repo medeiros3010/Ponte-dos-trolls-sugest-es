@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ItemRPG, SISTEMAS_PADRAO, ADMIN_PASSWORD, ItemStatus, UserProfile } from '../types';
+import { ItemRPG, SISTEMAS_PADRAO, ADMIN_PASSWORD, ItemStatus, UserProfile, OFFICIAL_PRODUCT_TYPES } from '../types';
 import { formatPhone, getTodayISODate } from '../utils/helpers';
 import { X, Save, PlusCircle, Pencil, Lock, AlertCircle, User } from 'lucide-react';
 
@@ -21,6 +21,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const isEditing = Boolean(itemToEdit);
 
   const [nome, setNome] = useState('');
+  const [produto, setProduto] = useState('Mapas para VTT');
   const [sistema, setSistema] = useState('PF2E');
   const [customSistema, setCustomSistema] = useState('');
   const [isCustomSistema, setIsCustomSistema] = useState(false);
@@ -42,6 +43,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     setPasswordError('');
     if (itemToEdit) {
       setNome(itemToEdit.nome);
+      setProduto(itemToEdit.produto || 'Mapas para VTT');
       if (SISTEMAS_PADRAO.includes(itemToEdit.sistema)) {
         setSistema(itemToEdit.sistema);
         setIsCustomSistema(false);
@@ -61,6 +63,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setStatus(itemToEdit.status || 'Sugestão');
     } else {
       setNome('');
+      setProduto('Mapas para VTT');
       setSistema('PF2E');
       setIsCustomSistema(false);
       setCustomSistema('');
@@ -98,7 +101,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     onSave({
       id: itemToEdit?.id,
       nome: nome.trim(),
-      produto: 'Módulo Foundry',
+      produto,
       sistema: finalSistema,
       descricao: descricao.trim(),
       link: link.trim(),
@@ -157,8 +160,23 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             />
           </div>
 
-          {/* Sistema de RPG & (Se Editando) Status dos 3 Estágios */}
-          <div className={`grid ${isEditing ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-3`}>
+          {/* Tipo de Produto & Sistema de RPG */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-medium text-[#8e9f90] mb-1">
+                Tipo de Produto *
+              </label>
+              <select
+                value={produto}
+                onChange={(e) => setProduto(e.target.value)}
+                className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+              >
+                {OFFICIAL_PRODUCT_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label className="block text-[11px] font-medium text-[#8e9f90] mb-1">
                 Sistema de RPG *
@@ -176,25 +194,25 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                 ))}
               </select>
             </div>
-
-            {/* O status só aparece no modo EDITAR (PROIBIDO no cadastro novo!) */}
-            {isEditing && (
-              <div>
-                <label className="block text-[11px] font-medium text-[#d49e2a] mb-1">
-                  Estágio / Status do Item
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as ItemStatus)}
-                  className="w-full bg-[#0d160f] border border-[#27442d] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
-                >
-                  <option value="Sugestão">💡 1. Sugestão (Recebendo apoios)</option>
-                  <option value="Em Financiamento">🔥 2. Em Financiamento (Vaquinha Aberta)</option>
-                  <option value="Finalizados">✅ 3. Finalizados (No Drive do Grupo)</option>
-                </select>
-              </div>
-            )}
           </div>
+
+          {/* O status só aparece no modo EDITAR (PROIBIDO no cadastro novo!) */}
+          {isEditing && (
+            <div>
+              <label className="block text-[11px] font-medium text-[#d49e2a] mb-1">
+                Estágio / Status do Item
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as ItemStatus)}
+                className="w-full bg-[#0d160f] border border-[#27442d] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+              >
+                <option value="Sugestão">💡 1. Sugestão (Recebendo apoios)</option>
+                <option value="Em Financiamento">🔥 2. Em Financiamento (Vaquinha Aberta)</option>
+                <option value="Finalizados">✅ 3. Finalizados (No Drive do Grupo)</option>
+              </select>
+            </div>
+          )}
 
           {isCustomSistema && (
             <div>

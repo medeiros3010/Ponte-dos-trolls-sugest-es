@@ -4,19 +4,34 @@ export type SugestoesCategory = 'Sugestão' | 'Finalizados';
 
 export type PackageStatus = 'Financiamento' | 'Catálogo';
 
-export type AppView = 'home' | 'sugestoes' | 'financiamento' | 'catalogo';
+export type AppView = 'home' | 'sugestoes' | 'financiamento' | 'catalogo' | 'membros';
 
 export type ProductType = 
+  | 'Mapas para VTT'
+  | 'Mapas normais'
+  | 'Livros'
+  | 'PF2E'
+  | 'DnD5e'
+  | 'SWADE'
+  | 'Symbaroum'
+  | 'Cthulhu'
   | 'Módulo Foundry'
-  | 'Mapa'
   | 'Token'
   | 'Patreon'
-  | 'Livro de Regras em PDF'
-  | 'Suplemento / Aventura em PDF'
-  | 'Bundle / Pacote de Mapas'
-  | 'Patreon Mensal'
-  | 'Livro'
-  | 'Outro';
+  | 'Outro'
+  | string;
+
+export const OFFICIAL_PRODUCT_TYPES: string[] = [
+  'Mapas para VTT',
+  'Mapas normais',
+  'Livros',
+  'PF2E',
+  'DnD5e',
+  'SWADE',
+  'Symbaroum',
+  'Cthulhu',
+  'Outro',
+];
 
 export type CurrencyType = 'USD' | 'BRL';
 
@@ -28,6 +43,8 @@ export interface UserProfile {
   telefone: string;
   email: string;
   createdAt?: string;
+  dataEntrada?: string;
+  strikes?: number | any[];
   isMaster?: boolean;
   status?: UserStatus;
 }

@@ -5,13 +5,16 @@ import path from 'path';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './src/data/seedData';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const BINS_DIR = path.resolve(process.cwd(), 'data', 'bins');
 
 // Ensure bins directory exists
 if (!fs.existsSync(BINS_DIR)) {
   fs.mkdirSync(BINS_DIR, { recursive: true });
 }
+
+// Version flag for official 125 users migration
+export const USERS_VERSION = 'v2_125_oficial';
 
 // Default bin seed file
 const defaultBinPath = path.join(BINS_DIR, 'trolls-rpg-oficial.json');
@@ -22,16 +25,22 @@ if (fs.existsSync(defaultBinPath)) {
   } catch (e) {}
 }
 
+const needsUsersReset = !existingDefaultData ||
+  existingDefaultData.usersVersion !== USERS_VERSION ||
+  !Array.isArray(existingDefaultData.users) ||
+  existingDefaultData.users.length < 125;
+
 const initialDefaultPayload = {
   id: 'trolls-rpg-oficial',
   name: 'A Ponte dos Trolls - Rateios RPG',
   updatedAt: new Date().toISOString(),
+  usersVersion: USERS_VERSION,
   items: (existingDefaultData && Array.isArray(existingDefaultData.items) && existingDefaultData.items.length > 0)
     ? existingDefaultData.items
     : SEED_ITEMS,
-  users: (existingDefaultData && Array.isArray(existingDefaultData.users) && existingDefaultData.users.length > 0)
-    ? existingDefaultData.users
-    : SEED_USERS,
+  users: needsUsersReset
+    ? SEED_USERS
+    : existingDefaultData.users,
   packages: (existingDefaultData && Array.isArray(existingDefaultData.packages) && existingDefaultData.packages.length > 0)
     ? existingDefaultData.packages
     : SEED_PACKAGES,
@@ -76,11 +85,18 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf-8');
       const data = JSON.parse(content);
-      if (!data.users || !Array.isArray(data.users) || data.users.length === 0) {
+      let needsSave = false;
+      if (data.usersVersion !== USERS_VERSION || !data.users || !Array.isArray(data.users) || data.users.length < 125) {
         data.users = SEED_USERS;
+        data.usersVersion = USERS_VERSION;
+        needsSave = true;
       }
       if (!data.packages || !Array.isArray(data.packages) || data.packages.length === 0) {
         data.packages = SEED_PACKAGES;
+        needsSave = true;
+      }
+      if (needsSave) {
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
       }
       return res.json(data);
     }
@@ -149,6 +165,7 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       id: binId,
       name: body.name || existingData.name || `A Ponte dos Trolls - ${binId}`,
       updatedAt: new Date().toISOString(),
+      usersVersion: body.usersVersion || existingData.usersVersion || USERS_VERSION,
       items: itemsToSave,
       users: usersToSave,
       packages: packagesToSave,
@@ -202,7 +219,7 @@ async function startServer() {
   if (!isProd) {
     // Dev mode: Vite middleware
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: false },
       appType: 'spa',
     });
     app.use(vite.middlewares);

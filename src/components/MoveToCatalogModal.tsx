@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { FundingPackage, ADMIN_PASSWORD } from '../types';
-import { X, CheckCircle2, Folder, KeyRound, AlertCircle } from 'lucide-react';
+import { X, CheckCircle2, Folder, KeyRound, DollarSign, AlertCircle } from 'lucide-react';
 
 interface MoveToCatalogModalProps {
   isOpen: boolean;
   onClose: () => void;
   packageItem: FundingPackage | null;
-  onConfirmMove: (packageId: string, linkDrive: string) => void;
+  onConfirmMove: (packageId: string, linkDrive: string, valorCatalogoBRL: number) => void;
   onToast: (msg: string) => void;
 }
 
@@ -18,12 +18,16 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
   onToast,
 }) => {
   const [linkDrive, setLinkDrive] = useState(packageItem?.linkDrive || '');
+  const [valorCatalogo, setValorCatalogo] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   React.useEffect(() => {
     if (packageItem) {
       setLinkDrive(packageItem.linkDrive || '');
+      // Sugere o valor de catálogo já salvo ou com acréscimo de 20-25%
+      const suggestedCatalogVal = packageItem.valorCatalogoBRL || (packageItem.valorTotalBRL * 1.25);
+      setValorCatalogo(suggestedCatalogVal.toFixed(2));
       setAdminPassword('');
       setErrorMsg('');
     }
@@ -38,8 +42,14 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
       return;
     }
 
-    onConfirmMove(packageItem.id, linkDrive.trim());
-    onToast(`Pacote "${packageItem.titulo}" movido para o Catálogo de Produtos!`);
+    const valorParsed = parseFloat(valorCatalogo.replace(',', '.'));
+    if (isNaN(valorParsed) || valorParsed <= 0) {
+      setErrorMsg('Informe um valor de catálogo válido em R$.');
+      return;
+    }
+
+    onConfirmMove(packageItem.id, linkDrive.trim(), valorParsed);
+    onToast(`Pacote "${packageItem.titulo}" movido para o Catálogo de Produtos com valor R$ ${valorParsed.toFixed(2)}!`);
     onClose();
   };
 
@@ -58,7 +68,7 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
                 Mover para o Catálogo de Produtos
               </h2>
               <p className="text-[11px] text-[#8a9d8c]">
-                Finalizar vaquinha e disponibilizar no acervo do grupo
+                Finalizar vaquinha e disponibilizar no acervo com valor de aquisição tardia
               </p>
             </div>
           </div>
@@ -76,64 +86,79 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
           <div className="p-3.5 bg-[#0c150e] border border-[#203625] rounded-2xl space-y-2">
             <h3 className="font-bold text-[#f4ecd8] text-sm">{packageItem.titulo}</h3>
             <div className="flex items-center gap-3 text-[11px] text-[#a4b5a6]">
-              <span>Valor: <strong className="text-[#d49e2a] font-mono">R$ {packageItem.valorTotalBRL.toFixed(2)}</strong></span>
+              <span>Valor Original da Vaquinha: <strong className="text-[#d49e2a] font-mono">R$ {packageItem.valorTotalBRL.toFixed(2)}</strong></span>
               <span>·</span>
               <span>Cotistas: <strong className="text-[#6ee7b7]">{packageItem.apoiadores.length} membros</strong></span>
             </div>
           </div>
 
           <div>
-            <label className="block font-semibold text-[#a4b5a6] mb-1">
-              Link da Pasta no Google Drive (para acesso dos membros):
+            <label className="block font-semibold text-[#f4ecd8] mb-1 flex items-center gap-1">
+              <DollarSign className="w-3.5 h-3.5 text-[#d49e2a]" />
+              <span>Valor do Pacote no Catálogo (R$) *:</span>
             </label>
-            <div className="relative">
-              <Folder className="w-4 h-4 text-[#7a8e7d] absolute left-3 top-2.5" />
-              <input
-                type="url"
-                value={linkDrive}
-                onChange={(e) => setLinkDrive(e.target.value)}
-                placeholder="https://drive.google.com/drive/folders/..."
-                className="w-full pl-9 pr-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
-              />
-            </div>
-            <p className="text-[11px] text-[#7a8e7d] mt-1">
-              Os membros poderão clicar no link do Drive diretamente pelo Catálogo para baixar os materiais.
+            <input
+              type="text"
+              required
+              value={valorCatalogo}
+              onChange={(e) => setValorCatalogo(e.target.value)}
+              placeholder="Ex: 120.00"
+              className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] font-mono font-bold focus:outline-none focus:border-[#43aa6a]"
+            />
+            <p className="text-[11px] text-[#8a9d8c] mt-1">
+              O valor de aquisição no Catálogo normalmente possui acréscimo em relação ao valor original do rateio.
             </p>
           </div>
 
-          <div className="pt-2 border-t border-[#1f3524] space-y-1.5">
-            <label className="block font-semibold text-[#d49e2a] flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Senha do Mestre para confirmar finalização:</span>
+          <div>
+            <label className="block font-semibold text-[#a4b5a6] mb-1 flex items-center gap-1">
+              <Folder className="w-3.5 h-3.5 text-[#7a8e7d]" />
+              <span>Link da Pasta no Google Drive (para acesso dos membros):</span>
+            </label>
+            <input
+              type="url"
+              value={linkDrive}
+              onChange={(e) => setLinkDrive(e.target.value)}
+              placeholder="https://drive.google.com/drive/folders/..."
+              className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
+            />
+            <p className="text-[11px] text-[#7a8e7d] mt-1">
+              Os membros que participaram poderão clicar no link do Drive diretamente pelo Catálogo para baixar os materiais.
+            </p>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-[#f4ecd8] mb-1 flex items-center gap-1">
+              <KeyRound className="w-3.5 h-3.5 text-[#d49e2a]" />
+              <span>Senha do Mestre para Confirmar:</span>
             </label>
             <input
               type="password"
               required
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
-              placeholder="Digite a senha de administrador..."
+              placeholder="Ponte#dos#trolls"
               className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
-              autoFocus
             />
           </div>
 
           {errorMsg && (
-            <p className="p-2.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs">
+            <div className="p-2.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs">
               {errorMsg}
-            </p>
+            </div>
           )}
 
-          <div className="flex justify-end gap-2.5 pt-2">
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-[#8a9d8c] hover:text-[#f1ede4] cursor-pointer"
+              className="px-3.5 py-2 text-xs text-[#8a9d8c] hover:text-[#f4ecd8] cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-[#43aa6a] hover:bg-[#52c27c] text-[#122015] font-bold shadow-lg shadow-black/40 cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2 font-bold text-xs rounded-xl bg-[#236336] hover:bg-[#2c7842] text-white shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Confirmar e Mover para o Catálogo</span>

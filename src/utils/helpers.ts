@@ -1,4 +1,4 @@
-import { ItemRPG, CurrencyType, ProductType } from '../types';
+import { ItemRPG, CurrencyType, ProductType, FundingPackage, UserProfile, Apoiador, PackageSubItem } from '../types';
 
 export const DEFAULT_EXCHANGE_RATE = 5.80;
 
@@ -277,9 +277,9 @@ export function generatePackageWhatsAppAnnouncement(pkg: FundingPackage): string
 
   let itensTexto = '';
   if (pkg.itens && pkg.itens.length > 0) {
-    itensTexto = pkg.itens.map(it => `📜 *${it.nome} (${it.sistema})*\n🔗 ${it.link || 'Sem link'}`).join('\n\n');
+    itensTexto = pkg.itens.map((it: PackageSubItem) => `📜 *${it.nome} (${it.sistema})*\n🔗 ${it.link || 'Sem link'}`).join('\n\n');
   } else if (pkg.itensInclusos && pkg.itensInclusos.length > 0) {
-    itensTexto = pkg.itensInclusos.map(it => `📜 *${it}*`).join('\n');
+    itensTexto = pkg.itensInclusos.map((it: string) => `📜 *${it}*`).join('\n');
   } else {
     itensTexto = `📜 *${pkg.titulo}*`;
   }
@@ -288,7 +288,7 @@ export function generatePackageWhatsAppAnnouncement(pkg: FundingPackage): string
   let listaParticipantes = 'Nenhum ainda. Seja o primeiro a participar!';
   if (apoiadores.length > 0) {
     listaParticipantes = apoiadores
-      .map((ap, i) => `${i + 1} - ${ap.nome}${ap.telefone ? ` (${ap.telefone})` : ''}`)
+      .map((ap: Apoiador, i: number) => `${i + 1} - ${ap.nome}${ap.telefone ? ` (${ap.telefone})` : ''}`)
       .join('\n');
   }
 
@@ -316,7 +316,7 @@ export function generateCatalogBuyMessage(pkg: FundingPackage, user: UserProfile
   
   let itensLista = '';
   if (pkg.itens && pkg.itens.length > 0) {
-    itensLista = pkg.itens.map(it => `${it.nome} (${it.sistema})`).join(', ');
+    itensLista = pkg.itens.map((it: PackageSubItem) => `${it.nome} (${it.sistema})`).join(', ');
   } else if (pkg.itensInclusos && pkg.itensInclusos.length > 0) {
     itensLista = pkg.itensInclusos.join(', ');
   } else {
@@ -359,7 +359,7 @@ export function exportFullDataToCSV(
   sections.push('=== SEÇÃO 2: SUGESTÕES DE COMPRA DA COMUNIDADE ===');
   sections.push(['ID', 'Data', 'Nome', 'Produto', 'Sistema', 'Descrição', 'Link', 'Sugerido Por', 'Telefone', 'Moeda', 'Valor', 'Apoiadores (Qtd)', 'Lista Apoiadores'].join(sep));
   items.forEach(it => {
-    const apoios = (it.apoiadores || []).map(a => a.nome).join(' | ');
+    const apoios = (it.apoiadores || []).map((a: Apoiador) => a.nome).join(' | ');
     sections.push([
       `"${it.id}"`,
       `"${formatDateDisplay(it.data)}"`,
@@ -400,8 +400,8 @@ export function exportFullDataToCSV(
   ].join(sep));
 
   packages.forEach(pkg => {
-    const itensStr = (pkg.itens || []).map(it => `${it.nome} [${it.sistema}]: R$${it.precoBRL.toFixed(2)}`).join(' | ');
-    const partsStr = (pkg.apoiadores || []).map(a => `${a.nome} (${a.telefone || ''})`).join(' | ');
+    const itensStr = (pkg.itens || []).map((it: PackageSubItem) => `${it.nome} [${it.sistema}]: R$${it.precoBRL.toFixed(2)}`).join(' | ');
+    const partsStr = (pkg.apoiadores || []).map((a: Apoiador) => `${a.nome} (${a.telefone || ''})`).join(' | ');
 
     sections.push([
       `"${pkg.id}"`,

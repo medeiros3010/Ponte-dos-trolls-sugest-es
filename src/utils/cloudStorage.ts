@@ -1,4 +1,4 @@
-import { ItemRPG, UserProfile, ItemStatus, FundingPackage } from '../types';
+import { ItemRPG, UserProfile, ItemStatus, FundingPackage, PackageSubItem } from '../types';
 import { SEED_USERS, SEED_PACKAGES } from '../data/seedData';
 
 export const CLOUD_BIN_KEY = 'ponte_trolls_bin_id_v4';
@@ -84,10 +84,13 @@ function resolveEndpoint(binOrUrl: string): { url: string; isCustom: boolean } {
   return { url: `${base}/api/bin/${encodeURIComponent(clean)}`, isCustom: false };
 }
 
+export const USERS_VERSION = 'v2_125_oficial';
+
 export interface CloudPayloadData {
   items: ItemRPG[];
   users: UserProfile[];
   packages: FundingPackage[];
+  usersVersion?: string;
 }
 
 export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData | null> {
@@ -131,6 +134,7 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
         createdAt: u.createdAt || new Date().toISOString(),
         isMaster: Boolean(u.isMaster),
         status: (u.status as any) || 'aprovado',
+        strikes: u.strikes !== undefined ? u.strikes : [],
       }));
     }
 
@@ -139,7 +143,7 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
       packages = normalizeCloudPackages(data.packages);
     }
 
-    return { items, users, packages };
+    return { items, users, packages, usersVersion: data.usersVersion };
   } catch (err) {
     console.error('fetchCloudData error:', err);
     throw err;
@@ -150,7 +154,8 @@ export async function pushCloudData(
   binOrUrl: string,
   items: ItemRPG[],
   users: UserProfile[],
-  packages: FundingPackage[]
+  packages: FundingPackage[],
+  usersVersion: string = USERS_VERSION
 ): Promise<boolean> {
   const { url } = resolveEndpoint(binOrUrl);
 
@@ -159,6 +164,7 @@ export async function pushCloudData(
       id: binOrUrl,
       name: 'A Ponte dos Trolls - Rateios RPG',
       updatedAt: new Date().toISOString(),
+      usersVersion,
       items,
       users,
       packages,
@@ -316,7 +322,7 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
       dataPagamento: pkg.dataPagamento || '2026-03-30',
       linkLoja: pkg.linkLoja || '',
       linkDrive: pkg.linkDrive || '',
-      itensInclusos: itensInclusos.length > 0 ? itensInclusos : itens.map((it) => it.nome),
+      itensInclusos: itensInclusos.length > 0 ? itensInclusos : itens.map((it: PackageSubItem) => it.nome),
       sugestoesIds: Array.isArray(pkg.sugestoesIds) ? pkg.sugestoesIds : [],
       status,
       apoiadores: Array.isArray(pkg.apoiadores) ? pkg.apoiadores : [],

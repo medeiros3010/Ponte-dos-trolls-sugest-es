@@ -18,6 +18,7 @@ import {
   getStoredCurrentUser,
   saveStoredCurrentUser,
   DEFAULT_BIN_ID,
+  USERS_VERSION,
 } from './utils/cloudStorage';
 
 import { Header } from './components/Header';
@@ -25,15 +26,18 @@ import { HomeHub } from './components/HomeHub';
 import { SugestoesView } from './components/SugestoesView';
 import { FinanciamentoView } from './components/FinanciamentoView';
 import { CatalogoView } from './components/CatalogoView';
+import { MembrosView } from './components/MembrosView';
 
 import { ItemFormModal } from './components/ItemFormModal';
 import { PackageModal } from './components/PackageModal';
 import { MoveToCatalogModal } from './components/MoveToCatalogModal';
 import { MemberManagementModal } from './components/MemberManagementModal';
+import { ExportDataModal } from './components/ExportDataModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { SettingsModal } from './components/SettingsModal';
 import { WeeklyBulletinModal } from './components/WeeklyBulletinModal';
 import { UserAuthModal } from './components/UserAuthModal';
+import { UserProfileModal } from './components/UserProfileModal';
 import { Toast } from './components/Toast';
 
 const STORAGE_KEY_ITEMS = 'ponte_trolls_clean_v5';
@@ -52,13 +56,19 @@ export default function App() {
   // Mandatory Identified User State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => getStoredCurrentUser());
 
-  // Members list
+  // Members list with automatic version check & overwrite for the 125 official members
   const [users, setUsers] = useState<UserProfile[]>(() => {
     try {
+      const storedVersion = localStorage.getItem('users_version');
+      if (storedVersion !== USERS_VERSION) {
+        localStorage.setItem('users_version', USERS_VERSION);
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(SEED_USERS));
+        return SEED_USERS;
+      }
       const stored = localStorage.getItem(STORAGE_KEY_USERS);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length >= 125) return parsed;
       }
     } catch (e) {
       console.warn('Fallback to seed users', e);
@@ -119,8 +129,10 @@ export default function App() {
   const [packageToDelete, setPackageToDelete] = useState<FundingPackage | null>(null);
 
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBulletinOpen, setIsBulletinOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = useCallback((msg: string) => {
@@ -144,7 +156,7 @@ export default function App() {
     localStorage.setItem(STORAGE_KEY_RATE, exchangeRate.toString());
   }, [exchangeRate]);
 
-  // Initial cloud synchronization
+  // Initial cloud synchronization with USERS_VERSION enforcement
   useEffect(() => {
     let isMounted = true;
     async function loadFromCloud() {
@@ -156,11 +168,37 @@ export default function App() {
           if (cloudData.items && cloudData.items.length > 0) {
             setItems(cloudData.items);
           }
-          if (cloudData.users && cloudData.users.length > 0) {
-            setUsers(cloudData.users);
-          }
           if (cloudData.packages && cloudData.packages.length > 0) {
             setPackages(cloudData.packages);
+          }
+
+          const storedVer = localStorage.getItem('users_version');
+          const isCloudOutdated = cloudData.usersVersion !== USERS_VERSION || (!cloudData.users || cloudData.users.length < 125);
+
+          if (storedVer !== USERS_VERSION || isCloudOutdated) {
+            // Overwrite immediately with the 125 official members and push PUT/POST to cloud
+            setUsers(SEED_USERS);
+            localStorage.setItem('users_version', USERS_VERSION);
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(SEED_USERS));
+
+            await pushCloudData(
+              binId,
+              cloudData.items && cloudData.items.length > 0 ? cloudData.items : items,
+              SEED_USERS,
+              cloudData.packages && cloudData.packages.length > 0 ? cloudData.packages : packages,
+              USERS_VERSION
+            );
+          } else if (cloudData.users && cloudData.users.length > 0) {
+            setUsers(cloudData.users);
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cloudData.users));
+          }
+        } else if (isMounted) {
+          const storedVer = localStorage.getItem('users_version');
+          if (storedVer !== USERS_VERSION) {
+            setUsers(SEED_USERS);
+            localStorage.setItem('users_version', USERS_VERSION);
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(SEED_USERS));
+            await pushCloudData(binId, items, SEED_USERS, packages, USERS_VERSION);
           }
         }
       } catch (err) {
@@ -185,7 +223,7 @@ export default function App() {
       if (!binId) return;
       try {
         setIsSyncing(true);
-        await pushCloudData(binId, newItems, newUsers, newPackages);
+        await pushCloudData(binId, newItems, newUsers, newPackages, USERS_VERSION);
       } catch (err) {
         console.error('Error syncing with cloud:', err);
         showToast('Aviso: Não foi possível salvar na nuvem.');
@@ -197,33 +235,59 @@ export default function App() {
   );
 
   // User Identification Handlers
-  const handleSelectExistingUser = (user: UserProfile, updatedEmail?: string) => {
+  const handleSelectExistingUser = (user: UserProfile, updatedEmail?: string, updatedPhone?: string) => {
     const updatedUser: UserProfile = {
       ...user,
       email: updatedEmail || user.email || '',
+      telefone: updatedPhone || user.telefone || '',
+      status: 'aprovado',
     };
     setCurrentUser(updatedUser);
     saveStoredCurrentUser(updatedUser);
 
-    if (updatedEmail && updatedEmail !== user.email) {
+    const hasChanges = (updatedEmail && updatedEmail !== user.email) || (updatedPhone && updatedPhone !== user.telefone);
+    if (hasChanges) {
       const nextUsers = users.map((u) => (u.id === user.id ? updatedUser : u));
       setUsers(nextUsers);
       syncWithCloud(items, nextUsers, packages);
     }
+
     showToast(`Bem-vindo, ${updatedUser.nome}!`);
+
+    // Abre imediatamente o Modal de Boas-Vindas e Conferência para membros comuns
+    if (!updatedUser.isMaster) {
+      setIsProfileOpen(true);
+    }
   };
 
-  const handleRegisterNewUser = (newUserData: Omit<UserProfile, 'id'>) => {
-    const newUser: UserProfile = {
-      ...newUserData,
-      id: `usr-${Date.now()}`,
-    };
-    const nextUsers = [...users, newUser];
+  const handleUpdateCurrentUser = (updatedUser: UserProfile) => {
+    setCurrentUser(updatedUser);
+    saveStoredCurrentUser(updatedUser);
+    const nextUsers = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
     setUsers(nextUsers);
-    setCurrentUser(newUser);
-    saveStoredCurrentUser(newUser);
     syncWithCloud(items, nextUsers, packages);
-    showToast(`Cadastro realizado com sucesso! Bem-vindo, ${newUser.nome}.`);
+  };
+
+  const handleUpdateUserFromManagement = (updatedUser: UserProfile) => {
+    const nextUsers = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+    setUsers(nextUsers);
+    if (currentUser?.id === updatedUser.id) {
+      setCurrentUser(updatedUser);
+      saveStoredCurrentUser(updatedUser);
+    }
+    syncWithCloud(items, nextUsers, packages);
+  };
+
+  const handleApproveUser = (userId: string) => {
+    const nextUsers = users.map((u) => (u.id === userId ? { ...u, status: 'aprovado' as const } : u));
+    setUsers(nextUsers);
+    syncWithCloud(items, nextUsers, packages);
+  };
+
+  const handleRejectUser = (userId: string) => {
+    const nextUsers = users.filter((u) => u.id !== userId);
+    setUsers(nextUsers);
+    syncWithCloud(items, nextUsers, packages);
   };
 
   const handleChangeUser = () => {
@@ -248,45 +312,46 @@ export default function App() {
       syncWithCloud(nextItems, users, packages);
       showToast('Sugestão atualizada!');
     } else {
-      // Nova Sugestão
-      const autorApoiador: Apoiador = {
-        id: currentUser?.id || `ap-${Date.now()}`,
-        nome: currentUser?.nome || itemData.sugeridoPorNome,
-        telefone: currentUser?.telefone || itemData.sugeridoPorTelefone,
-        email: currentUser?.email || '',
-        data: new Date().toISOString(),
-      };
-
+      // Criar Novo
       const newItem: ItemRPG = {
         ...itemData,
         id: `item-${Date.now()}`,
         status: 'Sugestão',
-        apoiadores: [autorApoiador],
+        apoiadores: currentUser
+          ? [
+              {
+                id: currentUser.id,
+                nome: currentUser.nome,
+                telefone: currentUser.telefone,
+                email: currentUser.email,
+              },
+            ]
+          : [],
       };
-
       const nextItems = [newItem, ...items];
       setItems(nextItems);
       syncWithCloud(nextItems, users, packages);
-      showToast('Nova sugestão cadastrada!');
+      showToast('Sugestão enviada com sucesso!');
     }
+    setIsFormOpen(false);
     setItemToEdit(null);
   };
 
   const handleToggleSupportItem = (itemId: string) => {
     if (!currentUser) return;
-    const item = items.find((i) => i.id === itemId);
-    if (!item) return;
+    const targetItem = items.find((it) => it.id === itemId);
+    if (!targetItem) return;
 
-    const alreadySupporting = item.apoiadores.some(
+    const alreadySupporting = (targetItem.apoiadores || []).some(
       (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
     );
 
     let nextApoiadores: Apoiador[];
     if (alreadySupporting) {
-      nextApoiadores = item.apoiadores.filter(
+      nextApoiadores = (targetItem.apoiadores || []).filter(
         (ap) => ap.id !== currentUser.id && ap.nome.toLowerCase() !== currentUser.nome.toLowerCase()
       );
-      showToast(`Você retirou seu apoio de "${item.nome}".`);
+      showToast(`Você retirou seu apoio da sugestão "${targetItem.nome}".`);
     } else {
       const novoApoiador: Apoiador = {
         id: currentUser.id,
@@ -295,8 +360,8 @@ export default function App() {
         email: currentUser.email,
         data: new Date().toISOString(),
       };
-      nextApoiadores = [...item.apoiadores, novoApoiador];
-      showToast(`Você apoiou "${item.nome}"!`);
+      nextApoiadores = [...(targetItem.apoiadores || []), novoApoiador];
+      showToast(`Você apoiou "${targetItem.nome}"!`);
     }
 
     const nextItems = items.map((it) => (it.id === itemId ? { ...it, apoiadores: nextApoiadores } : it));
@@ -348,13 +413,13 @@ export default function App() {
     const pkg = packages.find((p) => p.id === packageId);
     if (!pkg) return;
 
-    const alreadySupporting = pkg.apoiadores.some(
+    const alreadySupporting = (pkg.apoiadores || []).some(
       (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
     );
 
     let nextApoiadores: Apoiador[];
     if (alreadySupporting) {
-      nextApoiadores = pkg.apoiadores.filter(
+      nextApoiadores = (pkg.apoiadores || []).filter(
         (ap) => ap.id !== currentUser.id && ap.nome.toLowerCase() !== currentUser.nome.toLowerCase()
       );
       showToast(`Você saiu do rateio de "${pkg.titulo}".`);
@@ -366,7 +431,7 @@ export default function App() {
         email: currentUser.email,
         data: new Date().toISOString(),
       };
-      nextApoiadores = [...pkg.apoiadores, novoApoiador];
+      nextApoiadores = [...(pkg.apoiadores || []), novoApoiador];
       showToast(`Você entrou na vaquinha de "${pkg.titulo}"!`);
     }
 
@@ -375,13 +440,14 @@ export default function App() {
     syncWithCloud(items, users, nextPackages);
   };
 
-  const handleConfirmMoveToCatalog = (packageId: string, linkDrive: string) => {
+  const handleConfirmMoveToCatalog = (packageId: string, linkDrive: string, valorCatalogoBRL: number) => {
     const nextPackages = packages.map((p) =>
       p.id === packageId
         ? {
             ...p,
             status: 'Catálogo' as const,
             linkDrive,
+            valorCatalogoBRL,
             finalizadoEm: new Date().toISOString().split('T')[0],
           }
         : p
@@ -421,6 +487,31 @@ export default function App() {
     syncWithCloud(items, nextUsers, packages);
   };
 
+  const handleRestoreBackup = (backupData: any) => {
+    let nextItems = items;
+    let nextUsers = users;
+    let nextPackages = packages;
+
+    if (backupData.items && Array.isArray(backupData.items)) {
+      nextItems = backupData.items;
+      setItems(nextItems);
+    }
+    if (backupData.users && Array.isArray(backupData.users)) {
+      nextUsers = backupData.users;
+      setUsers(nextUsers);
+    }
+    if (backupData.packages && Array.isArray(backupData.packages)) {
+      nextPackages = backupData.packages;
+      setPackages(nextPackages);
+    }
+    syncWithCloud(nextItems, nextUsers, nextPackages);
+  };
+
+  // Pending users count for Master badge
+  const pendingUsersCount = useMemo(() => {
+    return users.filter((u) => u.status === 'pendente').length;
+  }, [users]);
+
   // Counters for Home Hub
   const countSugestoes = useMemo(() => {
     return items.filter((i) => i.status === 'Sugestão').length;
@@ -434,6 +525,10 @@ export default function App() {
     return packages.filter((p) => p.status === 'Catálogo').length;
   }, [packages]);
 
+  const countMembros = useMemo(() => {
+    return users.length;
+  }, [users]);
+
   return (
     <div className="min-h-screen bg-[#0c150e] text-[#f1ede4] flex flex-col font-sans selection:bg-[#d49e2a]/30 selection:text-[#f4ecd8]">
       
@@ -443,7 +538,6 @@ export default function App() {
           isOpen={!currentUser}
           users={users}
           onSelectExistingUser={handleSelectExistingUser}
-          onRegisterNewUser={handleRegisterNewUser}
         />
       )}
 
@@ -451,6 +545,8 @@ export default function App() {
       <Header
         binId={binId}
         currentUser={currentUser}
+        currentView={view}
+        pendingUsersCount={pendingUsersCount}
         onChangeUser={handleChangeUser}
         onGoHome={() => setView('home')}
         exchangeRate={exchangeRate}
@@ -461,7 +557,9 @@ export default function App() {
         }}
         onOpenSettingsModal={() => setIsSettingsOpen(true)}
         onOpenBulletinModal={() => setIsBulletinOpen(true)}
-        onOpenMembersModal={() => setIsMembersModalOpen(true)}
+        onOpenMembersModal={() => setView('membros')}
+        onOpenExportModal={() => setIsExportOpen(true)}
+        onOpenProfileModal={() => setIsProfileOpen(true)}
         isSyncing={isSyncing}
         onToast={showToast}
       />
@@ -476,6 +574,7 @@ export default function App() {
                 countSugestoes={countSugestoes}
                 countFinanciamento={countFinanciamento}
                 countCatalogo={countCatalogo}
+                countMembros={countMembros}
                 onNavigate={(v) => setView(v)}
                 onOpenNewItem={() => {
                   setItemToEdit(null);
@@ -520,6 +619,7 @@ export default function App() {
                 onDeletePackage={handleDeletePackage}
                 onMoveToCatalog={(pkg) => setPackageToMove(pkg)}
                 onToggleSupport={handleToggleSupportPackage}
+                onToast={showToast}
               />
             )}
 
@@ -533,6 +633,20 @@ export default function App() {
                   setIsPackageModalOpen(true);
                 }}
                 onDeletePackage={handleDeletePackage}
+                onToast={showToast}
+              />
+            )}
+
+            {view === 'membros' && (
+              <MembrosView
+                users={users}
+                currentUser={currentUser}
+                packages={packages}
+                items={items}
+                onGoHome={() => setView('home')}
+                onAddUser={handleAddUserFromManagement}
+                onUpdateUser={handleUpdateUserFromManagement}
+                onDeleteUser={handleDeleteUser}
                 onToast={showToast}
               />
             )}
@@ -563,7 +677,6 @@ export default function App() {
           }}
           onSave={handleSavePackage}
           existingPackage={packageToEdit}
-          availableSugestoes={items.filter((i) => i.status === 'Sugestão')}
           onToast={showToast}
         />
       )}
@@ -584,7 +697,34 @@ export default function App() {
           onClose={() => setIsMembersModalOpen(false)}
           users={users}
           onAddUser={handleAddUserFromManagement}
+          onUpdateUser={handleUpdateUserFromManagement}
           onDeleteUser={handleDeleteUser}
+          onToast={showToast}
+        />
+      )}
+
+      {/* Modal de Perfil e Conferência de Cadastro */}
+      {isProfileOpen && currentUser && (
+        <UserProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          currentUser={currentUser}
+          packages={packages}
+          items={items}
+          onUpdateCurrentUser={handleUpdateCurrentUser}
+          onToast={showToast}
+        />
+      )}
+
+      {isExportOpen && (
+        <ExportDataModal
+          isOpen={isExportOpen}
+          onClose={() => setIsExportOpen(false)}
+          users={users}
+          items={items}
+          packages={packages}
+          binId={binId}
+          onRestoreBackup={handleRestoreBackup}
           onToast={showToast}
         />
       )}
@@ -607,9 +747,9 @@ export default function App() {
             nome: packageToDelete.titulo,
             data: packageToDelete.criadoEm,
             produto: 'Bundle / Pacote de Mapas',
-            sistema: packageToDelete.sistema,
-            descricao: packageToDelete.descricao,
-            link: packageToDelete.linkLoja,
+            sistema: packageToDelete.sistema || 'Outro',
+            descricao: packageToDelete.descricao || '',
+            link: packageToDelete.linkLoja || '',
             sugeridoPorNome: 'Mestre da Ponte',
             sugeridoPorTelefone: '',
             moeda: 'BRL',
@@ -631,17 +771,17 @@ export default function App() {
           onSaveBinId={(newId) => {
             setBinId(newId);
             saveBinId(newId);
-            showToast(`Banco em nuvem alterado para: ${newId}`);
+            showToast(`Banco alternado para: ${newId}`);
           }}
-          onImportItems={(importedItems: ItemRPG[], mode: 'replace' | 'append') => {
-            const nextItems = mode === 'replace' ? importedItems : [...importedItems, ...items];
+          onImportItems={(newItems, mode) => {
+            const nextItems = mode === 'replace' ? newItems : [...items, ...newItems];
             setItems(nextItems);
             syncWithCloud(nextItems, users, packages);
-            showToast(`${importedItems.length} itens importados com sucesso!`);
+            showToast(`${newItems.length} itens importados com sucesso!`);
           }}
-          onUpdateItemsFromCloud={(cloudItems: ItemRPG[]) => {
-            setItems(cloudItems);
-            showToast('Itens atualizados a partir da nuvem!');
+          onUpdateItemsFromCloud={(newItems) => {
+            setItems(newItems);
+            syncWithCloud(newItems, users, packages);
           }}
           onClose={() => setIsSettingsOpen(false)}
           onToast={showToast}
@@ -651,16 +791,14 @@ export default function App() {
       {isBulletinOpen && (
         <WeeklyBulletinModal
           isOpen={isBulletinOpen}
+          onClose={() => setIsBulletinOpen(false)}
           items={items}
           exchangeRate={exchangeRate}
-          onClose={() => setIsBulletinOpen(false)}
           onToast={showToast}
         />
       )}
 
-      {/* Toast Notification */}
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
-
     </div>
   );
 }

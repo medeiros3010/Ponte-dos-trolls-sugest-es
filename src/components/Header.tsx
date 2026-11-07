@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Plus, Cloud, RefreshCw, MessageSquareShare, Link2, Check, User, Users, Shield, Crown } from 'lucide-react';
-import { UserProfile } from '../types';
+import { Plus, Cloud, RefreshCw, MessageSquareShare, Link2, Check, User, Users, Shield, Crown, ArrowLeft, Download } from 'lucide-react';
+import { UserProfile, AppView } from '../types';
 import { getShareableGroupLink } from '../utils/cloudStorage';
 
 interface HeaderProps {
   binId: string;
   currentUser: UserProfile | null;
+  currentView: AppView;
+  pendingUsersCount?: number;
   onChangeUser: () => void;
   onGoHome: () => void;
   exchangeRate: number;
@@ -14,6 +16,8 @@ interface HeaderProps {
   onOpenSettingsModal: () => void;
   onOpenBulletinModal: () => void;
   onOpenMembersModal: () => void;
+  onOpenExportModal: () => void;
+  onOpenProfileModal: () => void;
   isSyncing?: boolean;
   onToast: (msg: string) => void;
 }
@@ -21,6 +25,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   binId,
   currentUser,
+  currentView,
+  pendingUsersCount = 0,
   onChangeUser,
   onGoHome,
   exchangeRate,
@@ -29,6 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettingsModal,
   onOpenBulletinModal,
   onOpenMembersModal,
+  onOpenExportModal,
+  onOpenProfileModal,
   isSyncing = false,
   onToast,
 }) => {
@@ -61,11 +69,11 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
         <div className="flex items-center justify-between gap-3">
           
-          {/* Left: Avatar/Icon + Title + User Badge */}
+          {/* Left: Avatar/Icon + Title + User indicator */}
           <div className="flex items-center gap-3">
             <button
               onClick={onGoHome}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a] hover:scale-105 transition-transform"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a] hover:scale-105 transition-transform cursor-pointer"
               title="Voltar ao Menu Inicial"
             >
               <img
@@ -78,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onGoHome}
-                  className="font-rpg text-base sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight hover:text-[#d49e2a] transition-colors text-left"
+                  className="font-rpg text-base sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight hover:text-[#d49e2a] transition-colors text-left cursor-pointer"
                 >
                   A Ponte dos Trolls
                 </button>
@@ -120,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="hidden sm:inline text-[#3a523f]">·</span>
                     <button
                       onClick={onOpenSettingsModal}
-                      className="hidden sm:inline-flex items-center gap-1.5 hover:underline"
+                      className="hidden sm:inline-flex items-center gap-1.5 hover:underline cursor-pointer"
                       title="Clique para gerenciar o banco na nuvem e compartilhamento"
                     >
                       <span
@@ -143,71 +151,100 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Right: Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             
-            {/* Dollar Rate */}
-            <div className="hidden lg:flex items-center gap-1.5 bg-[#122015] px-2.5 py-1.5 rounded-xl border border-[#203625] text-xs">
-              <span className="text-[#7a8e7d] text-[11px]">1 USD =</span>
-              {isEditingRate ? (
-                <div className="flex items-center gap-1">
-                  <span className="text-[#d49e2a] font-mono">R$</span>
-                  <input
-                    type="text"
-                    value={tempRate}
-                    onChange={(e) => setTempRate(e.target.value)}
-                    onBlur={handleSaveRate}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveRate()}
-                    className="w-14 bg-[#0a120c] border border-[#d49e2a] rounded px-1.5 py-0.5 text-[#f4ecd8] font-mono text-xs focus:outline-none"
-                    autoFocus
-                  />
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setTempRate(exchangeRate.toFixed(2));
-                    setIsEditingRate(true);
-                  }}
-                  title="Ajustar cotação do dólar"
-                  className="font-mono font-bold text-[#d49e2a] hover:underline px-0.5"
-                >
-                  R$ {exchangeRate.toFixed(2)}
-                </button>
-              )}
+            {/* Botão Voltar ao Menu quando dentro de uma sub-tela */}
+            {currentView !== 'home' && (
               <button
-                onClick={() => {
-                  onExchangeRateChange(5.80);
-                  setTempRate('5.80');
-                }}
-                title="Redefinir para 5.80"
-                className="text-[#556957] hover:text-[#9aa39b] p-0.5 cursor-pointer"
+                onClick={onGoHome}
+                className="px-2.5 py-1.5 text-xs font-semibold text-[#a4b5a6] hover:text-[#f4ecd8] bg-[#122015] hover:bg-[#1a2e1f] border border-[#203625] rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                title="Voltar ao Menu Inicial"
               >
-                <RefreshCw className="w-3 h-3" />
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Voltar ao Menu</span>
               </button>
-            </div>
+            )}
 
-            {/* 🔗 Copiar Link Sincronizado para o Grupo */}
-            <button
-              onClick={handleCopyLink}
-              className={`p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
-                copiedLink
-                  ? 'bg-[#183824] text-[#6ee7b7] border-[#34d399]'
-                  : 'bg-[#16271a] hover:bg-[#1f3724] text-[#d49e2a] border-[#2e5035]'
-              }`}
-              title="Copiar link com o banco sincronizado para colar no WhatsApp"
-            >
-              {copiedLink ? <Check className="w-4 h-4 text-[#34d399]" /> : <Link2 className="w-4 h-4" />}
-              <span className="hidden sm:inline">{copiedLink ? 'Link Copiado!' : 'Copiar Link'}</span>
-            </button>
+            {/* Botão Meu Perfil para usuário comum */}
+            {!isMaster && currentUser && (
+              <button
+                onClick={onOpenProfileModal}
+                className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-[#142318] hover:bg-[#1a2e1f] border border-[#27442d] text-[#6ee7b7] flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Conferir meu cadastro, estatísticas e strikes"
+              >
+                <User className="w-3.5 h-3.5 text-[#34d399]" />
+                <span className="hidden sm:inline">Meu Perfil</span>
+              </button>
+            )}
 
             {/* BOTÕES EXCLUSIVOS DO MESTRE ADMIN */}
             {isMaster && (
               <>
-                {/* 👥 Gerenciar Membros */}
+                {/* Dollar Rate */}
+                <div className="hidden lg:flex items-center gap-1.5 bg-[#122015] px-2.5 py-1.5 rounded-xl border border-[#203625] text-xs">
+                  <span className="text-[#7a8e7d] text-[11px]">1 USD =</span>
+                  {isEditingRate ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[#d49e2a] font-mono">R$</span>
+                      <input
+                        type="text"
+                        value={tempRate}
+                        onChange={(e) => setTempRate(e.target.value)}
+                        onBlur={handleSaveRate}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSaveRate()}
+                        className="w-14 bg-[#0a120c] border border-[#d49e2a] rounded px-1.5 py-0.5 text-[#f4ecd8] font-mono text-xs focus:outline-none"
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setTempRate(exchangeRate.toFixed(2));
+                        setIsEditingRate(true);
+                      }}
+                      title="Ajustar cotação do dólar"
+                      className="font-mono font-bold text-[#d49e2a] hover:underline px-0.5 cursor-pointer"
+                    >
+                      R$ {exchangeRate.toFixed(2)}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      onExchangeRateChange(5.80);
+                      setTempRate('5.80');
+                    }}
+                    title="Redefinir para 5.80"
+                    className="text-[#556957] hover:text-[#9aa39b] p-0.5 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {/* 🔗 Copiar Link Sincronizado para o Grupo */}
+                <button
+                  onClick={handleCopyLink}
+                  className={`p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    copiedLink
+                      ? 'bg-[#183824] text-[#6ee7b7] border-[#34d399]'
+                      : 'bg-[#16271a] hover:bg-[#1f3724] text-[#d49e2a] border-[#2e5035]'
+                  }`}
+                  title="Copiar link com o banco sincronizado para colar no WhatsApp"
+                >
+                  {copiedLink ? <Check className="w-4 h-4 text-[#34d399]" /> : <Link2 className="w-4 h-4" />}
+                  <span className="hidden sm:inline">{copiedLink ? 'Copiado!' : 'Copiar Link'}</span>
+                </button>
+
+                {/* 👥 Gerenciar Membros com badge vermelha de pendentes */}
                 <button
                   onClick={onOpenMembersModal}
-                  className="p-2 sm:px-3 sm:py-2 text-xs font-semibold text-[#f4ecd8] bg-[#16271a] hover:bg-[#203625] border border-[#2e5035] rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-                  title="Gerenciar lista de membros cadastrados"
+                  className="relative p-2 sm:px-3 sm:py-2 text-xs font-semibold text-[#f4ecd8] bg-[#16271a] hover:bg-[#203625] border border-[#2e5035] rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Gerenciar lista de membros e aprovar solicitações"
                 >
                   <Users className="w-4 h-4 text-[#d49e2a]" />
                   <span className="hidden md:inline">Membros</span>
+                  {pendingUsersCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-red-600 text-white animate-pulse">
+                      {pendingUsersCount}
+                    </span>
+                  )}
                 </button>
 
                 {/* 📋 Boletim WhatsApp */}
@@ -220,26 +257,38 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="hidden md:inline">Boletim</span>
                 </button>
 
-                {/* ☁️ Nuvem / CSV */}
+                {/* 📥 Exportar Todos os Dados */}
+                <button
+                  onClick={onOpenExportModal}
+                  className="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border flex items-center gap-1.5 transition-colors bg-[#182b1d] text-[#fbbf24] border-[#fbbf24]/40 hover:bg-[#24402c] cursor-pointer"
+                  title="Exportar dados completos (Planilha Excel/CSV e Backup JSON)"
+                >
+                  <Download className="w-4 h-4 text-[#fbbf24]" />
+                  <span className="hidden md:inline">Exportar Dados</span>
+                </button>
+
+                {/* ☁️ Nuvem / Configurações */}
                 <button
                   onClick={onOpenSettingsModal}
                   className="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border flex items-center gap-1.5 transition-colors bg-[#122015] text-[#a4b5a6] border-[#203625] hover:text-[#f4ecd8] hover:bg-[#182b1d] cursor-pointer"
-                  title="Gerenciar banco em nuvem e exportar CSV"
+                  title="Gerenciar banco em nuvem"
                 >
                   <Cloud className="w-4 h-4 text-[#d49e2a]" />
-                  <span className="hidden md:inline">Nuvem / CSV</span>
+                  <span className="hidden md:inline">Nuvem</span>
                 </button>
               </>
             )}
 
-            {/* + Sugerir Compra */}
-            <button
-              onClick={onOpenNewItemModal}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold text-[#122015] bg-[#d49e2a] hover:bg-[#e5b23d] rounded-xl shadow-md shadow-black/30 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ Sugerir</span>
-            </button>
+            {/* + Sugerir Compra: SÓ APARECE QUANDO ESTÁ NA ABA "SUGERIR COMPRAS" */}
+            {currentView === 'sugestoes' && (
+              <button
+                onClick={onOpenNewItemModal}
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold text-[#122015] bg-[#d49e2a] hover:bg-[#e5b23d] rounded-xl shadow-md shadow-black/30 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Sugerir Compra</span>
+              </button>
+            )}
 
           </div>
 
