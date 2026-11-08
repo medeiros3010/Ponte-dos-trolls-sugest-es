@@ -80,17 +80,12 @@ export const InviteFriendModal: React.FC<InviteFriendModalProps> = ({
 
   // MENSAGEM PARA O AMIGO (Texto exato da especificação)
   const friendMessageText = useMemo(() => {
-    const indicatorName = currentUser?.nome || 'um membro da comunidade';
     return `Olá! Quero te apresentar a Ponte dos Trolls, uma comunidade de compras coletivas de materiais digitais para RPG, como mapas, tokens, livros e módulos para Foundry VTT.
 
 Os interessados dividem os custos de cada compra, e o acesso é destinado aos participantes daquela aquisição. O grupo possui regras de convivência e não permite compartilhar materiais brasileiros.
 
-Estou te indicando porque confio em você. Para solicitar entrada, acesse o site, clique em ‘Sou novo — solicitar entrada’, leia as regras e responda às perguntas. No cadastro, informe que foi indicado por ${indicatorName}.
-
-A entrada depende da aprovação do Mestre.
-
-${siteUrl}`;
-  }, [currentUser, siteUrl]);
+Estou te indicando porque confio em você. Vou encaminhar sua indicação ao Mestre, que entrará em contato caso tenha interesse em dar continuidade.`;
+  }, []);
 
   // MENSAGEM PARA O MESTRE (Texto exato da especificação)
   const masterMessageText = useMemo(() => {
@@ -104,7 +99,7 @@ Indicado por: ${indicatorName}
 Nome do amigo: ${nomeInformado}
 Telefone do amigo: ${telefoneInformado}
 
-Vou orientar essa pessoa a ler as regras e preencher a solicitação de entrada no site. A indicação fica para sua avaliação.`;
+Se tiver interesse em dar continuidade à indicação, entre em contato com essa pessoa.`;
   }, [currentUser, friendName, friendPhone]);
 
   if (!isOpen) return null;
@@ -178,7 +173,7 @@ Vou orientar essa pessoa a ler as regras e preencher a solicitação de entrada 
                 Aviso importante sobre indicações
               </span>
               <p className="text-xs text-[#55482e] leading-relaxed font-medium">
-                Indique apenas pessoas de sua confiança. Não divulgue este convite publicamente. A entrada depende da leitura das regras e da aprovação do Mestre.
+                Indique apenas pessoas de sua confiança e não divulgue publicamente. O Mestre avaliará a indicação de sua confiança e fará contato caso tenha interesse.
               </p>
             </div>
           </div>

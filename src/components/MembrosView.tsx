@@ -29,10 +29,13 @@ import {
   XCircle,
   HelpCircle,
   Eye,
+  MessageSquare,
 } from 'lucide-react';
 import { PageBanner } from './PageBanner';
 import { getUserRank, getUserAcquiredPackages } from '../utils/ranksAndAcquisitions';
 import { CandidateReviewModal } from './CandidateReviewModal';
+import { MemberAcervoModal } from './MemberAcervoModal';
+import { WelcomeMessageModal } from './WelcomeMessageModal';
 import { RulesConfig } from '../data/rulesAndQuestions';
 
 interface MembrosViewProps {
@@ -82,6 +85,9 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   // Modais de Cadastro e Edição de Membro
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState<UserProfile | null>(null);
+  const [memberToViewAcervo, setMemberToViewAcervo] = useState<UserProfile | null>(null);
+  const [welcomeMember, setWelcomeMember] = useState<{ nome: string; telefone: string } | null>(null);
+  const [activeMemberMenuId, setActiveMemberMenuId] = useState<string | null>(null);
 
   // Formulário de Novo Membro
   const [newName, setNewName] = useState('');
@@ -225,7 +231,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     // Filtro por tipo
     if (filterType === 'ativos') {
       list = list.filter((u) => getStats(u).activeFundingCount > 0);
-    } else if (filterType === 'pendencias') {
+    } else if (filterType === 'pendencias' && isMaster) {
       list = list.filter((u) => {
         const s = getStats(u);
         return s.strikesCount > 0 || s.hasPendingPayment;
@@ -243,7 +249,9 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
         case 'mais-ativos':
           return statsB.totalParticipations - statsA.totalParticipations;
         case 'mais-strikes':
-          return statsB.strikesCount - statsA.strikesCount;
+          return isMaster
+            ? statsB.strikesCount - statsA.strikesCount
+            : a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
         case 'nome-az':
         default:
           return a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
@@ -475,8 +483,8 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             )}
           </div>
 
-      {/* 3 CARDS DE ESTATÍSTICA (Fiel ao Print 2) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      {/* CARDS DE ESTATÍSTICA (3 para o Mestre, 2 para membros comuns) */}
+      <div className={`grid grid-cols-1 ${isMaster ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>
         
         {/* Card 1: Total de Membros */}
         <div className="parchment-card p-4 flex items-center gap-3.5">
@@ -502,21 +510,23 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           </div>
         </div>
 
-        {/* Card 3: Com Pendências */}
-        <div className="parchment-card p-4 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
-            <AlertTriangle className="w-5 h-5" />
+        {/* Card 3: Com Pendências (Visível apenas para o Mestre) */}
+        {isMaster && (
+          <div className="parchment-card p-4 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-rpg text-xl font-bold text-[#302414] block">
+                {groupStats.membersWithPending} com pendências
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="font-rpg text-xl font-bold text-[#302414] block">
-              {groupStats.membersWithPending} com pendências
-            </span>
-          </div>
-        </div>
+        )}
 
       </div>
 
-      {/* Barra de Filtros: Busca, Filtro de Tipo e Ordenação (Fiel ao Print 2) */}
+      {/* Barra de Filtros: Busca, Filtro de Tipo e Ordenação */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
         
         {/* Input de Busca */}
@@ -548,7 +558,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           >
             <option value="todos">Todos os membros</option>
             <option value="ativos">Participantes ativos</option>
-            <option value="pendencias">Com pendências</option>
+            {isMaster && <option value="pendencias">Com pendências</option>}
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -563,7 +573,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             <option value="nome-az">Nome A–Z</option>
             <option value="nome-za">Nome Z–A</option>
             <option value="mais-ativos">Mais ativos</option>
-            <option value="mais-strikes">Mais strikes</option>
+            {isMaster && <option value="mais-strikes">Mais strikes</option>}
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -644,18 +654,20 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                       </div>
                     </div>
 
-                    {/* Badge de Strikes (Top Right) */}
-                    <div>
-                      {stats.strikesCount > 0 ? (
-                        <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#edd8b2] text-[#7c4912] border border-[#deb878]">
-                          {stats.strikesCount} {stats.strikesCount === 1 ? 'strike' : 'strikes'}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-[#71634D] font-medium">
-                          0 strikes
-                        </span>
-                      )}
-                    </div>
+                    {/* Badge de Strikes (Top Right) - SOMENTE PARA O MESTRE */}
+                    {isMaster && (
+                      <div className="shrink-0">
+                        {stats.strikesCount > 0 ? (
+                          <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#edd8b2] text-[#7c4912] border border-[#deb878]">
+                            {stats.strikesCount} {stats.strikesCount === 1 ? 'strike' : 'strikes'}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-[#71634D] font-medium">
+                            0 strikes
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Linha de Contatos: E-mail e Telefone */}
@@ -687,12 +699,29 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
 
                   {/* Linha de Estatísticas: Acervo e Financiamentos */}
                   <div className="flex items-center gap-3 text-xs text-[#302414] pt-2">
-                    <div className="flex items-center gap-1">
-                      <Package className="w-3.5 h-3.5 text-[#716016]" />
-                      <span>
-                        Acervo: <strong>{stats.catalogCount}</strong> {stats.catalogCount === 1 ? 'pacote' : 'pacotes'}
-                      </span>
-                    </div>
+                    {isMaster ? (
+                      <button
+                        type="button"
+                        onClick={() => setMemberToViewAcervo(member)}
+                        className="flex items-center gap-1.5 px-2 py-1 -mx-2 -my-1 rounded-lg hover:bg-[#EADBBE] text-[#302414] hover:text-[#48551F] transition-all cursor-pointer group font-medium"
+                        title={`Clique para consultar o acervo individual de ${member.nome}`}
+                      >
+                        <Package className="w-3.5 h-3.5 text-[#716016] group-hover:scale-110 transition-transform" />
+                        <span>
+                          Acervo: <strong className="underline underline-offset-2">{stats.catalogCount}</strong> {stats.catalogCount === 1 ? 'pacote' : 'pacotes'}
+                        </span>
+                        <span className="text-[10px] text-[#48551F] font-bold bg-[#E5DBC1] px-1.5 py-0.5 rounded border border-[#C6AD78] group-hover:bg-[#48551F] group-hover:text-[#F8EDD5] transition-colors ml-0.5">
+                          Ver acervo
+                        </span>
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <Package className="w-3.5 h-3.5 text-[#716016]" />
+                        <span>
+                          Acervo: <strong>{stats.catalogCount}</strong> {stats.catalogCount === 1 ? 'pacote' : 'pacotes'}
+                        </span>
+                      </div>
+                    )}
 
                     <span className="text-[#C6AD78]">|</span>
 
@@ -717,40 +746,89 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                       <span>Editar membro</span>
                     </button>
 
-                    {/* Controle de Strikes: Strikes [ - ] [ N ] [ + ] */}
-                    <div className="flex items-center gap-1">
-                      <span className="text-[11px] text-[#71634D] font-medium mr-0.5">Strikes</span>
-                      <button
-                        onClick={() => handleUpdateStrikes(member, -1)}
-                        disabled={stats.strikesCount === 0}
-                        className="w-6 h-6 rounded bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] font-bold text-xs flex items-center justify-center disabled:opacity-40 cursor-pointer"
-                        title="Remover strike"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="w-6 text-center font-mono font-bold text-xs text-[#302414]">
-                        {stats.strikesCount}
-                      </span>
-                      <button
-                        onClick={() => handleUpdateStrikes(member, 1)}
-                        className="w-6 h-6 rounded bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] font-bold text-xs flex items-center justify-center cursor-pointer"
-                        title="Adicionar strike"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                    {/* Controle de Strikes e Menu Administrativo */}
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] text-[#71634D] font-medium mr-0.5">Strikes</span>
+                        <button
+                          onClick={() => handleUpdateStrikes(member, -1)}
+                          disabled={stats.strikesCount === 0}
+                          className="w-6 h-6 rounded bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] font-bold text-xs flex items-center justify-center disabled:opacity-40 cursor-pointer"
+                          title="Remover strike"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="w-6 text-center font-mono font-bold text-xs text-[#302414]">
+                          {stats.strikesCount}
+                        </span>
+                        <button
+                          onClick={() => handleUpdateStrikes(member, 1)}
+                          className="w-6 h-6 rounded bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] font-bold text-xs flex items-center justify-center cursor-pointer"
+                          title="Adicionar strike"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
 
-                      {/* 3 Pontos para Excluir */}
-                      <button
-                        onClick={() => {
-                          setUserToDelete(member);
-                          setDeletePassword('');
-                          setDeleteError('');
-                        }}
-                        className="p-1 text-[#71634D] hover:text-[#8b261b] ml-1 cursor-pointer"
-                        title="Excluir membro"
-                      >
-                        <span className="text-sm font-bold leading-none">⋮</span>
-                      </button>
+                      {/* Menu 3 Pontos com "Enviar boas-vindas" e "Excluir membro" */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setActiveMemberMenuId(activeMemberMenuId === member.id ? null : member.id)}
+                          className="p-1 text-[#71634D] hover:text-[#302414] hover:bg-[#EADBBE] rounded-lg transition-colors cursor-pointer"
+                          title="Mais opções administrativas do membro"
+                        >
+                          <span className="text-sm font-bold leading-none px-1">⋮</span>
+                        </button>
+
+                        {activeMemberMenuId === member.id && (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 bottom-full mb-1 w-48 bg-[#F8EDD5] text-[#302414] rounded-xl shadow-xl border border-[#C6AD78] py-1.5 z-50 animate-in fade-in-50"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMemberMenuId(null);
+                                setWelcomeMember({ nome: member.nome, telefone: member.telefone || '' });
+                              }}
+                              className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] text-[#48551F] transition-colors cursor-pointer font-semibold"
+                              title="Enviar ou rever mensagem de boas-vindas"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5 text-[#48551F]" />
+                              <span>Enviar boas-vindas</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMemberMenuId(null);
+                                handleOpenEditMember(member);
+                              }}
+                              className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                            >
+                              <Edit2 className="w-3.5 h-3.5 text-[#716016]" />
+                              <span>Editar membro</span>
+                            </button>
+
+                            <div className="border-t border-[#D6C296] my-1" />
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMemberMenuId(null);
+                                setUserToDelete(member);
+                                setDeletePassword('');
+                                setDeleteError('');
+                              }}
+                              className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 text-[#8b261b] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-[#8b261b]" />
+                              <span>Excluir membro</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                   </div>
@@ -990,6 +1068,9 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             }
             return false;
           }}
+          onApproveSuccess={(app) => {
+            setWelcomeMember({ nome: app.nome, telefone: app.telefone });
+          }}
           onReject={async (appId, obs, adminPassword) => {
             if (onRejectApplication) {
               const ok = await onRejectApplication(appId, obs, adminPassword);
@@ -1213,6 +1294,27 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             </div>
           </form>
         </div>
+      )}
+
+      {/* Modal de Consulta de Acervo do Membro (Exclusivo Mestre) */}
+      {memberToViewAcervo && (
+        <MemberAcervoModal
+          isOpen={Boolean(memberToViewAcervo)}
+          member={memberToViewAcervo}
+          packages={packages}
+          onClose={() => setMemberToViewAcervo(null)}
+          onToast={onToast}
+        />
+      )}
+
+      {/* Modal de Boas-Vindas ao Membro (Após Aprovação ou pelo Menu do Membro) */}
+      {welcomeMember && (
+        <WelcomeMessageModal
+          isOpen={Boolean(welcomeMember)}
+          member={welcomeMember}
+          onClose={() => setWelcomeMember(null)}
+          onToast={onToast}
+        />
       )}
 
     </div>

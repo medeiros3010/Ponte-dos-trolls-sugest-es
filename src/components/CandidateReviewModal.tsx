@@ -25,6 +25,7 @@ interface CandidateReviewModalProps {
   onReject: (applicationId: string, observacoes: string, adminPassword: string) => Promise<boolean>;
   onToast: (msg: string) => void;
   rulesConfig?: RulesConfig;
+  onApproveSuccess?: (application: MembershipApplication) => void;
 }
 
 export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
@@ -35,6 +36,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
   onReject,
   onToast,
   rulesConfig,
+  onApproveSuccess,
 }) => {
   const [adminPassword, setAdminPassword] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
@@ -62,6 +64,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
       if (ok) {
         onToast(`Membro "${application.nome}" aprovado com sucesso!`);
         onClose();
+        if (onApproveSuccess) {
+          onApproveSuccess(application);
+        }
       }
     } catch (err: any) {
       setErrorMsg(err?.message || 'Erro ao aprovar candidato');

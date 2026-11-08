@@ -66,6 +66,7 @@ export interface Apoiador {
   data?: string;
   pagamentoInformado?: boolean;
   dataPagamentoInformado?: string;
+  isPosteriorBuyer?: boolean;
 }
 
 export interface ParticipantPaymentInfo {
@@ -84,6 +85,7 @@ export interface ItemRPG {
   descricao: string;
   link: string;
   imageUrl?: string;
+  sugeridoPorId?: string;
   sugeridoPorNome: string;
   sugeridoPorTelefone: string;
   sugeridoPorEmail?: string;

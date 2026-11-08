@@ -616,7 +616,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredAndSortedPackages.map((pkg) => {
                 const isUserParticipant = isPackageAcquired(pkg, currentUser);
                 const isInCart = cartPackageIds.includes(pkg.id);
@@ -633,12 +633,12 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                 return (
                   <div
                     key={pkg.id}
-                    className="parchment-card overflow-hidden flex flex-col group hover:shadow-md transition-all duration-200 border-[#C6AD78]"
+                    className="parchment-card overflow-hidden flex flex-col justify-between group hover:shadow-lg transition-all duration-200 border-[#C6AD78]"
                   >
                     {/* Capa do Produto (Clicável para ver detalhes) */}
                     <div
                       onClick={() => setSelectedPackageDetails(pkg)}
-                      className="relative aspect-[16/10] bg-[#282D13] overflow-hidden cursor-pointer"
+                      className="relative aspect-[16/9] sm:aspect-[16/10] bg-[#282D13] overflow-hidden cursor-pointer"
                       title="Clique para ver detalhes do pacote"
                     >
                       {pkg.imageUrl ? (
@@ -750,7 +750,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                     </div>
 
                     {/* Conteúdo do Card */}
-                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
                       <div>
                         {/* Etiquetas: Sistema + Tipo de Produto */}
                         <div className="flex flex-wrap items-center gap-1.5 mb-2">
@@ -762,8 +762,8 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           </span>
                         </div>
 
-                        {/* Título do Pacote */}
-                        <h3 className="font-rpg text-base sm:text-lg font-bold text-[#302414] leading-snug line-clamp-1 group-hover:text-[#48551F] transition-colors">
+                        {/* Título do Pacote (Permite mais de uma linha sem truncamento prematuro) */}
+                        <h3 className="font-rpg text-base sm:text-lg font-bold text-[#302414] leading-snug line-clamp-2 min-h-[2.6rem] group-hover:text-[#48551F] transition-colors">
                           {pkg.titulo}
                         </h3>
 

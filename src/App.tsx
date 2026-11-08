@@ -271,7 +271,8 @@ export default function App() {
       if (!binId) return;
       try {
         setIsSyncing(true);
-        const cloudData = await fetchCloudData(binId);
+        const adminPw = currentUser?.isMaster ? ADMIN_PASSWORD : '';
+        const cloudData = await fetchCloudData(binId, adminPw, currentUser?.id, currentUser?.telefone);
         if (isMounted && cloudData) {
           if (Array.isArray(cloudData.items)) {
             setItems(cloudData.items);
@@ -300,7 +301,7 @@ export default function App() {
     return () => {
       isMounted = false;
     };
-  }, [binId]);
+  }, [binId, currentUser?.id, currentUser?.isMaster]);
 
   // Push to cloud helper
   const syncWithCloud = useCallback(
@@ -485,7 +486,7 @@ export default function App() {
       const nextCart = [...cart, packageId];
       setCart(nextCart);
       const pkg = packages.find((p) => p.id === packageId);
-      showToast(`🛒 "${pkg?.titulo || 'Pacote'}" adicionado ao carrinho!`);
+      showToast(`Adicionado ao carrinho: ${pkg?.titulo || 'Pacote'}`);
     } else {
       showToast('Este pacote já está no seu carrinho.');
     }
@@ -570,12 +571,17 @@ export default function App() {
   // Sugestões Handlers
   const handleSaveItem = (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string }) => {
     if (itemData.id) {
-      // Editar
+      // Editar: preserva o autor original inalterado
+      const originalItem = items.find((it) => it.id === itemData.id);
       const nextItems = items.map((it) =>
         it.id === itemData.id
           ? {
               ...it,
               ...itemData,
+              sugeridoPorId: originalItem?.sugeridoPorId || it.sugeridoPorId,
+              sugeridoPorNome: originalItem?.sugeridoPorNome || it.sugeridoPorNome,
+              sugeridoPorTelefone: originalItem?.sugeridoPorTelefone || it.sugeridoPorTelefone,
+              sugeridoPorEmail: originalItem?.sugeridoPorEmail || it.sugeridoPorEmail,
               status: itemData.status as ItemStatus,
             }
           : it
@@ -584,21 +590,27 @@ export default function App() {
       syncWithCloud(nextItems, users, packages);
       showToast('Sugestão atualizada!');
     } else {
-      // Criar Novo
+      // Criar Novo: estritamente determinado pela sessão autenticada
+      if (!currentUser) {
+        showToast('Você precisa estar autenticado para sugerir um material.');
+        return;
+      }
       const newItem: ItemRPG = {
         ...itemData,
         id: `item-${Date.now()}`,
         status: 'Sugestão',
-        apoiadores: currentUser
-          ? [
-              {
-                id: currentUser.id,
-                nome: currentUser.nome,
-                telefone: currentUser.telefone,
-                email: currentUser.email,
-              },
-            ]
-          : [],
+        sugeridoPorId: currentUser.id,
+        sugeridoPorNome: currentUser.nome,
+        sugeridoPorTelefone: currentUser.telefone,
+        sugeridoPorEmail: currentUser.email,
+        apoiadores: [
+          {
+            id: currentUser.id,
+            nome: currentUser.nome,
+            telefone: currentUser.telefone,
+            email: currentUser.email,
+          },
+        ],
       };
       const nextItems = [newItem, ...items];
       setItems(nextItems);

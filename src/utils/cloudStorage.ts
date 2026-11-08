@@ -96,15 +96,31 @@ export interface CloudPayloadData {
   usersVersion?: string;
 }
 
-export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData | null> {
+export async function fetchCloudData(
+  binOrUrl: string,
+  adminPassword?: string,
+  currentUserId?: string,
+  currentUserPhone?: string
+): Promise<CloudPayloadData | null> {
   const { url } = resolveEndpoint(binOrUrl);
 
   try {
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+    };
+    if (adminPassword) {
+      headers['x-admin-password'] = adminPassword;
+    }
+    if (currentUserId) {
+      headers['x-user-id'] = currentUserId;
+    }
+    if (currentUserPhone) {
+      headers['x-user-phone'] = currentUserPhone;
+    }
+
     const res = await fetch(url, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers,
     });
 
     if (!res.ok) {
@@ -652,6 +668,37 @@ export async function apiRemovePosteriorBuyer(
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(data.error || 'Erro ao remover comprador posterior');
+  }
+
+  return data;
+}
+
+/**
+ * Consulta o acervo de um membro (exclusivo para o Mestre com validação no servidor)
+ */
+export async function apiFetchMemberAcervo(
+  binId: string,
+  memberId: string,
+  adminPassword: string
+): Promise<{ success: boolean; member: any; packages: FundingPackage[]; count: number }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(
+    `${base}/api/bin/${encodeURIComponent(binId)}/member/${encodeURIComponent(memberId)}/acervo?adminPassword=${encodeURIComponent(adminPassword)}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': adminPassword,
+      },
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao consultar acervo do membro');
   }
 
   return data;

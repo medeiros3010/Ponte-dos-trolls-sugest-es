@@ -28,13 +28,11 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const [isCustomSistema, setIsCustomSistema] = useState(false);
   const [link, setLink] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [uploadError, setUploadError] = useState('');
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const [urlFormatError, setUrlFormatError] = useState('');
   const [moeda, setMoeda] = useState<'USD' | 'BRL'>('USD');
   const [valorNumerico, setValorNumerico] = useState<string>('0.00');
   const [observacaoValor, setObservacaoValor] = useState('');
-  const [sugeridoPorNome, setSugeridoPorNome] = useState('');
-  const [sugeridoPorTelefone, setSugeridoPorTelefone] = useState('');
   const [descricao, setDescricao] = useState('');
   const [status, setStatus] = useState<ItemStatus>('Sugestão');
   
@@ -42,10 +40,24 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const [adminPassword, setAdminPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Fixed Author details (Read-only)
+  const authorName = isEditing
+    ? itemToEdit?.sugeridoPorNome || 'Membro da Ponte'
+    : currentUser?.nome || 'Você';
+
+  const authorPhone = isEditing
+    ? itemToEdit?.sugeridoPorTelefone || ''
+    : currentUser?.telefone || '';
+
+  const authorId = isEditing
+    ? itemToEdit?.sugeridoPorId || ''
+    : currentUser?.id || '';
+
   useEffect(() => {
     setAdminPassword('');
     setPasswordError('');
-    setUploadError('');
+    setUrlFormatError('');
+    setImageLoadError(false);
     if (itemToEdit) {
       setNome(itemToEdit.nome);
       setProduto((itemToEdit.produto as ProductType) || 'Material para VTT');
@@ -63,8 +75,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setMoeda(itemToEdit.moeda);
       setValorNumerico(itemToEdit.valorNumerico.toString());
       setObservacaoValor(itemToEdit.observacaoValor || '');
-      setSugeridoPorNome(itemToEdit.sugeridoPorNome || '');
-      setSugeridoPorTelefone(itemToEdit.sugeridoPorTelefone || '');
       setDescricao(itemToEdit.descricao || '');
       setStatus(itemToEdit.status || 'Sugestão');
     } else {
@@ -78,38 +88,55 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setMoeda('USD');
       setValorNumerico('0.00');
       setObservacaoValor('');
-      setSugeridoPorNome(currentUser?.nome || '');
-      setSugeridoPorTelefone(currentUser?.telefone || '');
       setDescricao('');
       setStatus('Sugestão');
     }
   }, [itemToEdit, isOpen, currentUser]);
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSugeridoPorTelefone(formatPhone(e.target.value));
+  const validateImageUrl = (url: string): boolean => {
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setUrlFormatError('');
+      return true;
+    }
+
+    // Não aceitar caminhos locais, javascript:, blob: ou base64
+    const lower = trimmed.toLowerCase();
+    if (
+      lower.startsWith('javascript:') ||
+      lower.startsWith('blob:') ||
+      lower.startsWith('data:') ||
+      lower.startsWith('file:') ||
+      lower.startsWith('/') ||
+      lower.startsWith('\\')
+    ) {
+      setUrlFormatError('Informe uma URL HTTP ou HTTPS direta (não são aceitos caminhos locais, base64 ou blob).');
+      return false;
+    }
+
+    if (!/^https?:\/\/.+/i.test(trimmed)) {
+      setUrlFormatError('A URL deve iniciar com http:// ou https://');
+      return false;
+    }
+
+    setUrlFormatError('');
+    return true;
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      setIsUploadingImage(true);
-      setUploadError('');
-      const { uploadImageFile } = await import('../utils/cloudStorage');
-      const res = await uploadImageFile(file);
-      if (res && res.url) {
-        setImageUrl(res.url);
-      }
-    } catch (err: any) {
-      setUploadError(err.message || 'Erro ao fazer upload da imagem');
-    } finally {
-      setIsUploadingImage(false);
-    }
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setImageUrl(val);
+    setImageLoadError(false);
+    validateImageUrl(val);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome.trim() || !sugeridoPorNome.trim()) return;
+    if (!nome.trim()) return;
+
+    if (imageUrl.trim() && !validateImageUrl(imageUrl)) {
+      return;
+    }
 
     if (isEditing) {
       if (adminPassword !== ADMIN_PASSWORD) {
@@ -121,6 +148,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     const finalSistema = isCustomSistema && customSistema.trim() ? customSistema.trim() : sistema;
     const finalValor = parseFloat(valorNumerico.replace(',', '.')) || 0;
 
+    // Preservação estrita do autor original ou vinculação ao usuário autenticado
     onSave({
       id: itemToEdit?.id,
       nome: nome.trim(),
@@ -129,9 +157,10 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       descricao: descricao.trim(),
       link: link.trim(),
       imageUrl: imageUrl.trim() || undefined,
-      sugeridoPorNome: sugeridoPorNome.trim(),
-      sugeridoPorTelefone: sugeridoPorTelefone.trim(),
-      sugeridoPorEmail: currentUser?.email || '',
+      sugeridoPorId: isEditing ? (itemToEdit?.sugeridoPorId || authorId) : (currentUser?.id || ''),
+      sugeridoPorNome: authorName,
+      sugeridoPorTelefone: authorPhone,
+      sugeridoPorEmail: isEditing ? (itemToEdit?.sugeridoPorEmail || '') : (currentUser?.email || ''),
       moeda,
       valorNumerico: finalValor,
       observacaoValor: observacaoValor.trim(),
@@ -267,65 +296,83 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             />
           </div>
 
-          {/* Imagem do Item */}
-          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-2">
+          {/* Imagem do Item - Exclusivamente via URL HTTP/HTTPS */}
+          <div className="p-3.5 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold text-[#302414] flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-[#716016]" />
-                <span>Imagem Ilustrativa / Capa do Material (Opcional)</span>
-              </label>
+              <div>
+                <label className="text-xs font-bold text-[#302414] flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-[#716016]" />
+                  <span>URL da imagem do material (opcional)</span>
+                </label>
+                <p className="text-[11px] text-[#71634D] mt-0.5">
+                  Cole o endereço direto da imagem do material.
+                </p>
+              </div>
               {imageUrl && (
                 <button
                   type="button"
-                  onClick={() => setImageUrl('')}
-                  className="text-[10px] text-[#8b261b] hover:underline flex items-center gap-0.5 cursor-pointer"
+                  onClick={() => {
+                    setImageUrl('');
+                    setImageLoadError(false);
+                    setUrlFormatError('');
+                  }}
+                  className="text-[10px] text-[#8b261b] hover:underline flex items-center gap-1 cursor-pointer font-semibold px-2 py-1 rounded hover:bg-[#fae5e5]"
                 >
                   <Trash2 className="w-3 h-3" />
-                  <span>Remover</span>
+                  <span>Remover URL</span>
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-              <div className="sm:col-span-8">
-                <input
-                  type="url"
-                  placeholder="https://exemplo.com/capa.jpg"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-2.5 py-1.5 text-xs text-[#302414] placeholder-[#8c7b64] font-mono focus:outline-none focus:border-[#48551F]"
-                />
-              </div>
-
-              {isMaster && (
-                <div className="sm:col-span-4">
-                  <label className="inline-flex items-center justify-center gap-1.5 w-full py-1.5 px-2 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] rounded-lg text-xs font-semibold cursor-pointer transition-colors">
-                    <Upload className="w-3.5 h-3.5 text-[#716016]" />
-                    <span>{isUploadingImage ? 'Enviando...' : 'Upload Arquivo'}</span>
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif"
-                      className="hidden"
-                      disabled={isUploadingImage}
-                      onChange={handleFileUpload}
-                    />
-                  </label>
-                </div>
-              )}
+            <div>
+              <input
+                type="url"
+                placeholder="https://exemplo.com/imagem-do-modulo.jpg"
+                value={imageUrl}
+                onChange={handleImageUrlChange}
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] placeholder-[#8c7b64] font-mono focus:outline-none focus:border-[#48551F]"
+              />
             </div>
 
-            {uploadError && (
-              <p className="text-[10px] text-[#8b261b] font-medium">{uploadError}</p>
+            {urlFormatError && (
+              <p className="text-[11px] text-[#8b261b] font-medium flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{urlFormatError}</span>
+              </p>
             )}
 
-            {imageUrl && (
-              <div className="mt-2 flex items-center gap-3 p-2 bg-[#FAF4E6] rounded-lg border border-[#C6AD78]">
-                <img
-                  src={imageUrl}
-                  alt="Prévia"
-                  className="w-16 h-12 rounded object-cover border border-[#C6AD78]"
-                />
-                <span className="text-[10px] text-[#71634D] truncate max-w-xs">{imageUrl}</span>
+            {/* Prévia da Imagem com Tratamento Resiliente de Erro */}
+            {imageUrl.trim() && !urlFormatError && (
+              <div className="mt-2.5 p-2.5 bg-[#FAF4E6] rounded-xl border border-[#C6AD78] space-y-1.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-14 rounded-lg bg-[#282D13] overflow-hidden border border-[#C6AD78] flex items-center justify-center shrink-0">
+                    {!imageLoadError ? (
+                      <img
+                        src={imageUrl}
+                        alt="Prévia da imagem"
+                        onError={() => setImageLoadError(true)}
+                        onLoad={() => setImageLoadError(false)}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="w-6 h-6 text-[#8c9c64] opacity-70" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase font-bold text-[#71634D] block">
+                      Prévia do link:
+                    </span>
+                    <span className="text-xs text-[#302414] font-mono truncate block select-all">
+                      {imageUrl}
+                    </span>
+                  </div>
+                </div>
+
+                {imageLoadError && (
+                  <div className="p-2 rounded-lg bg-[#FFF6DE] border border-[#D4A538] text-[#875508] text-[11px] leading-tight">
+                    ⚠️ Não foi possível carregar a prévia deste endereço direto. Você pode salvar a sugestão normalmente, mas confira se o link está correto e público.
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -369,35 +416,38 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             </div>
           </div>
 
-          {/* Sugerido por (Nome + WhatsApp) */}
-          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-2">
-            <div className="flex items-center gap-1.5 text-[#716016] font-bold text-xs">
-              <User className="w-3.5 h-3.5" />
-              <span>Sugerido por (Perfil Vinculado):</span>
+          {/* Sugerido por (Identidade Fixa e Não Editável) */}
+          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#716016] flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" />
+                <span>Sugerido por:</span>
+              </span>
+              <span className="text-[10px] font-semibold text-[#71634D] bg-[#EDE2CA] px-2 py-0.5 rounded border border-[#C6AD78]">
+                Identidade Fixa
+              </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div>
-                <input
-                  type="text"
-                  required
-                  placeholder="Seu Nome / Apelido *"
-                  value={sugeridoPorNome}
-                  onChange={(e) => setSugeridoPorNome(e.target.value)}
-                  className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-3 py-1.5 text-xs text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
-                />
+
+            <div className="p-2.5 bg-[#FAF4E6] rounded-lg border border-[#C6AD78] flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-[#302414] block truncate">
+                  {authorName}
+                </span>
+                <span className="text-[11px] text-[#71634D] font-mono block">
+                  {authorPhone || 'Telefone não informado'}
+                </span>
               </div>
-              <div>
-                <input
-                  type="text"
-                  placeholder="Seu WhatsApp (com DDD)"
-                  value={sugeridoPorTelefone}
-                  onChange={handlePhoneChange}
-                  className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-3 py-1.5 text-xs text-[#302414] placeholder-[#8c7b64] font-mono focus:outline-none focus:border-[#48551F]"
-                />
-              </div>
+              <span className="text-xs text-[#48551F] font-bold">
+                ✓ Vinculado
+              </span>
             </div>
-            {!isEditing && (
-              <p className="text-[10px] text-[#71634D]">
+
+            {isEditing ? (
+              <p className="text-[10px] text-[#71634D] italic">
+                A autoria original desta sugestão é preservada mesmo durante edições administrativas.
+              </p>
+            ) : (
+              <p className="text-[10px] text-[#71634D] italic">
                 Você entrará automaticamente como o 1º apoiador deste item na fila de sugestões.
               </p>
             )}

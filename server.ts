@@ -11,7 +11,9 @@ function getPort(): number {
     const parsed = parseInt(process.argv[portArgIndex + 1], 10);
     if (!isNaN(parsed) && parsed > 0) return parsed;
   }
-  if (process.env.PORT) {
+  // In AI Studio / Cloud Run container environment, process.env.PORT is set to 8080 for Nginx.
+  // The Node application dev server MUST always bind to 3000.
+  if (process.env.PORT && process.env.PORT !== '8080') {
     const parsed = parseInt(process.env.PORT, 10);
     if (!isNaN(parsed) && parsed > 0) return parsed;
   }
@@ -219,6 +221,29 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
       // Ensure packages are properly sanitized with all new fields
       data.packages = data.packages.map(sanitizePackage);
 
+      // Regra 1: STRIKES VISÍVEIS SOMENTE AO MESTRE NA LISTAGEM
+      // A resposta da API para membros comuns não deve incluir strikes de outras pessoas.
+      // Preservar a consulta do próprio usuário à sua situação no perfil.
+      const adminPassword = (req.headers['x-admin-password'] as string) || (req.query.adminPassword as string);
+      const userId = (req.headers['x-user-id'] as string) || (req.query.userId as string);
+      const userPhone = (req.headers['x-user-phone'] as string) || (req.query.userPhone as string);
+      const isMaster = adminPassword === ADMIN_PASSWORD;
+
+      if (!isMaster) {
+        data.users = data.users.map((u: any) => {
+          const isSelf = (userId && u.id === userId) || (userPhone && u.telefone && u.telefone === userPhone);
+          if (isSelf) {
+            return u;
+          }
+          const sanitized = { ...u };
+          delete sanitized.strikes;
+          return sanitized;
+        });
+
+        // Solicitações são exclusivas do Mestre
+        data.solicitacoes = [];
+      }
+
       return res.json(data);
     }
 
@@ -293,8 +318,47 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       }
     }
 
+    // Sanitize items: preserve original author on existing items and enforce valid HTTP/HTTPS image URLs
+    const existingItemsMap = new Map<string, any>((existingData.items || []).map((it: any) => [it.id, it]));
+    itemsToSave = itemsToSave.map((item: any) => {
+      const orig: any = item.id ? existingItemsMap.get(item.id) : null;
+      let validImageUrl = item.imageUrl ? String(item.imageUrl).trim() : undefined;
+      // Do not accept javascript:, data:, or blob: urls for suggestions
+      if (validImageUrl && !validImageUrl.startsWith('http://') && !validImageUrl.startsWith('https://') && !validImageUrl.startsWith('/uploads/')) {
+        validImageUrl = orig?.imageUrl || undefined;
+      }
+      return {
+        ...item,
+        sugeridoPorId: orig?.sugeridoPorId || item.sugeridoPorId,
+        sugeridoPorNome: orig?.sugeridoPorNome || item.sugeridoPorNome,
+        sugeridoPorTelefone: orig?.sugeridoPorTelefone || item.sugeridoPorTelefone,
+        sugeridoPorEmail: orig?.sugeridoPorEmail || item.sugeridoPorEmail,
+        imageUrl: validImageUrl,
+      };
+    });
+
     // Sanitize packages to ensure images, stages, payments, etc. are preserved
     packagesToSave = packagesToSave.map(sanitizePackage);
+
+    const putAdminPassword = (req.headers['x-admin-password'] as string) || (body && body.adminPassword);
+    const isMasterPut = putAdminPassword === ADMIN_PASSWORD;
+
+    // Preservar strikes dos membros se o salvamento não for autenticado pelo Mestre
+    const existingUsersMap = new Map<string, any>((existingData.users || []).map((u: any) => [u.id, u]));
+    usersToSave = usersToSave.map((u: any) => {
+      const orig: any = u.id ? existingUsersMap.get(u.id) : null;
+      if (!isMasterPut && orig) {
+        return {
+          ...u,
+          strikes: orig.strikes !== undefined ? orig.strikes : (u.strikes || []),
+        };
+      }
+      return u;
+    });
+
+    if (!isMasterPut && Array.isArray(existingData.solicitacoes)) {
+      solicitacoesToSave = existingData.solicitacoes;
+    }
 
     const payload = {
       id: binId,
@@ -346,6 +410,22 @@ app.post('/api/bin/:binId/package/:packageId/pagamento', (req: Request, res: Res
 
     if (!pkg) {
       return res.status(404).json({ error: 'Pacote não encontrado' });
+    }
+
+    // Validação estrita de participação no servidor
+    const isMasterAdmin = adminPassword === ADMIN_PASSWORD;
+    const isParticipant = Array.isArray(pkg.apoiadores) && pkg.apoiadores.some((a: any) => a.id === memberId);
+
+    if (!isMasterAdmin && !isParticipant) {
+      return res.status(403).json({
+        error: 'Inscrições encerradas. Você poderá comprar quando estiver no Catálogo.',
+      });
+    }
+
+    if (!isMasterAdmin && pkg.etapaFinanciamento !== 'PAGAMENTO') {
+      return res.status(400).json({
+        error: 'Este financiamento não está na etapa de pagamento.',
+      });
     }
 
     // Inicializa estrutura de pagamentos
@@ -1037,7 +1117,15 @@ app.post('/api/bin/:binId/package/:packageId/posterior-buyer', (req: Request, re
         data: timestamp,
         pagamentoInformado: true,
         dataPagamentoInformado: timestamp,
+        isPosteriorBuyer: true,
       });
+    } else {
+      const ap = pkg.apoiadores.find((a: any) => a.id === memberId || a.nome.toLowerCase() === nome.toLowerCase());
+      if (ap) {
+        ap.isPosteriorBuyer = true;
+        ap.pagamentoInformado = true;
+        ap.dataPagamentoInformado = timestamp;
+      }
     }
 
     pkg.pagamentos[memberId] = {
@@ -1058,6 +1146,64 @@ app.post('/api/bin/:binId/package/:packageId/posterior-buyer', (req: Request, re
   } catch (err: any) {
     console.error('Erro ao adicionar comprador posterior:', err);
     return res.status(500).json({ error: 'Erro ao adicionar comprador posterior', details: err.message });
+  }
+});
+
+// GET /api/bin/:binId/member/:memberId/acervo - Mestre consulta o acervo individual de um membro
+app.get('/api/bin/:binId/member/:memberId/acervo', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId(req.params.binId);
+    const memberId = req.params.memberId;
+    const adminPassword = (req.headers['x-admin-password'] as string) || (req.query.adminPassword as string);
+
+    // Validação estrita no servidor: apenas o Mestre pode consultar acervo de outros membros
+    if (adminPassword !== ADMIN_PASSWORD) {
+      return res.status(403).json({
+        error: 'Acesso negado. Apenas o Mestre da Ponte pode consultar o acervo individual de membros.',
+      });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado.' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const users: any[] = Array.isArray(data.users) ? data.users : [];
+    const member = users.find((u: any) => u.id === memberId);
+
+    if (!member) {
+      return res.status(404).json({ error: 'Membro não encontrado.' });
+    }
+
+    const memberNorm = member.nome.trim().toLowerCase();
+    const packages: any[] = Array.isArray(data.packages) ? data.packages : [];
+
+    // Mesma regra de aquisição do "Meus itens": status === 'Catálogo' e presente em apoiadores
+    const acquiredPackages = packages.filter((pkg: any) => {
+      if (pkg.status !== 'Catálogo') return false;
+      return (pkg.apoiadores || []).some((ap: any) => {
+        if (ap.id && ap.id === memberId) return true;
+        if (ap.nome && ap.nome.trim().toLowerCase() === memberNorm) return true;
+        return false;
+      });
+    }).map(sanitizePackage);
+
+    return res.json({
+      success: true,
+      member: {
+        id: member.id,
+        nome: member.nome,
+        telefone: member.telefone,
+        email: member.email,
+        dataEntrada: member.dataEntrada,
+      },
+      packages: acquiredPackages,
+      count: acquiredPackages.length,
+    });
+  } catch (err: any) {
+    console.error('Erro ao consultar acervo do membro:', err);
+    return res.status(500).json({ error: 'Erro ao consultar acervo do membro', details: err.message });
   }
 });
 
@@ -1129,34 +1275,44 @@ async function startServer() {
     });
   }
 
-  const server = app.listen(PORT, HOST, () => {
-    console.log(`Server running on http://${HOST}:${PORT}`);
-  });
-
-  server.on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
-      console.warn(`[Server] Port ${PORT} is already in use by another process.`);
-      process.exit(0);
-    } else {
-      console.error('[Server] Fatal server error:', err);
-      process.exit(1);
-    }
-  });
-
-  const handleShutdown = async () => {
-    console.log('[Server] Gracefully shutting down...');
-    if (vite) {
-      try {
-        await vite.close();
-      } catch (e) {}
-    }
-    server.close(() => {
-      process.exit(0);
+  const startListening = (retries = 5, delay = 1000) => {
+    const server = app.listen(PORT, HOST, () => {
+      console.log(`Server running on http://${HOST}:${PORT}`);
     });
+
+    server.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        if (retries > 0) {
+          console.warn(`[Server] Port ${PORT} is busy, retrying in ${delay}ms... (${retries} attempts left)`);
+          setTimeout(() => {
+            startListening(retries - 1, delay * 1.5);
+          }, delay);
+        } else {
+          console.warn(`[Server] Port ${PORT} remained in use after all retries.`);
+        }
+      } else {
+        console.error('[Server] Fatal server error:', err);
+        process.exit(1);
+      }
+    });
+
+    const handleShutdown = async () => {
+      console.log('[Server] Gracefully shutting down...');
+      if (vite) {
+        try {
+          await vite.close();
+        } catch (e) {}
+      }
+      server.close(() => {
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGTERM', handleShutdown);
+    process.on('SIGINT', handleShutdown);
   };
 
-  process.on('SIGTERM', handleShutdown);
-  process.on('SIGINT', handleShutdown);
+  startListening();
 }
 
 startServer().catch((err) => {

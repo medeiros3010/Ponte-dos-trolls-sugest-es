@@ -250,9 +250,9 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
       
-      {/* Banner Superior com Arte dos Trolls (Fiel ao Print 3 / image_dc50d762.png) */}
+      {/* Banner Superior com Arte dos Trolls */}
       <PageBanner
         title="Juntos, a próxima aventura"
       />
@@ -277,7 +277,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
         )}
       </div>
 
-      {/* Lista de Financiamentos (Grid de 2 Colunas Amplo, Fiel ao Print 3) */}
+      {/* Lista de Financiamentos em Layout Amplo (1 Card Largo por Linha) */}
       {openPackages.length === 0 ? (
         <div className="parchment-card p-12 text-center my-6">
           <Coins className="w-12 h-12 text-[#716016] mx-auto mb-3 opacity-60" />
@@ -297,7 +297,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="space-y-8 w-full">
           {openPackages.map((pkg) => {
             const isColeta = (pkg.etapaFinanciamento || 'COLETA') === 'COLETA';
             const apoiadores = pkg.apoiadores || [];
@@ -330,11 +330,11 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
             return (
               <div
                 key={pkg.id}
-                className="parchment-card overflow-hidden flex flex-col border-[#C6AD78] shadow-sm hover:shadow-md transition-shadow"
+                className="parchment-card overflow-hidden flex flex-col border-[#C6AD78] shadow-md hover:shadow-lg transition-shadow rounded-2xl w-full"
               >
-                {/* RIBBON SUPERIOR DA ETAPA (Fiel ao Print 3) */}
+                {/* RIBBON SUPERIOR DA ETAPA EM FAIXA DESTACADA */}
                 <div
-                  className={`px-4 py-2.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider ${
+                  className={`px-5 py-3 flex items-center justify-between text-xs sm:text-sm font-bold uppercase tracking-wider ${
                     isColeta
                       ? 'bg-[#D4A538] text-[#322105]'
                       : 'bg-[#384518] text-[#F8EDD5]'
@@ -362,7 +362,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                         className="p-1 rounded hover:bg-black/15 transition-colors cursor-pointer"
                         title="Editar detalhes do pacote"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Edit2 className="w-4 h-4" />
                       </button>
 
                       {/* 3 Pontos Menu */}
@@ -372,7 +372,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                           className="p-1 rounded hover:bg-black/15 transition-colors cursor-pointer"
                           title="Opções do Mestre"
                         >
-                          <span className="text-xs font-bold leading-none px-0.5">⋮</span>
+                          <span className="text-sm font-bold leading-none px-1">⋮</span>
                         </button>
 
                         {activeMenuId === pkg.id && (
@@ -458,283 +458,354 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                   )}
                 </div>
 
-                {/* Banner de Capa */}
-                <div className="relative aspect-[21/8] bg-[#282D13] overflow-hidden">
-                  {pkg.imageUrl ? (
-                    <img
-                      src={pkg.imageUrl}
-                      alt={pkg.titulo}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#8c9c64] bg-[#222710]">
-                      <Coins className="w-10 h-10 opacity-70" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Corpo do Card */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                {/* CORPO PRINCIPAL: IMAGEM E APRESENTAÇÃO LADO A LADO NO DESKTOP */}
+                <div className="p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-7 items-start">
                   
-                  {/* Seção 1: Título, Badges e Itens Inclusos */}
-                  <div>
-                    <h3 className="font-rpg text-xl font-bold text-[#302414] leading-snug">
-                      {pkg.titulo}
-                    </h3>
+                  {/* COLUNA ESQUERDA: IMAGEM AMPLA COM PROPORÇÃO PRESERVADA */}
+                  <div className="lg:col-span-5 flex flex-col space-y-2">
+                    <div className="relative w-full min-h-[220px] sm:min-h-[280px] lg:h-[340px] bg-[#222710] rounded-2xl overflow-hidden border border-[#C6AD78]/60 flex items-center justify-center p-2.5 shadow-inner">
+                      {pkg.imageUrl ? (
+                        <img
+                          src={pkg.imageUrl}
+                          alt={pkg.titulo}
+                          className="w-full h-full object-contain max-h-[320px] rounded-xl transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-[#8c9c64] p-4 text-center">
+                          <Coins className="w-12 h-12 opacity-60 mb-2" />
+                          <span className="text-xs font-serif text-[#d6be8c]">A Ponte dos Trolls</span>
+                        </div>
+                      )}
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap items-center gap-1.5 mt-1.5 mb-2.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F]">
-                        {pkg.sistema || 'Foundry VTT Geral'}
-                      </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F]">
-                        {pkg.tipo || 'Material para VTT'}
-                      </span>
+                      {/* Botão sutil para o Mestre trocar a capa */}
+                      {isMaster && (
+                        <button
+                          type="button"
+                          onClick={() => setImageEditPkg(pkg)}
+                          className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-[#282D13]/80 hover:bg-[#282D13] text-[#F8EDD5] border border-[#C6AD78]/60 text-[11px] font-semibold flex items-center gap-1.5 backdrop-blur-sm cursor-pointer transition-colors shadow-sm"
+                        >
+                          <ImageIcon className="w-3 h-3 text-[#d6be8c]" />
+                          <span>Alterar capa</span>
+                        </button>
+                      )}
                     </div>
-
-                    {/* Itens Inclusos */}
-                    <p className="text-xs text-[#71634D] leading-relaxed">
-                      <strong className="text-[#302414]">
-                        📦 {pkg.itens?.length || pkg.itensInclusos?.length || 1} itens inclusos:
-                      </strong>{' '}
-                      {pkg.itens && pkg.itens.length > 0
-                        ? pkg.itens.map((i) => i.nome).join(' · ')
-                        : pkg.itensInclusos?.join(' · ') || 'Módulos e compêndios digitais'}
-                    </p>
                   </div>
 
-                  {/* CASO 1: ETAPA DE COLETA DE MEMBROS (Fiel ao Cartão Esquerdo de image_dc50d762.png) */}
-                  {isColeta && (
-                    <>
-                      {/* Progresso de Adesão */}
-                      <div className="space-y-1.5 pt-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <button
-                            type="button"
-                            onClick={() => setViewingParticipantsPkg(pkg)}
-                            className="font-semibold text-[#302414] hover:text-[#48551F] flex items-center gap-1.5 cursor-pointer group text-left transition-colors"
-                            title="Clique para ver a lista de participantes com ranks RPG"
-                          >
-                            <Users className="w-3.5 h-3.5 text-[#716016] group-hover:scale-110 transition-transform" />
-                            <span>
-                              <strong>{totalCotistas}</strong> de {metaMinima} participantes
-                            </span>
-                            <span className="text-[11px] text-[#48551F] font-bold underline underline-offset-2 ml-1">
-                              · Ver lista
-                            </span>
-                          </button>
-                          <span className="text-[#71634D]">
-                            Total do pacote:{' '}
-                            <strong className="text-[#302414] font-mono">
-                              R$ {pkg.valorTotalBRL.toFixed(2).replace('.', ',')}
-                            </strong>
-                          </span>
-                        </div>
-
-                        {/* Barra de Progresso */}
-                        <div className="h-2.5 w-full bg-[#E5DBC1] rounded-full overflow-hidden border border-[#D5C49F]">
-                          <div
-                            className="h-full bg-[#48551F] rounded-full transition-all duration-300"
-                            style={{ width: `${progressoPct}%` }}
-                          />
-                        </div>
+                  {/* COLUNA DIREITA: TÍTULO, DESCRIÇÃO, VALORES E AÇÃO PRINCIPAL */}
+                  <div className="lg:col-span-7 flex flex-col justify-between space-y-5">
+                    
+                    {/* Cabeçalho do Pacote */}
+                    <div className="space-y-2.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F]">
+                          {pkg.sistema || 'Foundry VTT Geral'}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F]">
+                          {pkg.tipo || 'Material para VTT'}
+                        </span>
                       </div>
 
-                      {/* 2 Caixas de Destaque: Cota Estimada & Prazo de Adesão */}
-                      <div className="grid grid-cols-2 gap-3 pt-1">
-                        {/* Caixa 1: Cota Estimada */}
-                        <div className="p-3.5 rounded-xl bg-[#FBF4E4] border border-[#D6C296]">
-                          <div className="flex items-center gap-1.5 text-xs text-[#71634D] mb-1">
-                            <Tag className="w-3.5 h-3.5 text-[#716016]" />
-                            <span>Cota estimada</span>
-                          </div>
-                          <span className="font-mono text-xl font-bold text-[#302414]">
-                            R$ {cotaEstimada.toFixed(2).replace('.', ',')}
-                          </span>
-                        </div>
+                      <h3 className="font-rpg text-2xl sm:text-3xl font-bold text-[#302414] leading-tight">
+                        {pkg.titulo}
+                      </h3>
 
-                        {/* Caixa 2: Adesões até */}
-                        <div className="p-3.5 rounded-xl bg-[#FBF4E4] border border-[#D6C296]">
-                          <div className="flex items-center gap-1.5 text-xs text-[#71634D] mb-1">
-                            <Calendar className="w-3.5 h-3.5 text-[#716016]" />
-                            <span>Adesões até</span>
-                          </div>
-                          <span className="font-mono text-base font-bold text-[#302414] block">
-                            {formatDateDisplay(pkg.dataFinalizar) || 'Em breve'}
-                          </span>
-                        </div>
-                      </div>
+                      {pkg.descricao && (
+                        <p className="text-xs sm:text-sm text-[#55482e] leading-relaxed">
+                          {pkg.descricao}
+                        </p>
+                      )}
 
-                      {/* Botões de Ação na Coleta */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-[#D6C296]">
-                        {isUserParticipant ? (
-                          <button
-                            onClick={() => handleParticipateClick(pkg)}
-                            className="flex-1 py-2.5 px-4 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                          >
-                            <Check className="w-4 h-4" />
-                            <span>Você está na lista (Sair)</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleParticipateClick(pkg)}
-                            className="flex-1 py-2.5 px-4 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
-                          >
-                            <Users className="w-4 h-4" />
-                            <span>Participar</span>
-                          </button>
-                        )}
+                      {/* Itens Inclusos */}
+                      <p className="text-xs text-[#71634D] leading-relaxed pt-1">
+                        <strong className="text-[#302414]">
+                          📦 {pkg.itens?.length || pkg.itensInclusos?.length || 1} itens inclusos:
+                        </strong>{' '}
+                        {pkg.itens && pkg.itens.length > 0
+                          ? pkg.itens.map((i) => i.nome).join(' · ')
+                          : pkg.itensInclusos?.join(' · ') || 'Módulos e compêndios digitais'}
+                      </p>
+                    </div>
 
-                        {isMaster && (
-                          <button
-                            onClick={() => setConfigPaymentState({ pkg, isStartingStage: true })}
-                            className="py-2.5 px-4 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs font-bold text-[#302414] flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <CreditCard className="w-4 h-4 text-[#716016]" />
-                            <span>Iniciar pagamento</span>
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {/* CASO 2: ETAPA DE PROCESSO DE PAGAMENTO (Fiel ao Cartão Direito de image_dc50d762.png) */}
-                  {!isColeta && (
-                    <>
-                      {/* Caixa de Destaque do Pagamento: Valor Final + Prazo */}
-                      <div className="p-4 rounded-xl bg-[#FBF4E4] border border-[#D6C296] flex items-center justify-between gap-4">
-                        <div>
-                          <span className="font-mono text-2xl sm:text-3xl font-bold text-[#302414]">
-                            R$ {valorFinalCobrado.toFixed(2).replace('.', ',')}
-                          </span>
-                          <span className="text-xs text-[#71634D] block mt-0.5">
-                            por participante
-                          </span>
-                        </div>
-
-                        <div className="text-right border-l border-[#D6C296] pl-4">
-                          <span className="text-xs text-[#71634D] flex items-center justify-end gap-1 mb-0.5">
-                            <Calendar className="w-3.5 h-3.5 text-[#716016]" />
-                            <span>Pagar até</span>
-                          </span>
-                          <span className="font-mono text-sm sm:text-base font-bold text-[#302414]">
-                            {formatDateDisplay(pkg.dataPagamento) || 'Definir'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Linha do Pix + Botão PAGAR */}
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-[#EDE2CA] border border-[#C6AD78]">
-                        {/* Chave Pix e Copiar */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-xs text-[#716016] font-bold">💠</span>
-                          <div className="truncate">
-                            <span className="text-[10px] uppercase font-bold text-[#71634D] block">
-                              Chave Pix:
-                            </span>
-                            <span className="font-mono text-xs font-semibold text-[#302414] select-all truncate block">
-                              {pkg.chavePix || 'Chave Pix não informada'}
-                            </span>
-                          </div>
-                          {pkg.chavePix && (
+                    {/* CASO 1: ETAPA DE COLETA DE MEMBROS */}
+                    {isColeta && (
+                      <div className="space-y-4 pt-1">
+                        {/* Progresso de Adesão */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs sm:text-sm">
                             <button
-                              onClick={() => handleCopyPixKey(pkg)}
-                              className="p-1 text-[#71634D] hover:text-[#302414] cursor-pointer"
-                              title="Copiar Chave Pix"
+                              type="button"
+                              onClick={() => setViewingParticipantsPkg(pkg)}
+                              className="font-semibold text-[#302414] hover:text-[#48551F] flex items-center gap-1.5 cursor-pointer group text-left transition-colors"
+                              title="Clique para ver a lista de participantes com ranks RPG"
                             >
-                              {copiedPixId === pkg.id ? (
-                                <Check className="w-3.5 h-3.5 text-[#48551F]" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
+                              <Users className="w-4 h-4 text-[#716016] group-hover:scale-110 transition-transform" />
+                              <span>
+                                <strong>{totalCotistas}</strong> de {metaMinima} participantes
+                              </span>
+                              <span className="text-xs text-[#48551F] font-bold underline underline-offset-2 ml-1">
+                                · Ver lista
+                              </span>
+                            </button>
+                            <span className="text-[#71634D]">
+                              Total do pacote:{' '}
+                              <strong className="text-[#302414] font-mono">
+                                R$ {pkg.valorTotalBRL.toFixed(2).replace('.', ',')}
+                              </strong>
+                            </span>
+                          </div>
+
+                          {/* Barra de Progresso */}
+                          <div className="h-3 w-full bg-[#E5DBC1] rounded-full overflow-hidden border border-[#D5C49F]">
+                            <div
+                              className="h-full bg-[#48551F] rounded-full transition-all duration-300"
+                              style={{ width: `${progressoPct}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 2 Caixas de Destaque: Cota Estimada & Prazo de Adesão */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          {/* Caixa 1: Cota Estimada */}
+                          <div className="p-4 rounded-xl bg-[#FBF4E4] border border-[#D6C296]">
+                            <div className="flex items-center gap-1.5 text-xs text-[#71634D] mb-1">
+                              <Tag className="w-4 h-4 text-[#716016]" />
+                              <span>Cota estimada</span>
+                            </div>
+                            <span className="font-mono text-2xl font-bold text-[#302414] block">
+                              R$ {cotaEstimada.toFixed(2).replace('.', ',')}
+                            </span>
+                          </div>
+
+                          {/* Caixa 2: Adesões até */}
+                          <div className="p-4 rounded-xl bg-[#FBF4E4] border border-[#D6C296]">
+                            <div className="flex items-center gap-1.5 text-xs text-[#71634D] mb-1">
+                              <Calendar className="w-4 h-4 text-[#716016]" />
+                              <span>Adesões até</span>
+                            </div>
+                            <span className="font-mono text-base sm:text-lg font-bold text-[#302414] block mt-0.5">
+                              {formatDateDisplay(pkg.dataFinalizar) || 'Em breve'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Botões de Ação na Coleta */}
+                        <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2 border-t border-[#D6C296]">
+                          {isUserParticipant ? (
+                            <button
+                              onClick={() => handleParticipateClick(pkg)}
+                              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                            >
+                              <Check className="w-4 h-4" />
+                              <span>Você está na lista (Sair)</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleParticipateClick(pkg)}
+                              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95"
+                            >
+                              <Users className="w-4 h-4" />
+                              <span>Participar deste rateio</span>
+                            </button>
+                          )}
+
+                          {isMaster && (
+                            <button
+                              onClick={() => setConfigPaymentState({ pkg, isStartingStage: true })}
+                              className="w-full sm:w-auto py-3 px-4 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs sm:text-sm font-bold text-[#302414] flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <CreditCard className="w-4 h-4 text-[#716016]" />
+                              <span>Iniciar pagamento</span>
                             </button>
                           )}
                         </div>
-
-                        {/* Botão PAGAR / Pagamento informado & Desfazer */}
-                        {(() => {
-                          const paymentInfo = pkg.pagamentos && pkg.pagamentos[currentUser.id];
-                          const participantRecord = (pkg.apoiadores || []).find(
-                            (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
-                          );
-                          const userHasPaid = Boolean(paymentInfo?.informouPagamento || participantRecord?.pagamentoInformado);
-
-                          if (userHasPaid) {
-                            return (
-                              <div className="flex flex-col items-end gap-1">
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] text-xs font-bold shadow-sm">
-                                  <Check className="w-3.5 h-3.5" />
-                                  <span>Pagamento informado</span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRequestUndoPayment(pkg)}
-                                  className="text-[11px] text-[#875508] hover:text-[#5a3805] underline underline-offset-2 cursor-pointer font-medium"
-                                  title="Clique caso tenha informado o pagamento por engano"
-                                >
-                                  Informei por engano — desfazer
-                                </button>
-                              </div>
-                            );
-                          }
-
-                          return (
-                            <div className="flex flex-col items-end">
-                              <button
-                                onClick={() => setPaymentInstructionsPkg(pkg)}
-                                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
-                              >
-                                <CreditCard className="w-3.5 h-3.5" />
-                                <span>PAGAR</span>
-                              </button>
-                              <span className="text-[10px] text-[#71634D] italic mt-1 text-center sm:text-right">
-                                Confirme no site após fazer o Pix.
-                              </span>
-                            </div>
-                          );
-                        })()}
                       </div>
+                    )}
 
-                      {/* Lista de Apoiadores e Situação de Pagamento (Fiel ao Print 3) */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs pb-0.5">
-                          <span className="font-bold text-[#302414] flex items-center gap-1">
-                            <Users className="w-3.5 h-3.5 text-[#716016]" />
-                            <span>Participantes ({apoiadores.length}):</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setViewingParticipantsPkg(pkg)}
-                            className="text-[11px] text-[#48551F] hover:underline font-bold cursor-pointer"
-                          >
-                            Ver lista completa · Ranks
-                          </button>
+                    {/* CASO 2: ETAPA DE PROCESSO DE PAGAMENTO */}
+                    {!isColeta && (
+                      <div className="space-y-4 pt-1">
+                        {/* Caixa de Destaque do Pagamento: Valor Final + Prazo */}
+                        <div className="p-4 sm:p-5 rounded-xl bg-[#FBF4E4] border border-[#D6C296] flex items-center justify-between gap-4">
+                          <div>
+                            <span className="font-mono text-2xl sm:text-3xl font-extrabold text-[#302414]">
+                              R$ {valorFinalCobrado.toFixed(2).replace('.', ',')}
+                            </span>
+                            <span className="text-xs sm:text-sm text-[#71634D] block mt-0.5">
+                              por participante
+                            </span>
+                          </div>
+
+                          <div className="text-right border-l border-[#D6C296] pl-4 sm:pl-6">
+                            <span className="text-xs text-[#71634D] flex items-center justify-end gap-1 mb-0.5">
+                              <Calendar className="w-4 h-4 text-[#716016]" />
+                              <span>Pagar até</span>
+                            </span>
+                            <span className="font-mono text-base sm:text-lg font-bold text-[#302414]">
+                              {formatDateDisplay(pkg.dataPagamento) || 'Definir'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        {apoiadores.map((ap) => {
-                          const paymentInfo = pkg.pagamentos && pkg.pagamentos[ap.id];
-                          const hasPaid = Boolean(paymentInfo?.informouPagamento || ap.pagamentoInformado);
 
-                          return (
-                            <div
-                              key={ap.id}
-                              className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#FBF4E4] border border-[#D6C296] text-xs"
-                            >
-                              <div className="flex items-center gap-2 truncate">
-                                <span className="text-[#71634D]">👤</span>
-                                <span className="font-medium text-[#302414] truncate">
-                                  {ap.nome}
+                        {/* ÁREA DE PAGAMENTO GATILHADA POR PARTICIPAÇÃO */}
+                        {isUserParticipant ? (
+                          /* PARTICIPANTE: Vê a chave Pix e a ação de pagamento */
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#EDE2CA] border border-[#C6AD78]">
+                            {/* Chave Pix e Copiar */}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-sm text-[#716016] font-bold">💠</span>
+                              <div className="truncate">
+                                <span className="text-[10px] uppercase font-bold text-[#71634D] block">
+                                  Chave Pix do Rateio:
+                                </span>
+                                <span className="font-mono text-xs sm:text-sm font-semibold text-[#302414] select-all truncate block">
+                                  {pkg.chavePix || 'Chave Pix não informada'}
                                 </span>
                               </div>
+                              {pkg.chavePix && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyPixKey(pkg)}
+                                  className="p-1.5 text-[#71634D] hover:text-[#302414] cursor-pointer"
+                                  title="Copiar Chave Pix"
+                                >
+                                  {copiedPixId === pkg.id ? (
+                                    <Check className="w-4 h-4 text-[#48551F]" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
+                            {/* Botão PAGAR / Pagamento informado & Desfazer */}
+                            {(() => {
+                              const paymentInfo = pkg.pagamentos && pkg.pagamentos[currentUser.id];
+                              const participantRecord = (pkg.apoiadores || []).find(
+                                (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
+                              );
+                              const userHasPaid = Boolean(paymentInfo?.informouPagamento || participantRecord?.pagamentoInformado);
+
+                              if (userHasPaid) {
+                                return (
+                                  <div className="flex flex-col items-end gap-1 shrink-0">
+                                    <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] text-xs font-bold shadow-sm">
+                                      <Check className="w-4 h-4" />
+                                      <span>Pagamento informado</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRequestUndoPayment(pkg)}
+                                      className="text-[11px] text-[#875508] hover:text-[#5a3805] underline underline-offset-2 cursor-pointer font-medium"
+                                      title="Clique caso tenha informado o pagamento por engano"
+                                    >
+                                      Informei por engano — desfazer
+                                    </button>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="flex flex-col items-end shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => setPaymentInstructionsPkg(pkg)}
+                                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                                  >
+                                    <CreditCard className="w-4 h-4" />
+                                    <span>PAGAR</span>
+                                  </button>
+                                  <span className="text-[10px] text-[#71634D] italic mt-1 text-center sm:text-right">
+                                    Confirme no site após fazer o Pix.
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        ) : (
+                          /* NÃO PARTICIPANTE: Mensagem curta obrigatória e sem instruções de Pix */
+                          <div className="p-4 rounded-xl bg-[#EDE2CA] border border-[#C6AD78] flex items-center gap-3 shadow-xs">
+                            <span className="text-xl shrink-0">🔒</span>
+                            <p className="text-xs sm:text-sm font-bold text-[#55482e] leading-snug">
+                              Inscrições encerradas. Você poderá comprar quando estiver no Catálogo.
+                            </p>
+                          </div>
+                        )}
+
+                      </div>
+                    )}
+
+                  </div>
+
+                </div>
+
+                {/* SEÇÃO INFERIOR AMPLA: PARTICIPANTES E SITUAÇÃO DE PAGAMENTO */}
+                <div className="border-t border-[#D6C296] bg-[#FBF4E4]/60 p-5 sm:p-6 rounded-b-2xl space-y-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm pb-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-[#302414] flex items-center gap-1.5">
+                        <Users className="w-4 h-4 text-[#716016]" />
+                        <span>Participantes inscritos ({apoiadores.length}):</span>
+                      </span>
+                      {!isColeta && (
+                        <span className="text-xs text-[#71634D]">
+                          (<strong className="text-[#2f5c1a] font-mono">{totalPagos}</strong> informados ·{' '}
+                          <strong className="text-[#875508] font-mono">{totalPendentes}</strong> pendentes)
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setViewingParticipantsPkg(pkg)}
+                        className="px-3 py-1.5 rounded-xl bg-[#EDE2CA] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <Users className="w-3.5 h-3.5 text-[#716016]" />
+                        <span>Ver lista completa · Ranks</span>
+                      </button>
+
+                      {!isColeta && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPaidEmails(pkg)}
+                          className="px-3 py-1.5 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="Copiar lista de e-mails de quem já pagou para liberar acesso no Google Drive"
+                        >
+                          <Mail className="w-3.5 h-3.5 text-[#716016]" />
+                          <span>Copiar e-mails</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Grade de Participantes Ampla */}
+                  {apoiadores.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto pr-1">
+                      {apoiadores.map((ap) => {
+                        const paymentInfo = pkg.pagamentos && pkg.pagamentos[ap.id];
+                        const hasPaid = Boolean(paymentInfo?.informouPagamento || ap.pagamentoInformado);
+
+                        return (
+                          <div
+                            key={ap.id}
+                            className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#FAF4E6] border border-[#D6C296] text-xs"
+                          >
+                            <div className="flex items-center gap-1.5 truncate">
+                              <span className="text-[#71634D]">👤</span>
+                              <span className="font-medium text-[#302414] truncate" title={ap.nome}>
+                                {ap.nome}
+                              </span>
+                            </div>
+
+                            {!isColeta && (
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 {hasPaid ? (
-                                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] flex items-center gap-1">
-                                    <Check className="w-3 h-3" />
-                                    <span>Pagamento informado</span>
+                                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] flex items-center gap-0.5">
+                                    <Check className="w-2.5 h-2.5" />
+                                    <span>Pago</span>
                                   </span>
                                 ) : (
-                                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#fae8b4] text-[#875508] border border-[#e3c578]">
+                                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#fae8b4] text-[#875508] border border-[#e3c578]">
                                     Pendente
                                   </span>
                                 )}
@@ -749,32 +820,18 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                                   </button>
                                 )}
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-
-                      {/* Rodapé da Etapa: Resumo dos Pagos + Copiar E-mails */}
-                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#D6C296] text-xs">
-                        <span className="text-[#71634D] font-medium">
-                          <strong className="text-[#302414] font-mono">{totalPagos}</strong> informados ·{' '}
-                          <strong className="text-[#875508] font-mono">{totalPendentes}</strong> pendentes
-                        </span>
-
-                        <button
-                          onClick={() => handleCopyPaidEmails(pkg)}
-                          className="px-3 py-1.5 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                          title="Copiar lista de e-mails de quem já pagou para liberar acesso no Google Drive"
-                        >
-                          <Mail className="w-3.5 h-3.5 text-[#716016]" />
-                          <span>Copiar e-mails</span>
-                        </button>
-                      </div>
-                    </>
+                  ) : (
+                    <p className="text-xs text-[#71634D] italic py-1">
+                      Nenhum participante inscrito até o momento.
+                    </p>
                   )}
-
                 </div>
+
               </div>
             );
           })}

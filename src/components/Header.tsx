@@ -79,6 +79,19 @@ export const Header: React.FC<HeaderProps> = ({
   const userMenuRef = useRef<HTMLDivElement>(null);
   const toolsMenuRef = useRef<HTMLDivElement>(null);
 
+  // Animação discreta ao adicionar ao carrinho (respeita motion-safe)
+  const prevCartCountRef = useRef(cartCount);
+  const [isBumpingCart, setIsBumpingCart] = useState(false);
+
+  useEffect(() => {
+    if (cartCount > prevCartCountRef.current) {
+      setIsBumpingCart(true);
+      const timer = setTimeout(() => setIsBumpingCart(false), 650);
+      return () => clearTimeout(timer);
+    }
+    prevCartCountRef.current = cartCount;
+  }, [cartCount]);
+
   const isMaster = Boolean(currentUser?.isMaster);
 
   // Close menus when clicking outside
@@ -154,20 +167,30 @@ export const Header: React.FC<HeaderProps> = ({
           <nav className="hidden md:flex items-center gap-1 sm:gap-1.5 lg:gap-2">
             {navItems.map((item) => {
               const isActive = currentView === item.id;
+              const isMembrosTab = item.id === 'membros';
+              const showPendingDot = isMembrosTab && isMaster && pendingUsersCount > 0;
+
               return (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer select-none flex items-center gap-1.5 ${
+                  className={`relative px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer select-none flex items-center gap-1.5 ${
                     isActive
                       ? 'bg-[#525c28] text-[#F8EDD5] shadow-sm border border-[#6b7a35]'
                       : 'text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a]'
                   }`}
+                  aria-label={showPendingDot ? `${item.label} (Há solicitações de entrada pendentes)` : item.label}
                 >
                   <span>{item.label}</span>
-                  {item.id === 'membros' && pendingUsersCount > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-600 text-white">
-                      {pendingUsersCount}
+                  {showPendingDot && (
+                    <span
+                      className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center"
+                      title="Há solicitações de entrada pendentes"
+                      aria-label="Há solicitações de entrada pendentes"
+                    >
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4A538] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#C2410C] ring-2 ring-[#282D13]" />
+                      <span className="sr-only">Há solicitações de entrada pendentes</span>
                     </span>
                   )}
                   {item.id === 'meus-itens' && typeof item.badge === 'number' && item.badge > 0 && (
@@ -182,18 +205,28 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Area: Cart + Tools Menu + User Account */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Carrinho do Catálogo */}
+            {/* Carrinho do Catálogo - Mais Visível e Destacado */}
             {onOpenCart && (
               <button
+                type="button"
                 onClick={onOpenCart}
-                className="relative p-2 rounded-xl bg-[#20240f] hover:bg-[#323917] border border-[#3f471e] text-[#F8EDD5] transition-colors cursor-pointer flex items-center justify-center"
-                title="Abrir Carrinho de Aquisições"
-                aria-label="Abrir carrinho de compras"
+                className={`relative min-h-[44px] min-w-[44px] px-3 sm:px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 select-none active:scale-95 ${
+                  cartCount > 0
+                    ? `bg-[#48551F] hover:bg-[#59672A] border-2 border-[#D4A538] text-[#F8EDD5] shadow-sm ${
+                        isBumpingCart ? 'motion-safe:scale-105 motion-safe:ring-2 motion-safe:ring-[#D4A538]' : ''
+                      }`
+                    : 'bg-[#1e220e] hover:bg-[#2c3214] border border-[#3f471e] text-[#cfc4a6] hover:text-[#F8EDD5]'
+                }`}
+                title={cartCount > 0 ? `Abrir Carrinho (${cartCount} ${cartCount === 1 ? 'item' : 'itens'})` : 'Abrir Carrinho'}
+                aria-label={`Abrir carrinho com ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`}
               >
-                <ShoppingCart className="w-4 h-4 text-[#d6be8c]" />
+                <ShoppingCart className={`w-5 h-5 shrink-0 ${cartCount > 0 ? 'text-[#f5dfa8]' : 'text-[#cfc4a6]'}`} />
+                <span className="hidden sm:inline font-bold text-xs sm:text-sm">
+                  Carrinho
+                </span>
                 {typeof cartCount === 'number' && cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-[#875508] border border-[#e3c578] text-[10px] font-bold text-[#F8EDD5] flex items-center justify-center font-mono">
-                    {cartCount}
+                  <span className="px-2 py-0.5 rounded-full bg-[#875508] border border-[#e3c578] text-[11px] font-extrabold text-[#F8EDD5] font-mono leading-none shrink-0 shadow-xs">
+                    <span className="hidden sm:inline">· </span>{cartCount}
                   </span>
                 )}
               </button>
@@ -411,6 +444,9 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="md:hidden py-3 border-t border-[#3f471e] flex flex-col gap-1 pb-4">
             {navItems.map((item) => {
               const isActive = currentView === item.id;
+              const isMembrosTab = item.id === 'membros';
+              const showPendingDot = isMembrosTab && isMaster && pendingUsersCount > 0;
+
               return (
                 <button
                   key={item.id}
@@ -423,11 +459,17 @@ export const Header: React.FC<HeaderProps> = ({
                       ? 'bg-[#525c28] text-[#F8EDD5] border border-[#6b7a35]'
                       : 'text-[#cfc4a6] hover:bg-[#363e1a] hover:text-[#F8EDD5]'
                   }`}
+                  aria-label={showPendingDot ? `${item.label} (Há solicitações de entrada pendentes)` : item.label}
                 >
                   <span>{item.label}</span>
-                  {item.id === 'membros' && pendingUsersCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-600 text-white">
-                      {pendingUsersCount}
+                  {showPendingDot && (
+                    <span
+                      className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C2410C] text-[#F8EDD5] border border-[#ea580c] shadow-xs"
+                      title="Há solicitações de entrada pendentes"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F8EDD5] animate-pulse" />
+                      <span>Pendências</span>
+                      <span className="sr-only">Há solicitações de entrada pendentes</span>
                     </span>
                   )}
                 </button>
