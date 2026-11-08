@@ -5,19 +5,24 @@ import { X, Image as ImageIcon, Upload, Trash2, Save, Lock, AlertCircle } from '
 
 interface EditPackageImageModalProps {
   isOpen: boolean;
-  pkg: FundingPackage | null;
+  pkg?: FundingPackage | null;
+  packageItem?: FundingPackage | null;
   onClose: () => void;
-  onSave: (packageId: string, newImageUrl: string, adminPassword?: string) => Promise<void>;
+  onSave?: (packageId: string, newImageUrl: string, adminPassword?: string) => Promise<void>;
+  onUpdateImage?: (packageId: string, newImageUrl: string, adminPassword?: string) => Promise<void>;
   onToast: (msg: string) => void;
 }
 
 export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
   isOpen,
   pkg,
+  packageItem,
   onClose,
   onSave,
+  onUpdateImage,
   onToast,
 }) => {
+  const currentPkg = packageItem || pkg;
   const [imageUrl, setImageUrl] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -26,15 +31,15 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (pkg && isOpen) {
-      setImageUrl(pkg.imageUrl || '');
+    if (currentPkg && isOpen) {
+      setImageUrl(currentPkg.imageUrl || '');
       setAdminPassword('');
       setPasswordError('');
       setUploadError('');
     }
-  }, [pkg, isOpen]);
+  }, [currentPkg, isOpen]);
 
-  if (!isOpen || !pkg) return null;
+  if (!isOpen || !currentPkg) return null;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,7 +69,11 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
 
     try {
       setIsSaving(true);
-      await onSave(pkg.id, imageUrl.trim(), adminPassword);
+      if (onSave) {
+        await onSave(currentPkg.id, imageUrl.trim(), adminPassword);
+      } else if (onUpdateImage) {
+        await onUpdateImage(currentPkg.id, imageUrl.trim(), adminPassword);
+      }
       onToast('Capa do pacote atualizada com sucesso!');
       onClose();
     } catch (err: any) {
@@ -75,48 +84,46 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#122015] border-2 border-[#d49e2a]/70 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-[#282D13]/70 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="parchment-card w-full max-w-md shadow-2xl overflow-hidden flex flex-col border-[#C6AD78]">
+        
         {/* Header */}
-        <div className="px-5 py-4 bg-gradient-to-r from-[#192f1f] to-[#122015] border-b border-[#203625] flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[#d49e2a]">
-            <ImageIcon className="w-5 h-5" />
-            <h3 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
+        <div className="px-5 py-4 bg-[#282D13] border-b border-[#3f471e] flex items-center justify-between text-[#F8EDD5]">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-[#d6be8c]" />
+            <h3 className="font-rpg text-base sm:text-lg font-bold text-[#F8EDD5]">
               Editar Capa do Pacote
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-[#8a9d8c] hover:text-[#f4ecd8] hover:bg-[#1a2f20] transition-colors cursor-pointer"
+            className="p-1 rounded-lg text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSave} className="p-5 space-y-4 text-xs">
+        <form onSubmit={handleSave} className="p-5 space-y-4 text-xs text-[#302414]">
           <div>
-            <span className="text-[11px] text-[#7a8e7d] block font-semibold">Pacote:</span>
-            <span className="font-bold text-[#f4ecd8] text-sm leading-tight block">{pkg.titulo}</span>
+            <span className="text-[11px] text-[#71634D] block font-semibold">Pacote:</span>
+            <span className="font-bold text-[#302414] text-sm leading-tight block font-rpg">{currentPkg.titulo}</span>
           </div>
 
-          {/* Pré-visualização da imagem atual / nova */}
+          {/* Prévia da Capa */}
           <div className="space-y-1.5">
-            <span className="text-[11px] text-[#8a9d8c] font-semibold block">Prévia da Capa:</span>
-            <div className="w-full h-44 rounded-xl bg-[#0b140d] border border-[#233a29] overflow-hidden flex items-center justify-center relative">
+            <span className="text-[11px] text-[#71634D] font-semibold block">Prévia da Capa:</span>
+            <div className="w-full h-44 rounded-xl bg-[#282D13] border border-[#C6AD78] overflow-hidden flex items-center justify-center relative">
               {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt="Prévia da capa"
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect fill="%231a2f20" width="200" height="150"/><text fill="%238a9d8c" x="50%" y="50%" text-anchor="middle" font-size="12">URL Inválida</text></svg>';
-                  }}
                 />
               ) : (
-                <div className="text-center p-4 text-[#607363]">
+                <div className="text-center p-4 text-[#93a270]">
                   <ImageIcon className="w-8 h-8 mx-auto mb-1 opacity-50" />
-                  <span className="text-[11px] block">Sem imagem cadastrada (será usado ícone padrão)</span>
+                  <span className="text-[11px] block">Sem imagem cadastrada</span>
                 </div>
               )}
 
@@ -124,34 +131,33 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setImageUrl('')}
-                  className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-black/75 hover:bg-red-950/90 text-red-300 border border-red-500/40 text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                  className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-[#282D13]/85 hover:bg-[#8b261b] text-[#F8EDD5] border border-[#6b7a35] text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                   title="Remover imagem"
                 >
                   <Trash2 className="w-3 h-3" />
-                  <span>Remover Imagem</span>
+                  <span>Remover</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* Opções de Inserção: URL ou Upload */}
-          <div className="space-y-2 p-3 bg-[#0c150e] border border-[#1e3422] rounded-xl">
-            <label className="text-[11px] font-semibold text-[#f4ecd8] block">
+          {/* Opções de Inserção */}
+          <div className="space-y-2 p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl">
+            <label className="text-[11px] font-semibold text-[#302414] block">
               URL da Imagem da Web:
             </label>
             <input
               type="url"
-              placeholder="https://exemplo.com/capa.jpg"
+              placeholder="https://exemplo.com/imagem.jpg"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-3 py-2 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
+              className="w-full px-3 py-1.5 bg-[#FAF4E6] border border-[#C6AD78] rounded-lg text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
             />
 
-            <div className="pt-1 flex items-center justify-between">
-              <span className="text-[10px] text-[#7a8e7d]">Ou envie um arquivo do seu dispositivo:</span>
-              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1b2f20] hover:bg-[#25422b] text-[#d49e2a] hover:text-[#f4ecd8] border border-[#2e5035] rounded-lg text-xs font-semibold cursor-pointer transition-colors">
-                <Upload className="w-3.5 h-3.5" />
-                <span>{isUploading ? 'Enviando...' : 'Fazer Upload'}</span>
+            <div className="pt-1 flex items-center gap-2">
+              <label className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] rounded-lg text-xs font-semibold cursor-pointer transition-colors">
+                <Upload className="w-3.5 h-3.5 text-[#716016]" />
+                <span>{isUploading ? 'Enviando...' : 'Fazer Upload do Arquivo'}</span>
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/webp,image/gif"
@@ -160,18 +166,16 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
                   onChange={handleFileUpload}
                 />
               </label>
+              <span className="text-[10px] text-[#71634D]">JPG, PNG, WebP (máx 5MB)</span>
             </div>
-
-            {uploadError && (
-              <p className="text-[10px] text-red-400 font-medium">{uploadError}</p>
-            )}
+            {uploadError && <p className="text-[10px] text-[#8b261b]">{uploadError}</p>}
           </div>
 
-          {/* Confirmação de Senha do Mestre */}
-          <div className="p-3 bg-[#0d160f] border border-[#27442d] rounded-xl space-y-1.5">
-            <label className="block text-xs font-semibold text-[#f4ecd8] flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-[#d49e2a]" />
-              <span>Senha do Mestre para confirmar alteração *</span>
+          {/* Senha do Mestre */}
+          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-1.5">
+            <label className="block text-xs font-semibold text-[#302414] flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-[#716016]" />
+              <span>Senha do Mestre para Salvar *</span>
             </label>
             <input
               type="password"
@@ -182,36 +186,38 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
                 setAdminPassword(e.target.value);
                 if (passwordError) setPasswordError('');
               }}
-              className="w-full bg-[#142318] border border-[#233a29] focus:border-[#d49e2a] rounded-lg px-3 py-2 text-xs text-[#f3efe6] font-mono focus:outline-none"
+              className="w-full bg-[#FAF4E6] border border-[#C6AD78] focus:border-[#48551F] rounded-lg px-3 py-2 text-xs text-[#302414] font-mono focus:outline-none"
             />
-            {passwordError && (
-              <div className="text-xs text-red-400 font-semibold flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{passwordError}</span>
-              </div>
-            )}
           </div>
 
-          {/* Actions */}
-          <div className="pt-2 border-t border-[#1f3524] flex items-center justify-end gap-2">
+          {passwordError && (
+            <div className="p-2.5 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-[#DC2626]" />
+              <span>{passwordError}</span>
+            </div>
+          )}
+
+          {/* Footer Actions */}
+          <div className="pt-2 border-t border-[#D6C296] flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="px-4 py-2 text-xs font-medium text-[#a4b5a6] hover:text-[#f4ecd8] bg-[#16271a] hover:bg-[#1e3422] rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-[#302414] bg-[#EADBBE] hover:bg-[#E2D1A8] rounded-xl transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={isSaving || isUploading}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#122015] bg-[#d49e2a] hover:bg-[#e5b23d] rounded-xl transition-colors shadow-md cursor-pointer disabled:opacity-50"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-[#F8EDD5] bg-[#48551F] hover:bg-[#59672A] rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{isSaving ? 'Salvando...' : 'Salvar Capa'}</span>
             </button>
           </div>
         </form>
+
       </div>
     </div>
   );

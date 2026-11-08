@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, ItemRPG, FundingPackage } from '../types';
-import { X, User, Phone, Mail, Calendar, AlertTriangle, CheckCircle2, Flame, ShoppingBag, ShieldCheck, DollarSign, Save, ArrowRight } from 'lucide-react';
+import {
+  X,
+  User,
+  Phone,
+  Mail,
+  Calendar,
+  AlertTriangle,
+  CheckCircle2,
+  Flame,
+  ShoppingBag,
+  ShieldCheck,
+  DollarSign,
+  Save,
+  ArrowRight,
+  Package,
+} from 'lucide-react';
 import { formatDateDisplay } from '../utils/helpers';
 
 interface UserProfileModalProps {
@@ -42,7 +57,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Estatísticas do Usuário utilizando o ID como referência primária
   const myPackages = packages.filter((pkg) =>
     (pkg.apoiadores || []).some(
       (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
@@ -58,7 +72,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     )
   );
 
-  // Requirement 5: Usar o valor final para pacotes em PAGAMENTO e estimativa durante COLETA
   const totalCommittedBRL = myActivePackages.reduce((acc, p) => {
     if (p.etapaFinanciamento === 'PAGAMENTO' && typeof p.valorFinalPorParticipante === 'number') {
       return acc + p.valorFinalPorParticipante;
@@ -109,97 +122,56 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-[#122015] border-2 border-[#d49e2a]/70 rounded-3xl w-full max-w-2xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/70 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="parchment-card w-full max-w-2xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden border-[#C6AD78]">
         
-        {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#182d1d] to-[#122015] border-b border-[#203625] flex items-center justify-between">
+        {/* Header em Verde-Oliva Escuro */}
+        <div className="px-6 py-4 bg-[#282D13] border-b border-[#3f471e] flex items-center justify-between text-[#F8EDD5]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#1e3524] border-2 border-[#d49e2a]/60 flex items-center justify-center text-[#d49e2a] font-bold">
+            <div className="w-10 h-10 rounded-full bg-[#3a4419] border border-[#C6AD78] flex items-center justify-center text-[#F8EDD5] font-bold">
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8] flex items-center gap-2">
+              <h2 className="font-rpg text-base sm:text-lg font-bold text-[#F8EDD5] flex items-center gap-2">
                 <span>Boas-vindas, {currentUser.nome}!</span>
               </h2>
-              <p className="text-[11px] text-[#8a9d8c]">
+              <p className="text-[11px] text-[#cfc4a6]">
                 Conferência de Cadastro e Painel de Participação
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#8a9d8c] hover:text-[#f4ecd8] hover:bg-[#1f3524] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-5 sm:p-6 overflow-y-auto max-h-[75vh] space-y-5 text-xs">
+        <div className="p-5 sm:p-6 overflow-y-auto max-h-[75vh] space-y-5 text-xs text-[#302414]">
           
-          {/* Alerta de Situação de Strikes */}
-          <div className={`p-4 rounded-2xl border flex items-start gap-3.5 ${
-            strikes === 0
-              ? 'bg-[#142918] border-emerald-500/40 text-emerald-200'
-              : strikes < 3
-              ? 'bg-[#29200d] border-amber-500/50 text-amber-200'
-              : 'bg-red-950/80 border-red-500 text-red-200'
-          }`}>
-            <div className="shrink-0 mt-0.5">
-              {strikes === 0 ? (
-                <ShieldCheck className="w-6 h-6 text-emerald-400" />
-              ) : (
-                <AlertTriangle className="w-6 h-6 text-amber-400" />
-              )}
-            </div>
-            <div className="space-y-1 flex-1">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-[#f4ecd8]">
-                  Situação de Pagamentos e Strikes:
-                </span>
-                <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
-                  strikes === 0
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                }`}>
-                  {strikes}/3 Strikes
-                </span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#c7d5c9]">
-                {strikes === 0 ? (
-                  <span>Sua situação está <strong>100% regular</strong> na mesa! Você não possui nenhum strike registrado.</span>
-                ) : (
-                  <span>Você possui <strong>{strikes} strike{strikes > 1 ? 's' : ''}</strong> de atraso. Regularize seus pagamentos no prazo para não atingir o limite.</span>
-                )}
-              </p>
-              <p className="text-[10px] text-[#8a9d8c] italic pt-0.5">
-                Regra da Mesa: Pagamentos fora do prazo recebem 1 strike. Ao acumular 3 strikes, o membro será removido do grupo de financiamento.
-              </p>
-            </div>
-          </div>
-
-          {/* Dados Cadastrais & Conferência (Requirement 1: Editar meus dados) */}
-          <div className="p-4 rounded-2xl bg-[#0c150e] border border-[#203625] space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-xs text-[#d49e2a] uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5" />
-                <span>Seus Dados Cadastrais</span>
-              </h3>
+          {/* Card 1: Dados Cadastrais com Botão Editar */}
+          <div className="p-4 rounded-2xl bg-[#FBF4E4] border border-[#D6C296] space-y-3">
+            <div className="flex items-center justify-between border-b border-[#D6C296] pb-2">
+              <span className="font-bold text-xs uppercase tracking-wider text-[#716016] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#48551F]" />
+                <span>Seus Dados de Contato na Mesa</span>
+              </span>
               <button
                 type="button"
                 onClick={() => setIsEditing(!isEditing)}
-                className="text-[11px] text-[#6ee7b7] hover:underline cursor-pointer font-semibold"
+                className="px-2.5 py-1 rounded-lg bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] font-semibold text-[11px] border border-[#C6AD78] cursor-pointer"
               >
-                {isEditing ? 'Cancelar Edição' : 'Editar meus dados'}
+                {isEditing ? 'Cancelar Edição' : '✏️ Editar Contato'}
               </button>
             </div>
 
             {isEditing ? (
               <form onSubmit={handleSaveContactInfo} className="space-y-3 pt-1">
                 <div>
-                  <label className="block text-[11px] text-[#8a9d8c] mb-1 font-semibold">
-                    Nome Completo / Apelido *:
+                  <label className="block text-[11px] font-bold text-[#302414] mb-1">
+                    Nome Completo:
                   </label>
                   <input
                     type="text"
@@ -207,48 +179,44 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     value={nome}
                     onChange={(e) => {
                       setNome(e.target.value);
-                      if (nameError) setNameError('');
+                      setNameError('');
                     }}
-                    placeholder="Seu nome ou apelido de jogo"
-                    className="w-full px-3 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                   />
-                  {nameError && (
-                    <p className="text-[10px] text-red-400 mt-1 font-medium">{nameError}</p>
-                  )}
+                  {nameError && <p className="text-[11px] text-[#8b261b] mt-1">{nameError}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] text-[#8a9d8c] mb-1 font-semibold">
-                      WhatsApp / Celular (Sua Senha) *:
+                    <label className="block text-[11px] font-bold text-[#302414] mb-1">
+                      WhatsApp / Celular:
                     </label>
                     <input
-                      type="tel"
+                      type="text"
                       required
                       value={phone}
                       onChange={(e) => handlePhoneMask(e.target.value)}
-                      placeholder="(11) 98765-4321"
-                      className="w-full px-3 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] font-mono focus:outline-none focus:border-[#d49e2a]"
+                      className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-[#8a9d8c] mb-1 font-semibold">
-                      E-mail para avisos:
+                    <label className="block text-[11px] font-bold text-[#302414] mb-1">
+                      E-mail Google Drive:
                     </label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="seu.email@exemplo.com"
-                      className="w-full px-3 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                      placeholder="usuario@gmail.com"
+                      className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-1">
+                <div className="flex justify-end pt-1">
                   <button
                     type="submit"
-                    className="px-4 py-2 font-bold text-xs rounded-xl bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] flex items-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-95"
+                    className="px-4 py-2 font-bold text-xs rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
                   >
                     <Save className="w-3.5 h-3.5" />
                     <span>Salvar Dados Atualizados</span>
@@ -257,17 +225,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </form>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
-                <div className="p-2.5 rounded-xl bg-[#122015] border border-[#1f3524]">
-                  <span className="text-[10px] text-[#7a8e7d] block font-semibold">Nome Cadastrado:</span>
-                  <span className="font-bold text-[#f4ecd8] truncate block">{currentUser.nome}</span>
+                <div className="p-2.5 rounded-xl bg-[#F8EDD5] border border-[#D6C296]">
+                  <span className="text-[10px] text-[#71634D] block font-semibold">Nome Cadastrado:</span>
+                  <span className="font-bold text-[#302414] truncate block">{currentUser.nome}</span>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#122015] border border-[#1f3524]">
-                  <span className="text-[10px] text-[#7a8e7d] block font-semibold">WhatsApp (Senha):</span>
-                  <span className="font-bold text-[#d49e2a] block">{currentUser.telefone || 'Não informado'}</span>
+                <div className="p-2.5 rounded-xl bg-[#F8EDD5] border border-[#D6C296]">
+                  <span className="text-[10px] text-[#71634D] block font-semibold">WhatsApp (Senha):</span>
+                  <span className="font-bold text-[#48551F] block">{currentUser.telefone || 'Não informado'}</span>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#122015] border border-[#1f3524]">
-                  <span className="text-[10px] text-[#7a8e7d] block font-semibold">E-mail:</span>
-                  <span className="font-bold text-[#a4b5a6] truncate block">{currentUser.email || 'Não informado'}</span>
+                <div className="p-2.5 rounded-xl bg-[#F8EDD5] border border-[#D6C296]">
+                  <span className="text-[10px] text-[#71634D] block font-semibold">E-mail Drive:</span>
+                  <span className="font-bold text-[#302414] truncate block">{currentUser.email || 'Não informado'}</span>
                 </div>
               </div>
             )}
@@ -275,65 +243,67 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
           {/* Painel de Estatísticas Pessoais */}
           <div className="space-y-3">
-            <h3 className="font-bold text-xs text-[#d49e2a] uppercase tracking-wider flex items-center gap-1.5">
+            <h3 className="font-bold text-xs text-[#716016] uppercase tracking-wider flex items-center gap-1.5">
               <DollarSign className="w-3.5 h-3.5" />
               <span>Suas Estatísticas na Ponte dos Trolls</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#0c150e] border border-[#203625]">
-                <span className="text-[10px] text-[#7a8e7d] uppercase font-semibold block">Vaquinhas em Andamento</span>
-                <span className="font-rpg text-xl font-bold text-[#fbbf24] flex items-center gap-1 mt-1">
-                  <Flame className="w-4 h-4 text-[#d49e2a]" />
+              {/* Vaquinhas em Andamento */}
+              <div className="p-3.5 rounded-2xl bg-[#FBF4E4] border border-[#D6C296]">
+                <span className="text-[10px] text-[#71634D] uppercase font-semibold block">Vaquinhas em Andamento</span>
+                <span className="font-rpg text-xl font-bold text-[#48551F] flex items-center gap-1 mt-1">
+                  <Flame className="w-4 h-4 text-[#716016]" />
                   <span>{myActivePackages.length} ativas</span>
                 </span>
-                <span className="text-[10px] text-[#8a9d8c] block mt-1">
+                <span className="text-[10px] text-[#71634D] block mt-1">
                   Compromisso: ~ R$ {totalCommittedBRL.toFixed(2).replace('.', ',')}
                 </span>
               </div>
 
-              {/* Requirement 1: Cartão clicável Acervo Disponível */}
+              {/* Atalho Clicável: Acervo Disponível */}
               <button
                 type="button"
                 onClick={handleAcervoClick}
-                className="p-3.5 rounded-2xl bg-[#0c150e] border border-[#203625] hover:border-emerald-500/60 hover:bg-[#102014] text-left transition-all duration-150 group cursor-pointer shadow-sm hover:shadow-emerald-950/30"
+                className="p-3.5 rounded-2xl bg-[#FBF4E4] border border-[#D6C296] hover:border-[#48551F] text-left transition-all group cursor-pointer shadow-sm"
                 title="Clique para abrir o Catálogo com os pacotes do seu acervo"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-[#7a8e7d] group-hover:text-emerald-300 uppercase font-semibold block transition-colors">
+                  <span className="text-[10px] text-[#71634D] group-hover:text-[#48551F] uppercase font-semibold block transition-colors">
                     Acervo Disponível
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-emerald-400 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                  <ArrowRight className="w-3.5 h-3.5 text-[#48551F] opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <span className="font-rpg text-xl font-bold text-emerald-400 flex items-center gap-1 mt-1">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span className="font-rpg text-xl font-bold text-[#48551F] flex items-center gap-1 mt-1">
+                  <CheckCircle2 className="w-4 h-4 text-[#48551F]" />
                   <span>{myCatalogPackages.length} pacotes</span>
                 </span>
-                <span className="text-[10px] text-emerald-400/80 group-hover:text-emerald-300 block mt-1 underline underline-offset-2">
+                <span className="text-[10px] text-[#48551F] block mt-1 underline underline-offset-2">
                   Clique para ver seu acervo no Catálogo →
                 </span>
               </button>
 
-              <div className="p-3.5 rounded-2xl bg-[#0c150e] border border-[#203625]">
-                <span className="text-[10px] text-[#7a8e7d] uppercase font-semibold block">Sugestões Apoiadas</span>
-                <span className="font-rpg text-xl font-bold text-[#6ee7b7] flex items-center gap-1 mt-1">
+              {/* Sugestões Apoiadas */}
+              <div className="p-3.5 rounded-2xl bg-[#FBF4E4] border border-[#D6C296]">
+                <span className="text-[10px] text-[#71634D] uppercase font-semibold block">Sugestões Apoiadas</span>
+                <span className="font-rpg text-xl font-bold text-[#716016] flex items-center gap-1 mt-1">
                   <ShoppingBag className="w-4 h-4" />
                   <span>{mySupportedItems.length} ideias</span>
                 </span>
-                <span className="text-[10px] text-[#8a9d8c] block mt-1">
+                <span className="text-[10px] text-[#71634D] block mt-1">
                   Aguardando rateio oficial
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Lista das Vaquinhas Ativas com distinção de valor cobrado vs estimativa (Requirement 5) */}
+          {/* Lista das Vaquinhas Ativas do Usuário */}
           {myActivePackages.length > 0 && (
-            <div className="p-4 rounded-2xl bg-[#0c150e] border border-[#203625] space-y-2.5">
-              <span className="font-bold text-xs text-[#f4ecd8] block">
+            <div className="p-4 rounded-2xl bg-[#FBF4E4] border border-[#D6C296] space-y-2.5">
+              <span className="font-bold text-xs text-[#302414] block">
                 Vaquinhas ativas com seu nome confirmado ({myActivePackages.length}):
               </span>
-              <div className="divide-y divide-[#1a2f20]">
+              <div className="divide-y divide-[#E3D1AC]">
                 {myActivePackages.map((pkg) => {
                   const isPagamento = pkg.etapaFinanciamento === 'PAGAMENTO';
                   const valorExato = isPagamento && typeof pkg.valorFinalPorParticipante === 'number'
@@ -344,26 +314,26 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     <div key={pkg.id} className="py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-[#f4ecd8]">{pkg.titulo}</span>
+                          <span className="font-bold text-[#302414]">{pkg.titulo}</span>
                           {isPagamento ? (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#fae8b4] text-[#875508] border border-[#e3c578]">
                               Etapa de Pagamento
                             </span>
                           ) : (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88]">
                               Coleta de Membros
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-[#7a8e7d] block">
+                        <span className="text-[10px] text-[#71634D] block">
                           Prazo Pagamento: {formatDateDisplay(pkg.dataPagamento)} · Cotistas: {pkg.apoiadores.length}/{pkg.minimoParticipantes}
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-[#8a9d8c] block">
+                        <span className="text-[10px] text-[#71634D] block">
                           {isPagamento ? 'Valor Cobrado:' : 'Estimativa Máxima:'}
                         </span>
-                        <span className="font-mono font-bold text-sm text-[#d49e2a]">
+                        <span className="font-mono font-bold text-sm text-[#302414]">
                           R$ {valorExato.toFixed(2).replace('.', ',')}
                         </span>
                       </div>
@@ -374,12 +344,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
           )}
 
-          {/* Botão de Conclusão de Grande Destaque (Requirement 1) */}
-          <div className="pt-4 border-t border-[#1f3524] flex justify-center">
+          {/* Botão de Conclusão Grande e Centralizado (Fiel à Instrução) */}
+          <div className="pt-4 border-t border-[#D6C296] flex justify-center">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto min-w-[280px] px-8 py-3.5 font-rpg text-sm sm:text-base font-bold rounded-2xl bg-gradient-to-r from-[#d49e2a] via-[#e5b23d] to-[#d49e2a] hover:from-[#e5b23d] hover:to-[#f3c85f] text-[#122015] shadow-xl shadow-amber-950/50 hover:shadow-amber-900/60 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-center"
+              className="w-full sm:w-auto min-w-[280px] px-8 py-3.5 font-rpg text-sm sm:text-base font-bold rounded-2xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-center"
             >
               Confirmar e Acessar a Central
             </button>

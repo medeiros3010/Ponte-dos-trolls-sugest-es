@@ -1,11 +1,25 @@
 import React, { useState, useMemo } from 'react';
 import { UserProfile, FundingPackage, ItemRPG, ADMIN_PASSWORD } from '../types';
-import { 
-  Users, UserPlus, Search, ArrowLeft, Shield, Phone, Mail, 
-  Calendar, AlertTriangle, Plus, Minus, Trash2, Award, 
-  Sparkles, PackageCheck, Flame, CheckCircle2 
+import {
+  Users,
+  UserPlus,
+  Search,
+  Shield,
+  Phone,
+  Mail,
+  Calendar,
+  AlertTriangle,
+  Plus,
+  Minus,
+  Trash2,
+  Package,
+  Coins,
+  Edit2,
+  Check,
+  X,
+  ChevronDown,
 } from 'lucide-react';
-import { formatDateDisplay } from '../utils/helpers';
+import { PageBanner } from './PageBanner';
 
 interface MembrosViewProps {
   users: UserProfile[];
@@ -31,19 +45,33 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   onToast,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('todos');
+  const [sortBy, setSortBy] = useState<string>('nome-az');
   const isMaster = Boolean(currentUser.isMaster);
 
-  // Mestre - Formulário de Novo Membro
+  // Modais de Cadastro e Edição de Membro
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [memberToEdit, setMemberToEdit] = useState<UserProfile | null>(null);
+
+  // Formulário de Novo Membro
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newDataEntrada, setNewDataEntrada] = useState(() => new Date().toISOString().split('T')[0]);
   const [formError, setFormError] = useState('');
 
-  // Mestre - Exclusão de membro
+  // Formulário de Edição
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+
+  // Exclusão de membro
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
+
+  // Active Menu Dropdown for card
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   // Phone mask helper
   const handlePhoneMask = (val: string, setter: (v: string) => void) => {
@@ -62,7 +90,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   // Helper de estatísticas por usuário
   const getStats = (member: UserProfile) => {
     const norm = member.nome.trim().toLowerCase();
-    
+
     // Vaquinhas ativas
     const activeFundingCount = packages.filter(
       (p) =>
@@ -85,21 +113,34 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
 
     const totalParticipations = activeFundingCount + catalogCount + suggestionsSupportedCount;
 
+    // Strikes count
+    const strikesCount = typeof member.strikes === 'number'
+      ? member.strikes
+      : Array.isArray(member.strikes)
+      ? member.strikes.length
+      : 0;
+
+    // Has pending payment in active payment packages
+    const hasPendingPayment = packages.some(
+      (p) =>
+        p.status === 'Financiamento' &&
+        p.etapaFinanciamento === 'PAGAMENTO' &&
+        (p.apoiadores || []).some((ap) => ap.id === member.id || ap.nome.trim().toLowerCase() === norm) &&
+        !(p.pagamentos && p.pagamentos[member.id]?.informouPagamento)
+    );
+
     let rank = 'Novato da Ponte';
-    let rankColor = 'text-[#8a9d8c] bg-[#1a2f20] border-[#2e5035]';
+    let isVeteran = false;
 
     if (member.isMaster || norm === 'ponte dos trolls') {
       rank = 'Mestre Guardião';
-      rankColor = 'text-[#d49e2a] bg-[#2a220d] border-[#d49e2a]/50';
-    } else if (totalParticipations >= 10) {
-      rank = 'Lenda dos Rateios';
-      rankColor = 'text-purple-300 bg-purple-950/70 border-purple-500/40';
+      isVeteran = true;
     } else if (totalParticipations >= 5) {
-      rank = 'Veterano da Mesa';
-      rankColor = 'text-amber-300 bg-amber-950/60 border-amber-500/40';
+      rank = 'Aventureiro ativo';
+      isVeteran = true;
     } else if (totalParticipations >= 1) {
-      rank = 'Aventureiro Ativo';
-      rankColor = 'text-emerald-300 bg-emerald-950/60 border-emerald-500/40';
+      rank = 'Aventureiro ativo';
+      isVeteran = true;
     }
 
     return {
@@ -107,25 +148,82 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
       catalogCount,
       suggestionsSupportedCount,
       totalParticipations,
+      strikesCount,
+      hasPendingPayment,
       rank,
-      rankColor,
+      isVeteran,
     };
   };
 
-  // Membros ativos (ordem alfabética por padrão)
-  const sortedMembers = useMemo(() => {
-    const list = [...users].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
-    if (!searchTerm.trim()) return list;
-    const q = searchTerm.toLowerCase().trim();
-    return list.filter(
-      (u) =>
-        u.nome.toLowerCase().includes(q) ||
-        (isMaster && u.telefone && u.telefone.toLowerCase().includes(q)) ||
-        (isMaster && u.email && u.email.toLowerCase().includes(q))
-    );
-  }, [users, searchTerm, isMaster]);
+  // Estatísticas globais do grupo (para os 3 cards do topo)
+  const groupStats = useMemo(() => {
+    let activeParticipantsSet = new Set<string>();
+    let membersWithPendingCount = 0;
 
-  // Submissão de novo membro pelo Mestre
+    users.forEach((u) => {
+      const stats = getStats(u);
+      if (stats.activeFundingCount > 0) {
+        activeParticipantsSet.add(u.id);
+      }
+      if (stats.strikesCount > 0 || stats.hasPendingPayment) {
+        membersWithPendingCount++;
+      }
+    });
+
+    return {
+      totalMembers: users.length,
+      activeParticipants: activeParticipantsSet.size,
+      membersWithPending: membersWithPendingCount,
+    };
+  }, [users, packages, items]);
+
+  // Lista filtrada e ordenada
+  const filteredAndSortedMembers = useMemo(() => {
+    let list = [...users];
+
+    // Busca textual
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim();
+      list = list.filter(
+        (u) =>
+          u.nome.toLowerCase().includes(q) ||
+          (isMaster && u.telefone && u.telefone.toLowerCase().includes(q)) ||
+          (isMaster && u.email && u.email.toLowerCase().includes(q))
+      );
+    }
+
+    // Filtro por tipo
+    if (filterType === 'ativos') {
+      list = list.filter((u) => getStats(u).activeFundingCount > 0);
+    } else if (filterType === 'pendencias') {
+      list = list.filter((u) => {
+        const s = getStats(u);
+        return s.strikesCount > 0 || s.hasPendingPayment;
+      });
+    }
+
+    // Ordenação
+    list.sort((a, b) => {
+      const statsA = getStats(a);
+      const statsB = getStats(b);
+
+      switch (sortBy) {
+        case 'nome-za':
+          return b.nome.localeCompare(a.nome, 'pt-BR', { sensitivity: 'base' });
+        case 'mais-ativos':
+          return statsB.totalParticipations - statsA.totalParticipations;
+        case 'mais-strikes':
+          return statsB.strikesCount - statsA.strikesCount;
+        case 'nome-az':
+        default:
+          return a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
+      }
+    });
+
+    return list;
+  }, [users, searchTerm, filterType, sortBy, isMaster, packages, items]);
+
+  // Submissão de novo membro
   const handleCreateMember = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -154,381 +252,610 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     setNewName('');
     setNewEmail('');
     setNewPhone('');
+    setIsAddModalOpen(false);
     onToast(`✅ Membro ${cleanName} cadastrado com sucesso!`);
   };
 
-  // Ajuste de strikes pelo Mestre
-  const handleAdjustStrikes = (member: UserProfile, delta: number) => {
-    const currentStrikes = Array.isArray(member.strikes) ? member.strikes.length : (member.strikes || 0);
-    const nextStrikes = Math.max(0, Math.min(3, currentStrikes + delta));
-    if (nextStrikes === currentStrikes) return;
-
-    onUpdateUser({
-      ...member,
-      strikes: nextStrikes,
-    });
-
-    if (delta > 0) {
-      onToast(`⚠️ 1 strike adicionado para ${member.nome} (Total: ${nextStrikes}/3).`);
-    } else {
-      onToast(`Strike removido de ${member.nome} (Total: ${nextStrikes}/3).`);
-    }
+  // Submissão de edição de membro
+  const handleOpenEditMember = (member: UserProfile) => {
+    setMemberToEdit(member);
+    setEditName(member.nome);
+    setEditEmail(member.email || '');
+    setEditPhone(member.telefone || '');
   };
 
-  // Exclusão de membro pelo Mestre
-  const handleConfirmDelete = (e: React.FormEvent) => {
+  const handleSaveEditMember = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userToDelete) return;
+    if (!memberToEdit) return;
 
-    if (deletePassword !== ADMIN_PASSWORD) {
-      setDeleteError('Senha do Mestre incorreta!');
+    const cleanName = editName.trim();
+    if (!cleanName) {
+      onToast('O nome não pode estar em branco.');
       return;
     }
 
+    onUpdateUser({
+      ...memberToEdit,
+      nome: cleanName,
+      email: editEmail.trim(),
+      telefone: editPhone.trim(),
+    });
+
+    onToast(`Dados de ${cleanName} atualizados!`);
+    setMemberToEdit(null);
+  };
+
+  // Ajuste de strikes pelo Mestre
+  const handleUpdateStrikes = (member: UserProfile, delta: number) => {
+    if (!isMaster) return;
+
+    let currentStrikesList: any[] = [];
+    if (Array.isArray(member.strikes)) {
+      currentStrikesList = [...member.strikes];
+    } else if (typeof member.strikes === 'number') {
+      currentStrikesList = Array.from({ length: member.strikes }, (_, i) => ({
+        id: `legacy-${i}`,
+        data: new Date().toISOString(),
+        motivo: 'Strike registrado pelo Mestre',
+      }));
+    }
+
+    if (delta > 0) {
+      currentStrikesList.push({
+        id: `strike-${Date.now()}`,
+        data: new Date().toISOString(),
+        motivo: 'Aviso de inadimplência/falta de pagamento',
+      });
+      onToast(`Strike adicionado a ${member.nome} (Total: ${currentStrikesList.length})`);
+    } else if (delta < 0 && currentStrikesList.length > 0) {
+      currentStrikesList.pop();
+      onToast(`Strike removido de ${member.nome} (Total: ${currentStrikesList.length})`);
+    }
+
+    onUpdateUser({
+      ...member,
+      strikes: currentStrikesList,
+    });
+  };
+
+  // Exclusão com senha
+  const handleConfirmDelete = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (deletePassword !== ADMIN_PASSWORD) {
+      setDeleteError('Senha do Mestre incorreta! Operação cancelada.');
+      return;
+    }
+
+    if (!userToDelete) return;
+
     onDeleteUser(userToDelete.id);
-    onToast(`Membro "${userToDelete.nome}" removido da mesa.`);
+    onToast(`Membro ${userToDelete.nome} removido do grupo.`);
     setUserToDelete(null);
     setDeletePassword('');
     setDeleteError('');
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col animate-in fade-in duration-200">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
       
-      {/* Barra de Navegação Topo */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#203625]">
+      {/* Banner Superior com Arte dos Trolls (Fiel ao Print 2 / image_b133733d.png) */}
+      <PageBanner
+        title="Quem faz a Ponte acontecer"
+        subtitle="Nossa comunidade de aventureiros."
+      />
+
+      {/* Cabeçalho da Seção: Título + Total Cadastrado + Botão Cadastrar Membro */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Users className="w-6 h-6 text-[#716016] shrink-0" />
+            <h2 className="font-rpg text-xl sm:text-2xl font-bold text-[#302414]">
+              Membros da Ponte
+            </h2>
+          </div>
+          <span className="text-xs text-[#71634D] font-medium border-l border-[#C6AD78] pl-3">
+            <strong className="text-[#302414] font-mono">{groupStats.totalMembers}</strong> membros cadastrados
+          </span>
+        </div>
+
+        {isMaster && (
           <button
-            onClick={onGoHome}
-            className="p-2.5 rounded-xl bg-[#142318] hover:bg-[#1d3323] text-[#a4b5a6] hover:text-[#f1ede4] border border-[#27442d] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
-            title="Voltar à tela principal"
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2.5 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
           >
-            <ArrowLeft className="w-4 h-4 text-[#d49e2a]" />
-            <span>Voltar ao Menu</span>
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Cadastrar membro</span>
           </button>
+        )}
+      </div>
+
+      {/* 3 CARDS DE ESTATÍSTICA (Fiel ao Print 2) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        
+        {/* Card 1: Total de Membros */}
+        <div className="parchment-card p-4 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
+            <Users className="w-5 h-5" />
+          </div>
           <div>
-            <h1 className="font-rpg text-xl sm:text-2xl font-bold text-[#f4ecd8] flex items-center gap-2">
-              <Users className="w-6 h-6 text-[#d49e2a]" />
-              <span>Membros da Ponte dos Trolls</span>
-            </h1>
-            <p className="text-xs text-[#8a9d8c] mt-0.5">
-              {users.length} aventureiros cadastrados na central de compras coletivas
-            </p>
+            <span className="font-rpg text-xl font-bold text-[#302414] block">
+              {groupStats.totalMembers} membros
+            </span>
           </div>
         </div>
 
-        {/* Busca rápida */}
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-[#7a8e7d] absolute left-3 top-3" />
+        {/* Card 2: Participantes Ativos */}
+        <div className="parchment-card p-4 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
+            <Calendar className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-rpg text-xl font-bold text-[#302414] block">
+              {groupStats.activeParticipants} participantes ativos
+            </span>
+          </div>
+        </div>
+
+        {/* Card 3: Com Pendências */}
+        <div className="parchment-card p-4 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-rpg text-xl font-bold text-[#302414] block">
+              {groupStats.membersWithPending} com pendências
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Barra de Filtros: Busca, Filtro de Tipo e Ordenação (Fiel ao Print 2) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+        
+        {/* Input de Busca */}
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-[#71634D] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nome..."
-            className="w-full pl-9 pr-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] placeholder-[#556957] focus:outline-none focus:border-[#d49e2a]"
+            placeholder="Buscar por nome ou contato..."
+            className="w-full bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-9 pr-8 py-2.5 text-xs sm:text-sm text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F] shadow-sm"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71634D] hover:text-[#302414] p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
+
+        {/* Dropdown Filtro */}
+        <div className="relative shrink-0">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
+          >
+            <option value="todos">Todos os membros</option>
+            <option value="ativos">Participantes ativos</option>
+            <option value="pendencias">Com pendências</option>
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+
+        {/* Dropdown Ordenação */}
+        <div className="relative shrink-0">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
+          >
+            <option value="nome-az">Nome A–Z</option>
+            <option value="nome-za">Nome Z–A</option>
+            <option value="mais-ativos">Mais ativos</option>
+            <option value="mais-strikes">Mais strikes</option>
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+
       </div>
 
-      {/* PAINEL DO MESTRE: Formulário de Cadastro Exclusivo */}
-      {isMaster && (
-        <div className="mb-6 bg-gradient-to-r from-[#172b1c] to-[#122015] border-2 border-[#d49e2a]/50 rounded-3xl p-5 sm:p-6 shadow-xl">
-          <div className="flex items-center gap-2 mb-3">
-            <UserPlus className="w-5 h-5 text-[#d49e2a]" />
-            <h2 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
-              Cadastrar Novo Membro na Mesa
-            </h2>
-          </div>
-          <p className="text-xs text-[#8a9d8c] mb-4">
-            Apenas o Mestre pode autorizar e adicionar novos integrantes. O número de celular cadastrado será a chave de acesso do usuário.
+      {/* GRADE DE 3 COLUNAS DE MEMBROS (Fiel ao Print 2) */}
+      {filteredAndSortedMembers.length === 0 ? (
+        <div className="parchment-card p-12 text-center my-6">
+          <Users className="w-12 h-12 text-[#716016] mx-auto mb-3 opacity-60" />
+          <h3 className="font-rpg text-lg font-bold text-[#302414]">
+            Nenhum membro encontrado
+          </h3>
+          <p className="text-xs text-[#71634D] max-w-sm mx-auto mt-1 mb-4">
+            Tente buscar por outro termo ou alterar o filtro selecionado.
           </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredAndSortedMembers.map((member) => {
+            const stats = getStats(member);
+            const initials = member.nome
+              ? member.nome
+                  .split(' ')
+                  .filter(Boolean)
+                  .map((p) => p[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase()
+              : '??';
 
-          <form onSubmit={handleCreateMember} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div>
-              <label className="block text-[11px] font-semibold text-[#a4b5a6] mb-1">Nome Completo *</label>
+            return (
+              <div
+                key={member.id}
+                className="parchment-card p-4 space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow"
+              >
+                <div>
+                  {/* Linha Superior: Avatar de Iniciais + Nome + Badge + Strikes */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Avatar Círculo com Iniciais */}
+                      <div className="w-11 h-11 rounded-full bg-[#455222] border border-[#C6AD78] text-[#F8EDD5] font-rpg font-bold text-sm flex items-center justify-center shrink-0 shadow-sm">
+                        {initials}
+                      </div>
+
+                      {/* Nome e Rank Badge */}
+                      <div className="min-w-0">
+                        <h3 className="font-rpg text-base font-bold text-[#302414] leading-tight truncate">
+                          {member.nome}
+                        </h3>
+
+                        {/* Rank Badge */}
+                        <div className="mt-1">
+                          {stats.isVeteran ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] inline-flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              <span>{stats.rank}</span>
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#fae8b4] text-[#875508] border border-[#e3c578] inline-flex items-center gap-1">
+                              <span>🌱</span>
+                              <span>{stats.rank}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Badge de Strikes (Top Right) */}
+                    <div>
+                      {stats.strikesCount > 0 ? (
+                        <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#edd8b2] text-[#7c4912] border border-[#deb878]">
+                          {stats.strikesCount} {stats.strikesCount === 1 ? 'strike' : 'strikes'}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[#71634D] font-medium">
+                          0 strikes
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Linha de Contatos: E-mail e Telefone */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#71634D] pt-2.5 border-t border-[#D6C296] mt-3">
+                    <div className="flex items-center gap-1 truncate max-w-[170px]" title={member.email || 'Não informado'}>
+                      <Mail className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                      <span className="truncate">
+                        {isMaster || currentUser.id === member.id
+                          ? member.email || 'Sem e-mail'
+                          : member.email
+                          ? member.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
+                          : 'Sem e-mail'}
+                      </span>
+                    </div>
+
+                    <span className="text-[#C6AD78]">|</span>
+
+                    <div className="flex items-center gap-1">
+                      <Phone className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                      <span>
+                        {isMaster || currentUser.id === member.id
+                          ? member.telefone || 'Sem telefone'
+                          : member.telefone
+                          ? '(xx) xxxxx-xxxx'
+                          : 'Sem telefone'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Linha de Estatísticas: Acervo e Financiamentos */}
+                  <div className="flex items-center gap-3 text-xs text-[#302414] pt-2">
+                    <div className="flex items-center gap-1">
+                      <Package className="w-3.5 h-3.5 text-[#716016]" />
+                      <span>
+                        Acervo: <strong>{stats.catalogCount}</strong> {stats.catalogCount === 1 ? 'pacote' : 'pacotes'}
+                      </span>
+                    </div>
+
+                    <span className="text-[#C6AD78]">|</span>
+
+                    <div className="flex items-center gap-1">
+                      <Coins className="w-3.5 h-3.5 text-[#716016]" />
+                      <span>
+                        Financiamentos: <strong>{stats.activeFundingCount}</strong> {stats.activeFundingCount === 1 ? 'ativo' : 'ativos'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rodapé do Card: Ações do Mestre (Fiel ao Print 2) */}
+                {isMaster && (
+                  <div className="pt-3 border-t border-[#D6C296] flex items-center justify-between gap-2">
+                    {/* Botão Editar Membro */}
+                    <button
+                      onClick={() => handleOpenEditMember(member)}
+                      className="px-3 py-1.5 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs font-semibold text-[#302414] flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5 text-[#716016]" />
+                      <span>Editar membro</span>
+                    </button>
+
+                    {/* Controle de Strikes: Strikes [ - ] [ N ] [ + ] */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] text-[#71634D] font-medium mr-0.5">Strikes</span>
+                      <button
+                        onClick={() => handleUpdateStrikes(member, -1)}
+                        disabled={stats.strikesCount === 0}
+                        className="w-6 h-6 rounded bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] font-bold text-xs flex items-center justify-center disabled:opacity-40 cursor-pointer"
+                        title="Remover strike"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="w-6 text-center font-mono font-bold text-xs text-[#302414]">
+                        {stats.strikesCount}
+                      </span>
+                      <button
+                        onClick={() => handleUpdateStrikes(member, 1)}
+                        className="w-6 h-6 rounded bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] font-bold text-xs flex items-center justify-center cursor-pointer"
+                        title="Adicionar strike"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+
+                      {/* 3 Pontos para Excluir */}
+                      <button
+                        onClick={() => {
+                          setUserToDelete(member);
+                          setDeletePassword('');
+                          setDeleteError('');
+                        }}
+                        className="p-1 text-[#71634D] hover:text-[#8b261b] ml-1 cursor-pointer"
+                        title="Excluir membro"
+                      >
+                        <span className="text-sm font-bold leading-none">⋮</span>
+                      </button>
+                    </div>
+
+                  </div>
+                )}
+
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ==================== MODAIS ==================== */}
+
+      {/* Modal 1: Cadastrar Novo Membro (Mestre) */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <form
+            onSubmit={handleCreateMember}
+            className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
+              <h3 className="font-rpg text-lg font-bold text-[#302414] flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-[#48551F]" />
+                <span>Cadastrar Novo Membro</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1 text-[#71634D] hover:text-[#302414]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">Nome Completo:</label>
               <input
                 type="text"
                 required
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Ex: Pedro Henrique"
-                className="w-full px-3 py-2 bg-[#0c150e] border border-[#27442d] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                placeholder="Ex: João da Silva"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
               />
             </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-[#a4b5a6] mb-1">Telefone / WhatsApp (Senha) *</label>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">WhatsApp com DDD:</label>
               <input
-                type="tel"
+                type="text"
                 required
                 value={newPhone}
                 onChange={(e) => handlePhoneMask(e.target.value, setNewPhone)}
-                placeholder="(19) 98765-4321"
-                className="w-full px-3 py-2 bg-[#0c150e] border border-[#27442d] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                placeholder="(11) 99999-9999"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
               />
             </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-[#a4b5a6] mb-1">E-mail (Drive de Entrega)</label>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">E-mail Google Drive:</label>
               <input
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="membro@gmail.com"
-                className="w-full px-3 py-2 bg-[#0c150e] border border-[#27442d] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                placeholder="usuario@gmail.com"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
               />
             </div>
 
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label className="block text-[11px] font-semibold text-[#a4b5a6] mb-1">Data de Entrada</label>
-                <input
-                  type="date"
-                  value={newDataEntrada}
-                  onChange={(e) => setNewDataEntrada(e.target.value)}
-                  className="w-full px-2.5 py-2 bg-[#0c150e] border border-[#27442d] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
-                />
-              </div>
+            {formError && (
+              <p className="text-xs text-[#8b261b] font-medium">{formError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="px-4 py-2 bg-[#EADBBE] rounded-xl text-xs font-semibold text-[#302414]"
+              >
+                Cancelar
+              </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 h-[38px]"
+                className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold shadow-sm cursor-pointer"
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Salvar</span>
+                Cadastrar Membro
               </button>
             </div>
           </form>
-
-          {formError && (
-            <div className="mt-3 text-xs text-red-300 bg-red-950/60 border border-red-500/40 p-2.5 rounded-xl">
-              {formError}
-            </div>
-          )}
         </div>
       )}
 
-      {/* Aviso de Privacidade para Membro Comum */}
-      {!isMaster && (
-        <div className="mb-4 p-3 bg-[#132317] border border-[#24462c] rounded-2xl flex items-center gap-2.5 text-xs text-[#a4b5a6]">
-          <Shield className="w-4 h-4 text-[#d49e2a] shrink-0" />
-          <span>
-            <strong>Visão Segura da Comunidade:</strong> Telefones e e-mails permanecem estritamente confidenciais. Aqui você pode ver os aventureiros da mesa, seus títulos e níveis de participação nos rateios!
-          </span>
-        </div>
-      )}
-
-      {/* Grid de Membros */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {sortedMembers.length === 0 ? (
-          <div className="col-span-full p-8 text-center bg-[#122015] border border-[#203625] rounded-2xl text-xs text-[#7a8e7d]">
-            Nenhum membro encontrado com este nome.
-          </div>
-        ) : (
-          sortedMembers.map((member) => {
-            const stats = getStats(member);
-            const strikesCount = Array.isArray(member.strikes) ? member.strikes.length : (member.strikes || 0);
-            const isSelf = currentUser.id === member.id;
-
-            return (
-              <div
-                key={member.id}
-                className={`bg-[#122015] border rounded-2xl p-4 flex flex-col justify-between transition-all duration-150 ${
-                  isSelf
-                    ? 'border-[#d49e2a] shadow-md shadow-[#d49e2a]/10 bg-[#16271a]'
-                    : 'border-[#203625] hover:border-[#2f5036]'
-                }`}
+      {/* Modal 2: Editar Membro (Mestre) */}
+      {memberToEdit && (
+        <div className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSaveEditMember}
+            className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
+              <h3 className="font-rpg text-lg font-bold text-[#302414] flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-[#48551F]" />
+                <span>Editar Membro</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setMemberToEdit(null)}
+                className="p-1 text-[#71634D] hover:text-[#302414]"
               >
-                <div>
-                  {/* Topo do Card: Nome e Rank */}
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-sm text-[#f4ecd8]">{member.nome}</span>
-                        {isSelf && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#d49e2a] text-[#122015]">
-                            Você
-                          </span>
-                        )}
-                        {member.isMaster && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#d49e2a]/20 text-[#d49e2a] border border-[#d49e2a]/40">
-                            Mestre
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-1">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${stats.rankColor}`}>
-                          <Award className="w-3 h-3" />
-                          <span>{stats.rank}</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Strikes (visível se tiver strikes ou para o Mestre) */}
-                    {(isMaster || strikesCount > 0) && (
-                      <div className="text-right shrink-0">
-                        {strikesCount === 0 ? (
-                          <span className="text-[10px] text-emerald-400 font-semibold px-1.5 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30">
-                            0 Strikes
-                          </span>
-                        ) : strikesCount < 3 ? (
-                          <span className="text-[10px] text-amber-300 font-bold px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-500/50 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3 text-amber-400" />
-                            <span>{strikesCount}/3 Strikes</span>
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-red-300 font-bold px-1.5 py-0.5 rounded bg-red-950/90 border border-red-500/60 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3 text-red-400" />
-                            <span>{strikesCount}/3 Limite</span>
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Informações Confidenciais (EXCLUSIVAS DO MESTRE) */}
-                  {isMaster && (
-                    <div className="mt-3 pt-2.5 border-t border-[#1b2f21] space-y-1 text-xs text-[#a4b5a6]">
-                      <div className="flex items-center gap-1.5 font-mono text-[#d49e2a]">
-                        <Phone className="w-3.5 h-3.5 shrink-0 text-[#7a8e7d]" />
-                        <span>{member.telefone || 'Sem telefone'}</span>
-                      </div>
-                      {member.email && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-[#8a9d8c] truncate">
-                          <Mail className="w-3.5 h-3.5 shrink-0 text-[#7a8e7d]" />
-                          <span className="truncate">{member.email}</span>
-                        </div>
-                      )}
-                      {member.dataEntrada && (
-                        <div className="flex items-center gap-1.5 text-[10px] text-[#6b7e6e]">
-                          <Calendar className="w-3 h-3 shrink-0" />
-                          <span>Entrou em: {formatDateDisplay(member.dataEntrada)}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Estatísticas de Participação (Visíveis para TODOS) */}
-                  <div className="mt-3 pt-2.5 border-t border-[#1b2f21] grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="bg-[#0e1811] p-2 rounded-xl border border-[#1b2f21]">
-                      <div className="text-[#7a8e7d] flex items-center gap-1 text-[10px]">
-                        <PackageCheck className="w-3 h-3 text-[#d49e2a]" />
-                        <span>Catálogo Drive:</span>
-                      </div>
-                      <div className="font-bold text-[#f1ede4] mt-0.5 font-mono">
-                        {stats.catalogCount} pacote{stats.catalogCount !== 1 ? 's' : ''}
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0e1811] p-2 rounded-xl border border-[#1b2f21]">
-                      <div className="text-[#7a8e7d] flex items-center gap-1 text-[10px]">
-                        <Flame className="w-3 h-3 text-amber-400" />
-                        <span>Vaquinhas:</span>
-                      </div>
-                      <div className="font-bold text-[#f1ede4] mt-0.5 font-mono">
-                        {stats.activeFundingCount} ativa{stats.activeFundingCount !== 1 ? 's' : ''}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Controles Administrativos do Mestre */}
-                {isMaster && (
-                  <div className="mt-3 pt-3 border-t border-[#1f3524] flex items-center justify-between gap-2">
-                    {/* Botões de Strike */}
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-[#7a8e7d] mr-1">Strikes:</span>
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustStrikes(member, -1)}
-                        disabled={strikesCount === 0}
-                        className="w-6 h-6 rounded-lg bg-[#1a2f20] hover:bg-[#25422d] text-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center border border-[#27452d] transition-all cursor-pointer"
-                        title="Remover strike"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="font-mono text-xs font-bold w-4 text-center text-[#d49e2a]">
-                        {strikesCount}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustStrikes(member, 1)}
-                        disabled={strikesCount >= 3}
-                        className="w-6 h-6 rounded-lg bg-[#1a2f20] hover:bg-[#25422d] text-amber-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center border border-[#27452d] transition-all cursor-pointer"
-                        title="Adicionar strike"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                    {/* Excluir membro */}
-                    {!member.isMaster && (
-                      <button
-                        type="button"
-                        onClick={() => setUserToDelete(member)}
-                        className="p-1.5 text-[#7a8e7d] hover:text-red-400 hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
-                        title="Excluir membro"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* Modal de Exclusão de Membro (Sem window.confirm) */}
-      {userToDelete && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#122015] border-2 border-red-500/60 rounded-3xl w-full max-w-md p-6 shadow-2xl">
-            <div className="flex items-center gap-3 text-red-400 mb-3">
-              <AlertTriangle className="w-6 h-6" />
-              <h3 className="font-rpg text-lg font-bold text-[#f4ecd8]">Excluir Membro</h3>
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-xs text-[#a4b5a6] mb-4">
-              Deseja realmente remover o membro <strong className="text-[#f4ecd8]">{userToDelete.nome}</strong> da central? Digite a senha do Mestre para confirmar.
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">Nome Completo:</label>
+              <input
+                type="text"
+                required
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">Telefone:</label>
+              <input
+                type="text"
+                value={editPhone}
+                onChange={(e) => handlePhoneMask(e.target.value, setEditPhone)}
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">E-mail Google Drive:</label>
+              <input
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setMemberToEdit(null)}
+                className="px-4 py-2 bg-[#EADBBE] rounded-xl text-xs font-semibold text-[#302414]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold shadow-sm cursor-pointer"
+              >
+                Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Modal 3: Excluir Membro (Mestre com Senha) */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <form
+            onSubmit={handleConfirmDelete}
+            className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
+              <h3 className="font-rpg text-base font-bold text-[#8b261b] flex items-center gap-2">
+                <Trash2 className="w-4 h-4 text-[#8b261b]" />
+                <span>Excluir Membro</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                className="p-1 text-[#71634D] hover:text-[#302414]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#71634D]">
+              Tem certeza que deseja excluir o cadastro de <strong>"{userToDelete.nome}"</strong>? Esta ação é irreversível.
             </p>
 
-            <form onSubmit={handleConfirmDelete} className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">Senha do Mestre:</label>
               <input
                 type="password"
                 required
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Senha do Mestre (Ponte#dos#trolls)"
-                className="w-full px-3 py-2 bg-[#0c150e] border border-red-500/40 rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-red-400"
-                autoFocus
+                placeholder="Digite a senha de administrador"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
               />
+            </div>
 
-              {deleteError && (
-                <div className="text-xs text-red-400">{deleteError}</div>
-              )}
+            {deleteError && (
+              <p className="text-xs text-[#8b261b] font-medium">{deleteError}</p>
+            )}
 
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserToDelete(null);
-                    setDeletePassword('');
-                    setDeleteError('');
-                  }}
-                  className="px-4 py-2 rounded-xl text-xs text-[#8a9d8c] hover:text-[#f1ede4] cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg cursor-pointer"
-                >
-                  Confirmar Exclusão
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                className="px-3.5 py-2 bg-[#EADBBE] rounded-xl text-xs font-semibold text-[#302414]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#8b261b] hover:bg-[#a32d20] text-[#F8EDD5] rounded-xl text-xs font-bold cursor-pointer"
+              >
+                Confirmar Exclusão
+              </button>
+            </div>
+          </form>
         </div>
       )}
+
     </div>
   );
 };

@@ -78,11 +78,10 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setMoeda('USD');
       setValorNumerico('0.00');
       setObservacaoValor('');
-      // Auto-preenche com perfil logado
       setSugeridoPorNome(currentUser?.nome || '');
       setSugeridoPorTelefone(currentUser?.telefone || '');
       setDescricao('');
-      setStatus('Sugestão'); // Entra automaticamente como Sugestão
+      setStatus('Sugestão');
     }
   }, [itemToEdit, isOpen, currentUser]);
 
@@ -96,7 +95,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     try {
       setIsUploadingImage(true);
       setUploadError('');
-      // Dynamically import upload helper
       const { uploadImageFile } = await import('../utils/cloudStorage');
       const res = await uploadImageFile(file);
       if (res && res.url) {
@@ -113,7 +111,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     e.preventDefault();
     if (!nome.trim() || !sugeridoPorNome.trim()) return;
 
-    // Check admin password if editing
     if (isEditing) {
       if (adminPassword !== ADMIN_PASSWORD) {
         setPasswordError('Senha incorreta! Digite a senha de administrador para salvar ou mudar status.');
@@ -138,7 +135,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       moeda,
       valorNumerico: finalValor,
       observacaoValor: observacaoValor.trim(),
-      status: isEditing ? status : 'Sugestão', // Novo entra sempre como Sugestão
+      status: isEditing ? status : 'Sugestão',
       data: itemToEdit?.data || getTodayISODate(),
     });
 
@@ -148,33 +145,33 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#282D13]/70 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="parchment-card w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col border-[#C6AD78]">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#1f3524] flex items-center justify-between">
+        <div className="p-4 sm:p-5 bg-[#282D13] border-b border-[#3f471e] flex items-center justify-between text-[#F8EDD5]">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#182b1d] text-[#d49e2a] border border-[#27442d]">
+            <span className="p-1.5 rounded-lg bg-[#3a4419] text-[#F8EDD5] border border-[#C6AD78]">
               {isEditing ? <Pencil className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
             </span>
-            <h2 className="text-base sm:text-lg font-bold text-[#f4ecd8]">
+            <h2 className="font-rpg text-base sm:text-lg font-bold text-[#F8EDD5]">
               {isEditing ? 'Editar Material de RPG' : 'Sugerir Nova Compra'}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-[#738776] hover:text-[#f4ecd8] p-1.5 rounded-lg hover:bg-[#182b1d] transition-colors"
+            className="text-[#cfc4a6] hover:text-[#F8EDD5] p-1.5 rounded-lg hover:bg-[#363e1a] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 flex-1 text-xs">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 flex-1 text-xs text-[#302414]">
           
           {/* Nome do Item */}
           <div>
-            <label className="block text-xs font-semibold text-[#c2cbbe] mb-1">
+            <label className="block text-xs font-semibold text-[#302414] mb-1">
               Nome do Item / Módulo *
             </label>
             <input
@@ -183,20 +180,20 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               placeholder="Ex: Season of Ghosts Remastered, Daggerheart Bundle..."
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-[#f3efe6] placeholder-[#506352] focus:outline-none focus:border-[#d49e2a]"
+              className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
             />
           </div>
 
           {/* Tipo de Produto & Sistema de RPG */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-medium text-[#8e9f90] mb-1">
+              <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
                 Tipo de Produto *
               </label>
               <select
                 value={produto}
                 onChange={(e) => setProduto(e.target.value as ProductType)}
-                className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] font-medium focus:outline-none focus:border-[#48551F]"
               >
                 {OFFICIAL_PRODUCT_TYPES.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -205,7 +202,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-[#8e9f90] mb-1">
+              <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
                 Sistema de RPG *
               </label>
               <select
@@ -214,7 +211,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                   setSistema(e.target.value);
                   setIsCustomSistema(e.target.value === 'Outro');
                 }}
-                className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] font-medium focus:outline-none focus:border-[#48551F]"
               >
                 {SISTEMAS_PADRAO.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -223,16 +220,16 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             </div>
           </div>
 
-          {/* O status só aparece no modo EDITAR (PROIBIDO no cadastro novo!) */}
+          {/* O status só aparece no modo EDITAR */}
           {isEditing && (
             <div>
-              <label className="block text-[11px] font-medium text-[#d49e2a] mb-1">
+              <label className="block text-[11px] font-semibold text-[#716016] mb-1">
                 Estágio / Status do Item
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as ItemStatus)}
-                className="w-full bg-[#0d160f] border border-[#27442d] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] font-medium focus:outline-none focus:border-[#48551F]"
               >
                 <option value="Sugestão">💡 1. Sugestão (Recebendo apoios)</option>
                 <option value="Em Financiamento">🔥 2. Em Financiamento (Vaquinha Aberta)</option>
@@ -243,7 +240,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
 
           {isCustomSistema && (
             <div>
-              <label className="block text-[11px] font-medium text-[#d49e2a] mb-1">
+              <label className="block text-[11px] font-semibold text-[#716016] mb-1">
                 Digite o Sistema de RPG:
               </label>
               <input
@@ -251,14 +248,14 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                 placeholder="Ex: Tormenta20, Alien RPG, Draw Steel..."
                 value={customSistema}
                 onChange={(e) => setCustomSistema(e.target.value)}
-                className="w-full bg-[#0d160f] border border-[#d49e2a]/50 rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
               />
             </div>
           )}
 
           {/* Link da Loja */}
           <div>
-            <label className="block text-[11px] font-medium text-[#8e9f90] mb-1">
+            <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
               Link da Loja / Patreon (Opcional)
             </label>
             <input
@@ -266,22 +263,22 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               placeholder="https://www.foundryvtt.store/products/..."
               value={link}
               onChange={(e) => setLink(e.target.value)}
-              className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
+              className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] placeholder-[#8c7b64] font-mono focus:outline-none focus:border-[#48551F]"
             />
           </div>
 
-          {/* Imagem do Item (Gerenciada pelo Mestre ou Sugestão) */}
-          <div className="p-3 bg-[#0d160f] border border-[#1e3422] rounded-xl space-y-2">
+          {/* Imagem do Item */}
+          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-semibold text-[#f4ecd8] flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-[#d49e2a]" />
+              <label className="text-[11px] font-bold text-[#302414] flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-[#716016]" />
                 <span>Imagem Ilustrativa / Capa do Material (Opcional)</span>
               </label>
               {imageUrl && (
                 <button
                   type="button"
                   onClick={() => setImageUrl('')}
-                  className="text-[10px] text-red-400 hover:text-red-300 flex items-center gap-0.5"
+                  className="text-[10px] text-[#8b261b] hover:underline flex items-center gap-0.5 cursor-pointer"
                 >
                   <Trash2 className="w-3 h-3" />
                   <span>Remover</span>
@@ -296,14 +293,14 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                   placeholder="https://exemplo.com/capa.jpg"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-2.5 py-1.5 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
+                  className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-2.5 py-1.5 text-xs text-[#302414] placeholder-[#8c7b64] font-mono focus:outline-none focus:border-[#48551F]"
                 />
               </div>
 
               {isMaster && (
                 <div className="sm:col-span-4">
-                  <label className="inline-flex items-center justify-center gap-1.5 w-full py-1.5 px-2 bg-[#1b2f20] hover:bg-[#25422b] text-[#d49e2a] hover:text-[#f4ecd8] border border-[#2e5035] rounded-lg text-xs font-semibold cursor-pointer transition-colors">
-                    <Upload className="w-3.5 h-3.5" />
+                  <label className="inline-flex items-center justify-center gap-1.5 w-full py-1.5 px-2 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] rounded-lg text-xs font-semibold cursor-pointer transition-colors">
+                    <Upload className="w-3.5 h-3.5 text-[#716016]" />
                     <span>{isUploadingImage ? 'Enviando...' : 'Upload Arquivo'}</span>
                     <input
                       type="file"
@@ -318,32 +315,29 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             </div>
 
             {uploadError && (
-              <p className="text-[10px] text-red-400 font-medium">{uploadError}</p>
+              <p className="text-[10px] text-[#8b261b] font-medium">{uploadError}</p>
             )}
 
             {imageUrl && (
-              <div className="mt-2 flex items-center gap-3 p-2 bg-[#142318] rounded-lg border border-[#203625]">
+              <div className="mt-2 flex items-center gap-3 p-2 bg-[#FAF4E6] rounded-lg border border-[#C6AD78]">
                 <img
                   src={imageUrl}
                   alt="Prévia"
-                  className="w-16 h-12 rounded object-cover border border-[#27442d]"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="40" viewBox="0 0 60 40"><rect fill="%231a2f20" width="60" height="40"/><text fill="%238a9d8c" x="50%" y="55%" text-anchor="middle" font-size="8">Erro URL</text></svg>';
-                  }}
+                  className="w-16 h-12 rounded object-cover border border-[#C6AD78]"
                 />
-                <span className="text-[10px] text-[#8a9d8c] truncate max-w-xs">{imageUrl}</span>
+                <span className="text-[10px] text-[#71634D] truncate max-w-xs">{imageUrl}</span>
               </div>
             )}
           </div>
 
           {/* Valor, Moeda & Obs de Promoção */}
-          <div className="grid grid-cols-3 gap-2.5 p-3 rounded-xl bg-[#0d160f] border border-[#1e3422]">
+          <div className="grid grid-cols-3 gap-2.5 p-3 rounded-xl bg-[#FBF4E4] border border-[#D6C296]">
             <div>
-              <label className="block text-[10px] text-[#7a8e7d] mb-1">Moeda</label>
+              <label className="block text-[10px] font-semibold text-[#71634D] mb-1">Moeda</label>
               <select
                 value={moeda}
                 onChange={(e) => setMoeda(e.target.value as 'USD' | 'BRL')}
-                className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-2 py-1.5 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-2 py-1.5 text-xs text-[#302414] font-medium focus:outline-none focus:border-[#48551F]"
               >
                 <option value="USD">USD ($)</option>
                 <option value="BRL">BRL (R$)</option>
@@ -351,7 +345,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[10px] text-[#7a8e7d] mb-1">Valor Total</label>
+              <label className="block text-[10px] font-semibold text-[#71634D] mb-1">Valor Total</label>
               <input
                 type="number"
                 step="0.01"
@@ -359,25 +353,25 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                 placeholder="0.00"
                 value={valorNumerico}
                 onChange={(e) => setValorNumerico(e.target.value)}
-                className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-2.5 py-1.5 text-xs text-[#f3efe6] font-mono focus:outline-none focus:border-[#d49e2a]"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-2.5 py-1.5 text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] text-[#7a8e7d] mb-1">Obs / Promoção</label>
+              <label className="block text-[10px] font-semibold text-[#71634D] mb-1">Obs / Promoção</label>
               <input
                 type="text"
                 placeholder="Ex: 11,99 na promo"
                 value={observacaoValor}
                 onChange={(e) => setObservacaoValor(e.target.value)}
-                className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-2 py-1.5 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-2.5 py-1.5 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
               />
             </div>
           </div>
 
           {/* Sugerido por (Nome + WhatsApp) */}
-          <div className="p-3 bg-[#0d160f] border border-[#1e3422] rounded-xl space-y-2">
-            <div className="flex items-center gap-1.5 text-[#d49e2a] font-semibold text-xs">
+          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-2">
+            <div className="flex items-center gap-1.5 text-[#716016] font-bold text-xs">
               <User className="w-3.5 h-3.5" />
               <span>Sugerido por (Perfil Vinculado):</span>
             </div>
@@ -389,7 +383,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                   placeholder="Seu Nome / Apelido *"
                   value={sugeridoPorNome}
                   onChange={(e) => setSugeridoPorNome(e.target.value)}
-                  className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-3 py-1.5 text-xs text-[#f3efe6] placeholder-[#506352] focus:outline-none focus:border-[#d49e2a]"
+                  className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-3 py-1.5 text-xs text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
                 />
               </div>
               <div>
@@ -398,12 +392,12 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                   placeholder="Seu WhatsApp (com DDD)"
                   value={sugeridoPorTelefone}
                   onChange={handlePhoneChange}
-                  className="w-full bg-[#142318] border border-[#233a29] rounded-lg px-3 py-1.5 text-xs text-[#f3efe6] placeholder-[#506352] font-mono focus:outline-none focus:border-[#d49e2a]"
+                  className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-3 py-1.5 text-xs text-[#302414] placeholder-[#8c7b64] font-mono focus:outline-none focus:border-[#48551F]"
                 />
               </div>
             </div>
             {!isEditing && (
-              <p className="text-[10px] text-[#7a8e7d]">
+              <p className="text-[10px] text-[#71634D]">
                 Você entrará automaticamente como o 1º apoiador deste item na fila de sugestões.
               </p>
             )}
@@ -411,7 +405,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
 
           {/* Descrição Opcional */}
           <div>
-            <label className="block text-[11px] font-medium text-[#8e9f90] mb-1">
+            <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
               Descrição do Pacote (Opcional)
             </label>
             <textarea
@@ -419,15 +413,15 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               placeholder="O que vem no pacote? Mapas, bestiário, regras..."
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
-              className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] placeholder-[#506352] focus:outline-none focus:border-[#d49e2a]"
+              className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
             />
           </div>
 
           {/* Trava de Segurança: Senha de Admin Obrigatória no Modo Edição */}
           {isEditing && (
-            <div className="p-3 bg-[#0d160f] border border-[#27442d] rounded-xl space-y-1.5">
-              <label className="block text-xs font-semibold text-[#f4ecd8] flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#d49e2a]" />
+            <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-1.5">
+              <label className="block text-xs font-semibold text-[#302414] flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#716016]" />
                 <span>Senha do Admin para salvar / mudar status *</span>
               </label>
               <input
@@ -438,10 +432,10 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                   setAdminPassword(e.target.value);
                   if (passwordError) setPasswordError('');
                 }}
-                className="w-full bg-[#142318] border border-[#233a29] focus:border-[#d49e2a] rounded-lg px-3 py-2 text-xs text-[#f3efe6] font-mono focus:outline-none"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] focus:border-[#48551F] rounded-lg px-3 py-2 text-xs text-[#302414] font-mono focus:outline-none"
               />
               {passwordError && (
-                <div className="text-xs text-[#e06c75] font-semibold flex items-center gap-1">
+                <div className="text-xs text-[#8b261b] font-semibold flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{passwordError}</span>
                 </div>
@@ -450,17 +444,17 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
           )}
 
           {/* Footer Actions */}
-          <div className="pt-3 border-t border-[#1f3524] flex items-center justify-end gap-2">
+          <div className="pt-3 border-t border-[#D6C296] flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-[#a4b5a6] hover:text-[#f4ecd8] bg-[#16271a] hover:bg-[#1e3422] rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-[#302414] bg-[#EADBBE] hover:bg-[#E2D1A8] rounded-xl transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#122015] bg-[#d49e2a] hover:bg-[#e5b23d] rounded-xl transition-colors shadow-md cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F8EDD5] bg-[#48551F] hover:bg-[#59672A] rounded-xl transition-colors shadow-sm cursor-pointer"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{isEditing ? 'Salvar Alterações' : 'Cadastrar Sugestão'}</span>

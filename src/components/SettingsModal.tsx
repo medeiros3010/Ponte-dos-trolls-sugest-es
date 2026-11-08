@@ -191,40 +191,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#122015] border border-[#233a29] rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/70 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="parchment-card w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col border-[#C6AD78]">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#1f3524] flex items-center justify-between">
+        <div className="p-4 sm:p-5 bg-[#282D13] border-b border-[#3f471e] flex items-center justify-between text-[#F8EDD5]">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#182b1d] text-[#d49e2a] border border-[#28462f]">
+            <span className="p-1.5 rounded-lg bg-[#3a4419] text-[#F8EDD5] border border-[#C6AD78]">
               <Database className="w-4 h-4" />
             </span>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-[#f4ecd8]">
+              <h2 className="text-base sm:text-lg font-bold font-rpg text-[#F8EDD5]">
                 Banco de Dados & Sincronização
               </h2>
-              <p className="text-xs text-[#8a9d8c]">
+              <p className="text-xs text-[#cfc4a6]">
                 Banco JSON automático e compartilhado com o grupo do WhatsApp
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-[#738776] hover:text-[#f3efe6] p-1.5 rounded-lg hover:bg-[#192c1d] transition-colors"
+            className="text-[#cfc4a6] hover:text-[#F8EDD5] p-1.5 rounded-lg hover:bg-[#363e1a] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[#1f3524] px-4 sm:px-6 bg-[#0e1710]/50 text-xs">
+        <div className="flex border-b border-[#D6C296] px-4 sm:px-6 bg-[#FBF4E4] text-xs">
           <button
             onClick={() => setActiveTab('cloud')}
-            className={`py-3 px-3.5 font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
+            className={`py-3 px-3.5 font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'cloud'
-                ? 'border-[#d49e2a] text-[#d49e2a]'
-                : 'border-transparent text-[#7a8e7d] hover:text-[#f3efe6]'
+                ? 'border-[#48551F] text-[#48551F]'
+                : 'border-transparent text-[#71634D] hover:text-[#302414]'
             }`}
           >
             <Cloud className="w-3.5 h-3.5" />
@@ -233,10 +233,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <button
             onClick={() => setActiveTab('import')}
-            className={`py-3 px-3.5 font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
+            className={`py-3 px-3.5 font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'import'
-                ? 'border-[#d49e2a] text-[#d49e2a]'
-                : 'border-transparent text-[#7a8e7d] hover:text-[#f3efe6]'
+                ? 'border-[#48551F] text-[#48551F]'
+                : 'border-transparent text-[#71634D] hover:text-[#302414]'
             }`}
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -245,10 +245,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <button
             onClick={() => setActiveTab('export')}
-            className={`py-3 px-3.5 font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
+            className={`py-3 px-3.5 font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'export'
-                ? 'border-[#d49e2a] text-[#d49e2a]'
-                : 'border-transparent text-[#7a8e7d] hover:text-[#f3efe6]'
+                ? 'border-[#48551F] text-[#48551F]'
+                : 'border-transparent text-[#71634D] hover:text-[#302414]'
             }`}
           >
             <Download className="w-3.5 h-3.5" />
@@ -257,13 +257,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Body Content */}
-        <div className="p-4 sm:p-6 space-y-4 flex-1 text-xs">
+        <div className="p-4 sm:p-6 space-y-4 flex-1 text-xs text-[#302414]">
           
           {/* TAB: Cloud */}
           {activeTab === 'cloud' && (
             <div className="space-y-4">
-              <div className="p-3.5 bg-[#0d160f] border border-[#1e3422] rounded-xl text-[#9cb09e] space-y-1.5">
-                <p className="font-semibold text-[#d49e2a] text-xs flex items-center gap-1.5">
+              <div className="p-3.5 bg-[#FBF4E4] border border-[#D6C296] rounded-xl text-[#71634D] space-y-1.5">
+                <p className="font-semibold text-[#716016] text-xs flex items-center gap-1.5">
                   <Database className="w-3.5 h-3.5" />
                   <span>Sincronização Automática em Nuvem:</span>
                 </p>
@@ -273,31 +273,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Shareable Link Box */}
-              <div className="p-3.5 bg-[#16271a] border border-[#2e5035] rounded-xl space-y-2.5">
+              <div className="p-3.5 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[#f4ecd8] flex items-center gap-1.5 text-xs">
-                    <Share2 className="w-4 h-4 text-[#d49e2a]" />
+                  <span className="font-bold text-[#302414] flex items-center gap-1.5 text-xs">
+                    <Share2 className="w-4 h-4 text-[#716016]" />
                     <span>Link Sincronizado para o Grupo</span>
                   </span>
                   <button
                     onClick={handleCopyShareLink}
-                    className="flex items-center gap-1 text-xs font-bold text-[#122015] bg-[#d49e2a] hover:bg-[#e5b23d] px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                    className="flex items-center gap-1 text-xs font-bold text-[#F8EDD5] bg-[#48551F] hover:bg-[#59672A] px-3 py-1.5 rounded-lg transition-colors shadow-sm cursor-pointer"
                   >
                     {copiedShareLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedShareLink ? 'Link Copiado!' : 'Copiar Link'}</span>
                   </button>
                 </div>
-                <p className="text-[11px] text-[#8e9f90]">
+                <p className="text-[11px] text-[#71634D]">
                   Envie este link no grupo do WhatsApp. Qualquer pessoa que abrir acessará exatamente os mesmos itens atualizados:
                 </p>
-                <div className="bg-[#0c150e] p-2.5 rounded-lg text-[11px] font-mono text-[#a4b5a6] break-all border border-[#1f3524] select-all">
+                <div className="bg-[#F8EDD5] p-2.5 rounded-lg text-[11px] font-mono text-[#302414] break-all border border-[#C6AD78] select-all">
                   {shareableLink}
                 </div>
               </div>
 
               {/* Banco ID Management */}
               <div>
-                <label className="block text-xs font-semibold text-[#c2cbbe] mb-1.5">
+                <label className="block text-xs font-semibold text-[#302414] mb-1.5">
                   ID do Banco Compartilhado:
                 </label>
                 <div className="flex gap-2">
@@ -306,11 +306,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     placeholder="trolls-rpg-oficial"
                     value={binInput}
                     onChange={(e) => setBinInput(e.target.value)}
-                    className="flex-1 bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] font-mono placeholder-[#506352] focus:outline-none focus:border-[#d49e2a]"
+                    className="flex-1 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] font-mono placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
                   />
                   <button
                     onClick={handleSaveBinId}
-                    className="px-3.5 py-2 font-bold bg-[#1b2f20] hover:bg-[#233f2a] text-[#d49e2a] border border-[#2b4d33] rounded-xl transition-colors whitespace-nowrap"
+                    className="px-3.5 py-2 font-bold bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl transition-colors whitespace-nowrap cursor-pointer"
                   >
                     Conectar
                   </button>
@@ -318,9 +318,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={handleCreateNewBin}
                     disabled={isLoadingCloud}
                     title="Criar um novo banco separado com ID único"
-                    className="px-3 py-2 font-semibold bg-[#16271a] hover:bg-[#1f3524] text-[#a4b5a6] hover:text-[#f4ecd8] border border-[#25462d] rounded-xl transition-colors flex items-center gap-1.5"
+                    className="px-3 py-2 font-semibold bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
-                    <PlusCircle className="w-3.5 h-3.5 text-[#d49e2a]" />
+                    <PlusCircle className="w-3.5 h-3.5 text-[#716016]" />
                     <span className="hidden sm:inline">Novo Banco</span>
                   </button>
                 </div>
@@ -331,16 +331,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   onClick={handlePullFromCloud}
                   disabled={isLoadingCloud}
-                  className="py-2.5 px-3 rounded-xl font-semibold bg-[#16271a] hover:bg-[#1e3422] text-[#52c27c] border border-[#25462d] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="py-2.5 px-3 rounded-xl font-semibold bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4 text-[#48551F]" />
                   <span>Puxar da Nuvem (Atualizar)</span>
                 </button>
 
                 <button
                   onClick={handlePushToCloud}
                   disabled={isLoadingCloud}
-                  className="py-2.5 px-3 rounded-xl font-semibold bg-[#16271a] hover:bg-[#1e3422] text-[#d49e2a] border border-[#25462d] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="py-2.5 px-3 rounded-xl font-semibold bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] border border-[#3f471e] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                 >
                   <Upload className="w-4 h-4" />
                   <span>Gravar na Nuvem (Enviar Tudo)</span>
@@ -348,8 +348,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {cloudStatus && (
-                <div className="p-2.5 bg-[#0d160f] border border-[#1e3422] rounded-xl text-[11px] font-mono text-center text-[#c2cbbe]">
-                  {isLoadingCloud && <RefreshCw className="w-3.5 h-3.5 animate-spin inline mr-2 text-[#d49e2a]" />}
+                <div className="p-2.5 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-[11px] font-mono text-center text-[#71634D]">
+                  {isLoadingCloud && <RefreshCw className="w-3.5 h-3.5 animate-spin inline mr-2 text-[#716016]" />}
                   {cloudStatus}
                 </div>
               )}
@@ -359,17 +359,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB: Importar */}
           {activeTab === 'import' && (
             <div className="space-y-4">
-              <div className="p-3 bg-[#0d160f] border border-[#1e3422] rounded-xl text-[#a4b5a6] space-y-1">
-                <p className="font-semibold text-[#d49e2a]">
+              <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl text-[#71634D] space-y-1">
+                <p className="font-semibold text-[#716016]">
                   💡 Colar diretamente da Planilha:
                 </p>
                 <p className="text-[11px] leading-relaxed">
-                  No Google Sheets ou Excel, copie (<kbd className="px-1 rounded bg-[#182b1d] text-[#f4ecd8] font-mono">Ctrl+C</kbd>) as linhas e cole abaixo. Nosso leitor reconhece automaticamente as colunas da planilha oficial do grupo!
+                  No Google Sheets ou Excel, copie (<kbd className="px-1 rounded bg-[#EADBBE] text-[#302414] font-mono">Ctrl+C</kbd>) as linhas e cole abaixo. Nosso leitor reconhece automaticamente as colunas da planilha oficial do grupo!
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#c2cbbe] mb-1">
+                <label className="block text-xs font-medium text-[#302414] mb-1">
                   Cole as linhas da planilha aqui:
                 </label>
                 <textarea
@@ -377,13 +377,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={pastedText}
                   onChange={(e) => handleParseText(e.target.value)}
                   placeholder="2026-02-15	Battlezoo Adventures	Módulo Foundry	PF2E	...	https://...	Erick Santos	$ 20.00	Financiado"
-                  className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl p-3 text-xs text-[#f3efe6] font-mono placeholder-[#506352] focus:outline-none focus:border-[#d49e2a]"
+                  className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl p-3 text-xs text-[#302414] font-mono placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
                 />
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-1">
-                <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#182b1d] hover:bg-[#203a27] text-[#c2cbbe] hover:text-white cursor-pointer border border-[#27442d] transition-colors">
-                  <Upload className="w-3.5 h-3.5 text-[#d49e2a]" />
+                <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] cursor-pointer border border-[#C6AD78] transition-colors font-medium">
+                  <Upload className="w-3.5 h-3.5 text-[#716016]" />
                   <span>Ou selecione arquivo (.CSV / .TSV)</span>
                   <input
                     type="file"
@@ -395,33 +395,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {parsedPreview.length > 0 && (
-                <div className="p-3 rounded-xl bg-[#0d160f] border border-[#27442d] space-y-3">
+                <div className="p-3 rounded-xl bg-[#FBF4E4] border border-[#D6C296] space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-[#43aa6a] flex items-center gap-1.5">
+                    <span className="font-semibold text-[#48551F] flex items-center gap-1.5">
                       <CheckCircle2 className="w-4 h-4" />
                       <span>{parsedPreview.length} item(ns) identificados</span>
                     </span>
 
                     <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-1.5 text-[#a4b5a6] cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[#302414] cursor-pointer">
                         <input
                           type="radio"
                           name="mode"
                           value="append"
                           checked={importMode === 'append'}
                           onChange={() => setImportMode('append')}
-                          className="accent-[#d49e2a]"
+                          className="accent-[#48551F]"
                         />
                         <span>Adicionar aos atuais</span>
                       </label>
-                      <label className="flex items-center gap-1.5 text-[#e06c75] cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[#8b261b] cursor-pointer">
                         <input
                           type="radio"
                           name="mode"
                           value="replace"
                           checked={importMode === 'replace'}
                           onChange={() => setImportMode('replace')}
-                          className="accent-[#e06c75]"
+                          className="accent-[#8b261b]"
                         />
                         <span>Substituir tudo</span>
                       </label>
@@ -430,7 +430,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                   <button
                     onClick={handleConfirmImport}
-                    className="w-full py-2 px-3 rounded-xl font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] flex items-center justify-center gap-1.5 transition-colors shadow-md"
+                    className="w-full py-2 px-3 rounded-xl font-bold bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
                     <span>Confirmar Importação</span>
@@ -443,34 +443,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB: Exportar */}
           {activeTab === 'export' && (
             <div className="space-y-4 py-1">
-              <div className="p-4 bg-[#0d160f] border border-[#1e3422] rounded-xl space-y-2">
-                <h4 className="font-semibold text-[#f4ecd8] flex items-center gap-1.5">
-                  <Download className="w-4 h-4 text-[#d49e2a]" />
+              <div className="p-4 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-2">
+                <h4 className="font-semibold text-[#302414] flex items-center gap-1.5">
+                  <Download className="w-4 h-4 text-[#716016]" />
                   <span>Exportar Planilha Oficial (.CSV)</span>
                 </h4>
-                <p className="text-[#8e9f90] text-[11px] leading-relaxed">
+                <p className="text-[#71634D] text-[11px] leading-relaxed">
                   Baixa um arquivo .CSV com codificação UTF-8 BOM perfeitamente compatível com Microsoft Excel e Google Sheets, mantendo as colunas oficiais do grupo.
                 </p>
                 <button
                   onClick={handleExportCSV}
-                  className="w-full mt-2 py-2.5 px-4 rounded-xl font-bold bg-[#1b2f20] hover:bg-[#233f2a] text-[#f4ecd8] border border-[#2b4d33] flex items-center justify-center gap-2 transition-colors"
+                  className="w-full mt-2 py-2.5 px-4 rounded-xl font-bold bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
-                  <Download className="w-4 h-4 text-[#d49e2a]" />
+                  <Download className="w-4 h-4 text-[#716016]" />
                   <span>Baixar Planilha CSV ({currentItems.length} Itens)</span>
                 </button>
               </div>
 
-              <div className="p-4 bg-[#0d160f] border border-[#1e3422] rounded-xl space-y-2">
-                <h4 className="font-semibold text-[#f4ecd8] flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-[#43aa6a]" />
+              <div className="p-4 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-2">
+                <h4 className="font-semibold text-[#302414] flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-[#48551F]" />
                   <span>Versão Standalone (Arquivo Único HTML Offline)</span>
                 </h4>
-                <p className="text-[#8e9f90] text-[11px] leading-relaxed">
+                <p className="text-[#71634D] text-[11px] leading-relaxed">
                   Gera um arquivo único .html com Tailwind CSS, dados embutidos e tema da floresta para enviar no WhatsApp ou abrir em qualquer dispositivo sem servidor.
                 </p>
                 <button
                   onClick={handleExportHTML}
-                  className="w-full mt-2 py-2.5 px-4 rounded-xl font-bold bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  className="w-full mt-2 py-2.5 px-4 rounded-xl font-bold bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
                 >
                   <Globe className="w-4 h-4 stroke-[2.5]" />
                   <span>Baixar Arquivo HTML Standalone</span>
@@ -482,10 +482,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 border-t border-[#1f3524] bg-[#0e1710]/80 flex items-center justify-end">
+        <div className="p-4 sm:p-5 border-t border-[#D6C296] bg-[#FBF4E4] flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-medium text-[#c2cbbe] hover:text-[#f4ecd8] bg-[#16271a] hover:bg-[#1e3422] transition-colors"
+            className="px-4 py-2 rounded-xl text-xs font-medium text-[#302414] bg-[#EADBBE] hover:bg-[#E2D1A8] transition-colors cursor-pointer"
           >
             Fechar
           </button>

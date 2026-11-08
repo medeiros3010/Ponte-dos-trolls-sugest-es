@@ -1,8 +1,38 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FundingPackage, UserProfile, SISTEMAS_PADRAO, OFFICIAL_PRODUCT_TYPES, ProductType, ADMIN_PASSWORD } from '../types';
-import { ArrowLeft, BookOpen, Search, ExternalLink, FolderCheck, Users, Copy, Check, Trash2, Edit2, ShoppingCart, Info, MessageSquare, Phone, X, Filter, RotateCcw, Image as ImageIcon, Link as LinkIcon, KeyRound, Sparkles, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
+import {
+  FundingPackage,
+  UserProfile,
+  SISTEMAS_PADRAO,
+  OFFICIAL_PRODUCT_TYPES,
+  ProductType,
+  ADMIN_PASSWORD,
+} from '../types';
+import {
+  Search,
+  ExternalLink,
+  Users,
+  Copy,
+  Trash2,
+  Edit2,
+  ShoppingCart,
+  Info,
+  MessageSquare,
+  Phone,
+  X,
+  Filter,
+  RotateCcw,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  KeyRound,
+  CheckCircle2,
+  Package,
+  FolderCheck,
+  ChevronDown,
+  BookOpen,
+} from 'lucide-react';
 import { generateCatalogBuyMessage, extractPaidMemberEmails, formatDateDisplay } from '../utils/helpers';
 import { EditPackageImageModal } from './EditPackageImageModal';
+import { PageBanner } from './PageBanner';
 
 interface CatalogoViewProps {
   packages: FundingPackage[];
@@ -42,10 +72,13 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSistema, setSelectedSistema] = useState<string>('Todos');
-  const [selectedTipo, setSelectedTipo] = useState<string>('Todos');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('recentes');
+
+  // Mobile filters open/close
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   // Modal States
   const [selectedPackageDetails, setSelectedPackageDetails] = useState<FundingPackage | null>(null);
@@ -53,14 +86,17 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   const [copiedBuyMsg, setCopiedBuyMsg] = useState<boolean>(false);
   const [showRulesNotice, setShowRulesNotice] = useState<boolean>(false);
 
-  // Drive Link Quick Edit Modal (Requirement 5)
+  // Active Menu Dropdown for card
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  // Drive Link Quick Edit Modal
   const [driveEditPkg, setDriveEditPkg] = useState<FundingPackage | null>(null);
   const [editDriveUrl, setEditDriveUrl] = useState('');
   const [driveAdminPassword, setDriveAdminPassword] = useState('');
   const [driveEditError, setDriveEditError] = useState('');
   const [isSavingDrive, setIsSavingDrive] = useState(false);
 
-  // Edit Cover Image Modal (Requirement 3)
+  // Edit Cover Image Modal
   const [imageEditPkg, setImageEditPkg] = useState<FundingPackage | null>(null);
 
   // Base list of packages in Catálogo
@@ -68,10 +104,16 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     return packages.filter((p) => p.status === 'Catálogo');
   }, [packages]);
 
-  // Combined Filters and Sorting (Requirements 1, 3, 4)
+  const handleToggleCategory = (cat: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+    );
+  };
+
+  // Combined Filters and Sorting
   const filteredAndSortedPackages = useMemo(() => {
     const list = catalogPackages.filter((pkg) => {
-      // 0. Filtro Meu Acervo (Requirement 1)
+      // 0. Filtro Meu Acervo
       if (myAcervoActive) {
         const isUserParticipant = (pkg.apoiadores || []).some(
           (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
@@ -79,7 +121,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
         if (!isUserParticipant) return false;
       }
 
-      // 1. Text Search (title, description, internal sub-items, and supporters)
+      // 1. Text Search
       const q = searchTerm.toLowerCase().trim();
       const matchSearch =
         !q ||
@@ -97,19 +139,19 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
         Boolean(pkg.itensInclusos && pkg.itensInclusos.some((item) => item.toLowerCase().includes(q))) ||
         (pkg.apoiadores || []).some((ap) => ap.nome.toLowerCase().includes(q));
 
-      // 2. Sistema Filter (matches package or ANY internal sub-item)
+      // 2. Sistema Filter
       const matchSistema =
         selectedSistema === 'Todos' ||
         pkg.sistema === selectedSistema ||
         (pkg.itens && pkg.itens.some((it) => it.sistema === selectedSistema));
 
-      // 3. Tipo Filter (matches package or ANY internal sub-item)
-      const matchTipo =
-        selectedTipo === 'Todos' ||
-        pkg.tipo === selectedTipo ||
-        (pkg.itens && pkg.itens.some((it) => it.tipo === selectedTipo));
+      // 3. Categories (multi-checkbox)
+      const matchCategory =
+        selectedCategories.length === 0 ||
+        (pkg.tipo && selectedCategories.includes(pkg.tipo)) ||
+        (pkg.itens && pkg.itens.some((it) => it.tipo && selectedCategories.includes(it.tipo)));
 
-      // 4. Preço em Reais (uses valorCatalogoBRL; fallback to valorTotalBRL, 0 is valid)
+      // 4. Preço em Reais
       const catalogPrice =
         typeof pkg.valorCatalogoBRL === 'number'
           ? pkg.valorCatalogoBRL
@@ -121,7 +163,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
       const matchMinPrice = min === null || isNaN(min) || catalogPrice >= min;
       const matchMaxPrice = max === null || isNaN(max) || catalogPrice <= max;
 
-      return matchSearch && matchSistema && matchTipo && matchMinPrice && matchMaxPrice;
+      return matchSearch && matchSistema && matchCategory && matchMinPrice && matchMaxPrice;
     });
 
     // Sorting
@@ -143,7 +185,18 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     });
 
     return list;
-  }, [catalogPackages, myAcervoActive, currentUser.id, currentUser.nome, searchTerm, selectedSistema, selectedTipo, minPrice, maxPrice, sortBy]);
+  }, [
+    catalogPackages,
+    myAcervoActive,
+    currentUser.id,
+    currentUser.nome,
+    searchTerm,
+    selectedSistema,
+    selectedCategories,
+    minPrice,
+    maxPrice,
+    sortBy,
+  ]);
 
   // Clear all filters
   const handleClearFilters = () => {
@@ -151,13 +204,12 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     if (onToggleMyAcervo) onToggleMyAcervo(false);
     setSearchTerm('');
     setSelectedSistema('Todos');
-    setSelectedTipo('Todos');
+    setSelectedCategories([]);
     setMinPrice('');
     setMaxPrice('');
     setSortBy('recentes');
   };
 
-  // Requirement 8: Copy emails of participants who informed payment
   const handleCopyPaidEmails = (pkg: FundingPackage) => {
     const result = extractPaidMemberEmails(pkg, allUsers);
 
@@ -228,7 +280,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
       if (onUpdateDriveLink) {
         await onUpdateDriveLink(driveEditPkg.id, editDriveUrl.trim());
       }
-      // Update local state in details modal if open
       if (selectedPackageDetails && selectedPackageDetails.id === driveEditPkg.id) {
         setSelectedPackageDetails({ ...selectedPackageDetails, linkDrive: editDriveUrl.trim() });
       }
@@ -242,946 +293,750 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col animate-in fade-in duration-200">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
       
-      {/* Top Bar com Voltar */}
-      <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-[#1f3524]">
+      {/* Banner Superior com Arte dos Trolls (fiel ao Print 1 / image_968094c5.png) */}
+      <PageBanner
+        title="O acervo da Ponte"
+        subtitle="Encontre a próxima aventura da sua mesa."
+      />
+
+      {/* Botão de Filtros no Celular */}
+      <div className="lg:hidden mb-4">
         <button
-          onClick={onGoHome}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#142318] hover:bg-[#1a2f20] text-[#d49e2a] hover:text-[#f4ecd8] border border-[#27442d] text-xs font-semibold transition-all hover:-translate-x-0.5 cursor-pointer"
+          onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+          className="w-full py-2.5 px-4 bg-[#F8EDD5] border border-[#C6AD78] rounded-xl text-sm font-semibold text-[#302414] flex items-center justify-between shadow-sm cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Voltar ao Menu Inicial</span>
-        </button>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowRulesNotice(true)}
-            className="text-xs text-[#a4b5a6] hover:text-[#f4ecd8] flex items-center gap-1.5 bg-[#122015] hover:bg-[#182c1d] px-3 py-1.5 rounded-xl border border-[#203625] transition-colors cursor-pointer"
-            title="Ver regras de aquisição do Catálogo"
-          >
-            <Info className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Regras de Aquisição</span>
-          </button>
-          <span className="text-xs font-mono text-[#52c27c] bg-[#173320] border border-[#275232] px-3.5 py-1.5 rounded-xl font-bold">
-            {catalogPackages.length} pacotes no Acervo
+          <span className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-[#716016]" />
+            <span>Filtros do Acervo</span>
+            {(myAcervoActive || selectedCategories.length > 0 || selectedSistema !== 'Todos') && (
+              <span className="w-2 h-2 rounded-full bg-[#48551F]" />
+            )}
           </span>
-        </div>
+          <ChevronDown className={`w-4 h-4 transition-transform ${isMobileFiltersOpen ? 'rotate-180' : ''}`} />
+        </button>
       </div>
 
-      {/* Header do Catálogo */}
-      <div className="mb-6 space-y-1">
-        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#52c27c] uppercase tracking-wider">
-          <BookOpen className="w-4 h-4" />
-          <span>Acervo Concluído & Disponível no Google Drive</span>
-        </div>
-        <h1 className="font-rpg text-2xl sm:text-3xl font-bold text-[#f4ecd8]">
-          Catálogo de Produtos
-        </h1>
-        <p className="text-xs sm:text-sm text-[#8a9d8c]">
-          Materiais, módulos de Foundry VTT, livros e mapas já organizados e disponibilizados. Adquira pacotes completos com acesso imediato à pasta do Drive!
-        </p>
-      </div>
-
-      {/* Painel Completo de Filtros e Ordenação (Requirement 3) */}
-      <div className="bg-[#0e1911] border border-[#1f3524] rounded-2xl p-4 mb-8 space-y-3.5 shadow-lg">
-        {/* Linha 1: Busca Geral */}
-        <div className="relative">
-          <Search className="w-4 h-4 text-[#7a8e7d] absolute left-3.5 top-3" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por pacote, nome de módulos, livros, mapas ou cotistas..."
-            className="w-full pl-10 pr-4 py-2.5 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
-          />
-        </div>
-
-        {/* Linha 2: Sistema, Tipo, Faixa de Preço & Ordenação */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-          
-          {/* Filtro Sistema */}
-          <div>
-            <label className="block text-[10px] uppercase font-bold text-[#7a8e7d] mb-1">
-              🎲 Sistema:
-            </label>
-            <select
-              value={selectedSistema}
-              onChange={(e) => setSelectedSistema(e.target.value)}
-              className="w-full px-2.5 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
-            >
-              <option value="Todos">Todos os Sistemas</option>
-              {SISTEMAS_PADRAO.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+      {/* Main Layout: Sidebar Filtros à Esquerda + Grade de Produtos à Direita */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        
+        {/* SIDEBAR DE FILTROS (Fiel ao Print 1) */}
+        <aside
+          className={`w-full lg:w-64 shrink-0 parchment-card p-5 space-y-5 lg:sticky lg:top-24 ${
+            isMobileFiltersOpen ? 'block' : 'hidden lg:block'
+          }`}
+        >
+          {/* Cabeçalho do Filtro */}
+          <div className="flex items-center gap-2 pb-3 border-b border-[#D6C296]">
+            <Filter className="w-4 h-4 text-[#302414]" />
+            <h2 className="font-rpg text-base font-bold text-[#302414]">
+              Filtrar acervo
+            </h2>
           </div>
 
-          {/* Filtro Tipo (Requirement 4: 4 tipos oficiais + Todos) */}
-          <div>
-            <label className="block text-[10px] uppercase font-bold text-[#7a8e7d] mb-1">
-              🏷️ Tipo de Produto:
-            </label>
-            <select
-              value={selectedTipo}
-              onChange={(e) => setSelectedTipo(e.target.value)}
-              className="w-full px-2.5 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
-            >
-              <option value="Todos">Todos os Tipos</option>
-              {OFFICIAL_PRODUCT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Preço Mínimo */}
-          <div>
-            <label className="block text-[10px] uppercase font-bold text-[#7a8e7d] mb-1">
-              💰 Preço Mínimo (R$):
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              placeholder="Ex: 5"
-              className="w-full px-2.5 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] font-mono focus:outline-none focus:border-[#43aa6a]"
-            />
-          </div>
-
-          {/* Preço Máximo */}
-          <div>
-            <label className="block text-[10px] uppercase font-bold text-[#7a8e7d] mb-1">
-              💰 Preço Máximo (R$):
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              placeholder="Ex: 30"
-              className="w-full px-2.5 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] font-mono focus:outline-none focus:border-[#43aa6a]"
-            />
-          </div>
-
-          {/* Ordenação */}
-          <div>
-            <label className="block text-[10px] uppercase font-bold text-[#7a8e7d] mb-1">
-              ⇅ Ordenar por:
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-2.5 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
-            >
-              <option value="recentes">Mais recentes</option>
-              <option value="menor-preco">Menor preço</option>
-              <option value="maior-preco">Maior preço</option>
-              <option value="nome-az">Nome (A – Z)</option>
-            </select>
-          </div>
-
-        </div>
-
-        {/* Linha 3: Resumo dos Resultados e Botão Limpar Filtros */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#1a2e20] text-xs">
-          <div className="text-[#8e9f90]">
-            Exibindo <strong className="text-[#f4ecd8] font-mono">{filteredAndSortedPackages.length}</strong> de{' '}
-            <span className="font-mono">{catalogPackages.length}</span> pacotes no catálogo
-          </div>
-
-          {(searchTerm || selectedSistema !== 'Todos' || selectedTipo !== 'Todos' || minPrice || maxPrice || sortBy !== 'recentes') && (
-            <button
-              onClick={handleClearFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#142618] hover:bg-[#1a3321] text-[#a4b5a6] hover:text-[#f4ecd8] border border-[#234229] transition-colors cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Limpar Filtros</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Banner de Filtro Ativo: Meu Acervo (Requirement 1) */}
-      {myAcervoActive && (
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-[#142d1c] to-[#0f2115] border-2 border-emerald-500/60 flex flex-wrap items-center justify-between gap-3 shadow-lg animate-in fade-in">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/50 flex items-center justify-center text-emerald-400 shrink-0">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-rpg text-sm sm:text-base font-bold text-[#f4ecd8] block">
-                Filtro Ativo: Meu Acervo ({filteredAndSortedPackages.length} pacote{filteredAndSortedPackages.length === 1 ? '' : 's'})
-              </span>
-              <p className="text-[11px] text-[#c7d5c9]">
-                Exibindo apenas materiais que você já financiou ou adquiriu. O acesso aos arquivos é feito pelo Google Drive.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setMyAcervoActive(false);
-              if (onToggleMyAcervo) onToggleMyAcervo(false);
-            }}
-            className="px-3.5 py-2 rounded-xl bg-emerald-900/80 hover:bg-emerald-800 text-[#f4ecd8] border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-            <span>Remover filtro e ver todo o catálogo</span>
-          </button>
-        </div>
-      )}
-
-      {/* Grade de Vitrine Responsiva (Requirement 1 - Print 1) */}
-      {filteredAndSortedPackages.length === 0 ? (
-        <div className="py-20 text-center border-2 border-dashed border-[#1f3524] rounded-3xl bg-[#0c150e]/60">
-          <div className="w-16 h-16 rounded-full bg-[#182c1d] border border-[#27442d] flex items-center justify-center mx-auto mb-3 text-2xl">
-            {myAcervoActive ? '📂' : '🔍'}
-          </div>
-          <h3 className="font-rpg text-lg font-bold text-[#f4ecd8]">
-            {myAcervoActive
-              ? 'Nenhum material no seu acervo pessoal ainda'
-              : 'Nenhum pacote encontrado com esses filtros'}
-          </h3>
-          <p className="text-xs text-[#8a9d8c] mt-1 max-w-md mx-auto">
-            {myAcervoActive
-              ? 'Participe dos financiamentos em andamento ou explore os itens da vitrine abaixo para adquirir novos pacotes!'
-              : 'Tente ajustar os filtros de sistema, tipo ou faixa de preço para visualizar outros materiais do catálogo.'}
-          </p>
-          <button
-            onClick={handleClearFilters}
-            className="mt-4 px-4 py-2 rounded-xl bg-[#1a2f20] hover:bg-[#25422d] border border-[#2f5539] text-[#d49e2a] text-xs font-bold transition-all cursor-pointer"
-          >
-            Ver Todo o Catálogo
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-          {filteredAndSortedPackages.map((pkg) => {
-            const valorCatalogo =
-              typeof pkg.valorCatalogoBRL === 'number'
-                ? pkg.valorCatalogoBRL
-                : pkg.valorTotalBRL;
-
-            const subItemsCount = pkg.itens?.length || pkg.itensInclusos?.length || 1;
-
-            return (
-              <div
-                key={pkg.id}
-                className="group flex flex-col bg-gradient-to-b from-[#132216] to-[#0c170f] border-2 border-[#1f3524] hover:border-[#43aa6a]/70 rounded-3xl p-4 shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#43aa6a]/10"
-              >
-                {/* 1. Imagem de Capa em Destaque (Sem deformação, proporção consistente) */}
-                <div
-                  onClick={() => setSelectedPackageDetails(pkg)}
-                  className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-[#09110a] border border-[#1b3120] flex items-center justify-center cursor-pointer group-hover:border-[#388554] transition-colors group/capa"
-                >
-                  {pkg.imageUrl ? (
-                    <img
-                      src={pkg.imageUrl}
-                      alt={pkg.titulo}
-                      className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-4 text-center">
-                      <div className="w-12 h-12 rounded-2xl bg-[#142618] border border-[#27442d] flex items-center justify-center text-xl mb-2">
-                        🎲
-                      </div>
-                      <span className="font-rpg text-xs font-bold text-[#8a9d8c]">A Ponte dos Trolls</span>
-                    </div>
-                  )}
-
-                  {/* Ação de Editar Capa para o Mestre sobre a Capa (Requirement 3) */}
-                  {isMaster && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageEditPkg(pkg);
-                      }}
-                      className="absolute inset-0 bg-black/75 opacity-0 group-hover/capa:opacity-100 flex flex-col items-center justify-center gap-1 text-[11px] text-[#f4ecd8] font-bold transition-opacity cursor-pointer p-1 text-center"
-                      title="Editar imagem da capa"
-                    >
-                      <ImageIcon className="w-5 h-5 text-[#d49e2a]" />
-                      <span>Editar Capa</span>
-                    </button>
-                  )}
-
-                  {/* Badges Flutuantes sobre a Imagem */}
-                  <div className="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[85%] pointer-events-none">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-black/80 backdrop-blur-md text-[#d49e2a] border border-[#d49e2a]/40 shadow-sm">
-                      {pkg.sistema || 'Foundry VTT'}
-                    </span>
-                    {pkg.tipo && (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#142618]/90 backdrop-blur-md text-[#86efac] border border-[#22c55e]/30 shadow-sm">
-                        {pkg.tipo}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Drive Badge se houver link */}
-                  {pkg.linkDrive && (
-                    <div className="absolute bottom-2 right-2 px-1.5 py-1 rounded-lg bg-emerald-950/80 backdrop-blur-sm border border-emerald-500/40 text-emerald-400" title="Disponível no Google Drive">
-                      <FolderCheck className="w-3.5 h-3.5" />
-                    </div>
-                  )}
-                </div>
-
-                {/* 2. Informações: Título & Itens */}
-                <div className="mt-3.5 space-y-1.5 flex-1 flex flex-col">
-                  <h3
-                    onClick={() => setSelectedPackageDetails(pkg)}
-                    className="font-rpg text-sm sm:text-base font-bold text-[#f4ecd8] group-hover:text-[#52c27c] transition-colors line-clamp-2 leading-snug cursor-pointer min-h-[2.5rem]"
-                    title={pkg.titulo}
-                  >
-                    {pkg.titulo}
-                  </h3>
-
-                  <p className="text-[11px] text-[#7a8e7d]">
-                    📦 {subItemsCount} {subItemsCount === 1 ? 'item incluso' : 'itens inclusos'}
-                  </p>
-
-                  {/* 3. Preço de Aquisição no Catálogo */}
-                  <div className="pt-2 mt-auto">
-                    <span className="text-[10px] uppercase font-bold text-[#8a9d8c] block">
-                      Valor de Aquisição:
-                    </span>
-                    <span className="font-rpg text-xl font-bold text-[#fbbf24] tracking-wide">
-                      R$ {valorCatalogo.toFixed(2).replace('.', ',')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 4. Botões de Ação Alinhados */}
-                <div className="mt-4 pt-3 border-t border-[#1a2e20] flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    {/* Botão Ver Detalhes */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPackageDetails(pkg)}
-                      className="flex-1 py-2 px-2.5 rounded-xl bg-[#142618] hover:bg-[#1a3321] text-[#a4b5a6] hover:text-[#f4ecd8] border border-[#244229] text-xs font-semibold transition-colors cursor-pointer text-center"
-                    >
-                      Ver detalhes
-                    </button>
-
-                    {/* Botão Compra WhatsApp */}
-                    <button
-                      type="button"
-                      onClick={() => setPackageToBuy(pkg)}
-                      className="flex-1 py-2 px-2.5 rounded-xl bg-[#236336] hover:bg-[#2c7842] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02]"
-                      title="Comprar via WhatsApp"
-                    >
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      <span>Comprar</span>
-                    </button>
-                  </div>
-
-                  {/* Ações de Mestre: Editar, Excluir, Capa e Link Drive */}
-                  {isMaster && (
-                    <div className="flex items-center justify-between gap-1 pt-1 border-t border-[#16271a] text-[11px]">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => handleOpenDriveEdit(pkg, e)}
-                          className="text-[#6ee7b7] hover:underline flex items-center gap-1 cursor-pointer"
-                          title="Editar link do Drive"
-                        >
-                          <FolderCheck className="w-3 h-3 text-[#34d399]" />
-                          <span>Drive</span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setImageEditPkg(pkg);
-                          }}
-                          className="text-[#d49e2a] hover:underline flex items-center gap-1 cursor-pointer"
-                          title="Editar capa do pacote"
-                        >
-                          <ImageIcon className="w-3 h-3" />
-                          <span>Capa</span>
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => onEditPackage(pkg)}
-                          className="p-1 text-[#a4b5a6] hover:text-[#f4ecd8] hover:bg-[#1a2f20] rounded-lg cursor-pointer"
-                          title="Editar pacote"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => onDeletePackage(pkg)}
-                          className="p-1 text-[#a4b5a6] hover:text-red-400 hover:bg-red-950/40 rounded-lg cursor-pointer"
-                          title="Excluir pacote"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ==================== MODAL DE DETALHES COMPLETOS DO PACOTE ==================== */}
-      {selectedPackageDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-[#122015] border-2 border-[#43aa6a]/70 rounded-3xl w-full max-w-2xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden">
-            
-            {/* Header Modal */}
-            <div className="px-6 py-4 bg-gradient-to-r from-[#173320] to-[#122015] border-b border-[#25462d] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#1f4228] border border-[#43aa6a]/50 flex items-center justify-center text-[#6ee7b7]">
-                  <BookOpen className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
-                    Detalhes do Pacote
-                  </h3>
-                  <p className="text-[11px] text-[#8a9d8c]">
-                    Acervo oficial de materiais de RPG da Ponte dos Trolls
-                  </p>
-                </div>
-              </div>
+          {/* Toggle: Meu acervo */}
+          <div className="space-y-1.5 pb-4 border-b border-[#D6C296]">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-[#302414]">Meu acervo</span>
               <button
-                onClick={() => setSelectedPackageDetails(null)}
-                className="p-1.5 rounded-lg text-[#8a9d8c] hover:text-[#f4ecd8] hover:bg-[#1a2f20] transition-colors cursor-pointer"
+                type="button"
+                role="switch"
+                aria-checked={myAcervoActive}
+                onClick={() => {
+                  const next = !myAcervoActive;
+                  setMyAcervoActive(next);
+                  if (onToggleMyAcervo) onToggleMyAcervo(next);
+                }}
+                className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  myAcervoActive ? 'bg-[#48551F]' : 'bg-[#D4C198]'
+                }`}
               >
-                <X className="w-5 h-5" />
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[#F8EDD5] shadow-md ring-0 transition duration-200 ease-in-out ${
+                    myAcervoActive ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
               </button>
             </div>
+            <p className="text-[11px] text-[#71634D] leading-tight">
+              Mostrar apenas pacotes que já possuo.
+            </p>
+          </div>
 
-            {/* Content Modal */}
-            <div className="p-5 sm:p-6 overflow-y-auto max-h-[75vh] space-y-5 text-xs">
-              
-              {/* Top Section com Imagem e Título */}
-              <div className="flex flex-col sm:flex-row gap-4 items-start">
-                <div className="w-full sm:w-40 aspect-[4/3] sm:aspect-square rounded-2xl overflow-hidden bg-[#0a120c] border border-[#203625] flex items-center justify-center shrink-0">
-                  {selectedPackageDetails.imageUrl ? (
-                    <img
-                      src={selectedPackageDetails.imageUrl}
-                      alt={selectedPackageDetails.titulo}
-                      className="w-full h-full object-contain p-2"
+          {/* Categorias (Checkboxes com ícones) */}
+          <div className="space-y-2 pb-4 border-b border-[#D6C296]">
+            <label className="block text-xs font-bold text-[#302414]">
+              Categorias
+            </label>
+            <div className="space-y-1.5 text-xs text-[#302414]">
+              {[
+                { id: 'Livros', label: 'Livros', icon: '📖' },
+                { id: 'Mapas', label: 'Mapas', icon: '🗺️' },
+                { id: 'Material para VTT', label: 'Material para VTT', icon: '🖥️' },
+                { id: 'Outros', label: 'Outros', icon: '🎲' },
+              ].map((cat) => {
+                const checked = selectedCategories.includes(cat.id);
+                return (
+                  <label
+                    key={cat.id}
+                    className="flex items-center justify-between py-1 px-1.5 rounded-lg hover:bg-[#EFE3C8] transition-colors cursor-pointer select-none"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-sm">{cat.icon}</span>
+                      <span className="font-medium">{cat.label}</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => handleToggleCategory(cat.id)}
+                      className="w-4 h-4 rounded border-[#C6AD78] text-[#48551F] focus:ring-[#48551F] accent-[#48551F] cursor-pointer"
                     />
-                  ) : (
-                    <div className="text-center p-2 text-[#7a8e7d]">
-                      <span className="text-2xl block mb-1">📚</span>
-                      <span className="text-[10px]">A Ponte dos Trolls</span>
-                    </div>
-                  )}
-                </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
 
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-[#1c3222] text-[#d49e2a] border border-[#d49e2a]/30">
-                      {selectedPackageDetails.sistema || 'Foundry VTT'}
-                    </span>
-                    {selectedPackageDetails.tipo && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#1a3321] text-[#86efac] border border-[#22c55e]/30">
-                        {selectedPackageDetails.tipo}
-                      </span>
-                    )}
-                    {selectedPackageDetails.finalizadoEm && (
-                      <span className="text-[11px] text-[#7a8e7d]">
-                        Finalizado em {formatDateDisplay(selectedPackageDetails.finalizadoEm)}
-                      </span>
-                    )}
-                  </div>
+          {/* Sistema */}
+          <div className="space-y-1.5 pb-4 border-b border-[#D6C296]">
+            <label className="block text-xs font-bold text-[#302414]">
+              Sistema
+            </label>
+            <div className="relative">
+              <select
+                value={selectedSistema}
+                onChange={(e) => setSelectedSistema(e.target.value)}
+                className="w-full appearance-none bg-[#FBF4E4] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] font-medium focus:outline-none focus:border-[#48551F] cursor-pointer"
+              >
+                <option value="Todos">Todos os sistemas</option>
+                {SISTEMAS_PADRAO.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
 
-                  <h2 className="font-rpg text-lg sm:text-xl font-bold text-[#f4ecd8] leading-tight">
-                    {selectedPackageDetails.titulo}
-                  </h2>
+          {/* Faixa de Preço */}
+          <div className="space-y-1.5 pb-4 border-b border-[#D6C296]">
+            <label className="block text-xs font-bold text-[#302414]">
+              Faixa de preço
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="0"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                placeholder="R$ mín."
+                className="w-full bg-[#FBF4E4] border border-[#C6AD78] rounded-xl px-2.5 py-1.5 text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
+              />
+              <span className="text-xs text-[#71634D]">—</span>
+              <input
+                type="number"
+                min="0"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                placeholder="R$ máx."
+                className="w-full bg-[#FBF4E4] border border-[#C6AD78] rounded-xl px-2.5 py-1.5 text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
+              />
+            </div>
+          </div>
 
-                  {/* Preço de Aquisição */}
-                  <div className="p-3 rounded-xl bg-[#0c150e] border border-[#1f3524] inline-block">
-                    <span className="text-[10px] uppercase font-bold text-[#8a9d8c] block">
-                      Valor de Aquisição no Catálogo:
-                    </span>
-                    <span className="font-rpg text-xl font-bold text-[#fbbf24]">
-                      R${' '}
-                      {(
-                        typeof selectedPackageDetails.valorCatalogoBRL === 'number'
-                          ? selectedPackageDetails.valorCatalogoBRL
-                          : selectedPackageDetails.valorTotalBRL
-                      )
-                        .toFixed(2)
-                        .replace('.', ',')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {/* Botão Limpar Filtros */}
+          <button
+            onClick={handleClearFilters}
+            className="w-full py-2 px-3 bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] rounded-xl text-xs font-semibold text-[#302414] flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-[#716016]" />
+            <span>Limpar filtros</span>
+          </button>
+        </aside>
 
-              {/* Descrição */}
-              {selectedPackageDetails.descricao && (
-                <div className="p-3.5 rounded-2xl bg-[#0c150e] border border-[#1f3524] space-y-1">
-                  <span className="text-[11px] font-bold text-[#a4b5a6] uppercase tracking-wider block">
-                    Descrição do Material:
-                  </span>
-                  <p className="text-xs text-[#d1d5db] leading-relaxed">
-                    {selectedPackageDetails.descricao}
-                  </p>
-                </div>
+        {/* ÁREA PRINCIPAL: BARRA SUPERIOR + GRADE DE 3 COLUNAS */}
+        <div className="flex-1 min-w-0">
+          
+          {/* Barra Superior: Busca, Ordenação e Contagem (Fiel ao Print 1) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
+            
+            {/* Input de Busca */}
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-[#71634D] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar no acervo..."
+                className="w-full bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-9 pr-8 py-2.5 text-xs sm:text-sm text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F] shadow-sm"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71634D] hover:text-[#302414] p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
+            </div>
 
-              {/* Botão de Acesso ao Google Drive & Edição pelo Mestre */}
-              <div className="p-4 rounded-2xl bg-[#142618] border border-[#274c30] flex flex-wrap items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <span className="font-bold text-[#6ee7b7] flex items-center gap-1.5 text-xs">
-                    <FolderCheck className="w-4 h-4 text-[#34d399]" />
-                    <span>Acesso ao Google Drive:</span>
-                  </span>
-                  <span className="text-[11px] text-[#8e9f90]">
-                    {selectedPackageDetails.linkDrive
-                      ? 'Pasta oficial configurada com os arquivos e módulos'
-                      : 'Nenhum link do Drive cadastrado ainda.'}
-                  </span>
-                </div>
+            {/* Ordenação */}
+            <div className="relative shrink-0">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
+              >
+                <option value="recentes">Mais recentes</option>
+                <option value="menor-preco">Menor preço</option>
+                <option value="maior-preco">Maior preço</option>
+                <option value="nome-az">Nome (A – Z)</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
 
-                <div className="flex items-center gap-2">
-                  {selectedPackageDetails.linkDrive ? (
-                    <a
-                      href={selectedPackageDetails.linkDrive}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 rounded-xl bg-[#236336] hover:bg-[#2c7842] text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <FolderCheck className="w-4 h-4" />
-                      <span>Abrir no Google Drive</span>
-                    </a>
-                  ) : null}
+            {/* Contagem de Pacotes Disponíveis */}
+            <div className="text-xs text-[#71634D] font-medium shrink-0 self-center sm:self-auto">
+              <span className="font-bold text-[#302414] font-mono">{filteredAndSortedPackages.length}</span> pacotes disponíveis
+            </div>
 
-                  {isMaster && (
-                    <button
-                      type="button"
-                      onClick={() => handleOpenDriveEdit(selectedPackageDetails)}
-                      className="px-3 py-2 rounded-xl bg-[#1a3321] hover:bg-[#22442c] border border-[#2f5e3c] text-[#d49e2a] hover:text-[#f4ecd8] font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                      title="Editar link da pasta no Google Drive"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>{selectedPackageDetails.linkDrive ? 'Alterar Link' : 'Adicionar Link'}</span>
-                    </button>
-                  )}
-                </div>
+          </div>
+
+          {/* Grade de 3 Colunas de Produtos (Fiel ao Print 1) */}
+          {filteredAndSortedPackages.length === 0 ? (
+            <div className="parchment-card p-12 text-center my-6">
+              <div className="w-14 h-14 rounded-full bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center mx-auto mb-3 text-2xl">
+                {myAcervoActive ? '📂' : '🔍'}
               </div>
+              <h3 className="font-rpg text-lg font-bold text-[#302414]">
+                {myAcervoActive
+                  ? 'Nenhum material no seu acervo pessoal'
+                  : 'Nenhum pacote encontrado'}
+              </h3>
+              <p className="text-xs text-[#71634D] max-w-md mx-auto mt-1 mb-4">
+                {myAcervoActive
+                  ? 'Você ainda não participou de nenhum rateio concluído deste banco de dados.'
+                  : 'Tente ajustar os filtros ou a palavra-chave da busca.'}
+              </p>
+              <button
+                onClick={handleClearFilters}
+                className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Limpar filtros
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredAndSortedPackages.map((pkg) => {
+                const isUserParticipant = (pkg.apoiadores || []).some(
+                  (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
+                );
 
-              {/* Itens Inclusos com Miniaturas (Requirement 2) */}
-              <div className="p-4 rounded-2xl bg-[#0c150e] border border-[#1f3524] space-y-3">
-                <span className="text-[11px] font-bold text-[#52c27c] uppercase tracking-wider block">
-                  Itens Inclusos neste Pacote ({selectedPackageDetails.itens?.length || selectedPackageDetails.itensInclusos?.length || 0}):
-                </span>
+                const catalogPrice =
+                  typeof pkg.valorCatalogoBRL === 'number'
+                    ? pkg.valorCatalogoBRL
+                    : pkg.valorTotalBRL;
 
-                {selectedPackageDetails.itens && selectedPackageDetails.itens.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {selectedPackageDetails.itens.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-2.5 p-2 rounded-xl bg-[#122015] border border-[#1e3823]"
-                      >
-                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#0c150e] border border-[#27442d] flex items-center justify-center shrink-0">
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.nome} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xs text-[#6e8571]">📜</span>
+                const itemCount = Array.isArray(pkg.itens) && pkg.itens.length > 0
+                  ? pkg.itens.length
+                  : (pkg.itensInclusos ? pkg.itensInclusos.length : 1);
+
+                return (
+                  <div
+                    key={pkg.id}
+                    className="parchment-card overflow-hidden flex flex-col group hover:shadow-md transition-all duration-200 border-[#C6AD78]"
+                  >
+                    {/* Capa do Produto */}
+                    <div className="relative aspect-[16/10] bg-[#282D13] overflow-hidden">
+                      {pkg.imageUrl ? (
+                        <img
+                          src={pkg.imageUrl}
+                          alt={pkg.titulo}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-[#252b12] text-[#8c9c64] p-4 text-center">
+                          <Package className="w-10 h-10 mb-1 opacity-70" />
+                          <span className="text-xs font-serif">{pkg.titulo}</span>
+                        </div>
+                      )}
+
+                      {/* Selo: No seu acervo (Top Left) */}
+                      {isUserParticipant && (
+                        <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-md bg-[#3e4e1a] text-[#F8EDD5] text-[11px] font-bold shadow-md flex items-center gap-1 border border-[#5d7328]">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#a8d363]" />
+                          <span>No seu acervo</span>
+                        </div>
+                      )}
+
+                      {/* Botões do Mestre (Top Right) */}
+                      {isMaster && (
+                        <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+                          {/* Editar Imagem */}
+                          {onUpdatePackageImage && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setImageEditPkg(pkg);
+                              }}
+                              className="p-1.5 rounded-lg bg-[#282D13]/85 hover:bg-[#282D13] text-[#F8EDD5] border border-[#6b7a35] shadow-md transition-colors cursor-pointer"
+                              title="Alterar capa do pacote"
+                            >
+                              <ImageIcon className="w-3.5 h-3.5" />
+                            </button>
                           )}
-                        </div>
 
-                        <div className="min-w-0 flex-1">
-                          <span className="font-semibold text-[#f4ecd8] block truncate text-xs">
-                            {item.nome}
-                          </span>
-                          <div className="flex items-center gap-1.5 text-[10px] text-[#8e9f90]">
-                            <span className="text-[#d49e2a] font-medium">{item.sistema}</span>
-                            <span>·</span>
-                            <span>{item.tipo || 'Material para VTT'}</span>
-                          </div>
-                        </div>
+                          {/* Menu 3 Pontos */}
+                          <div className="relative">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuId(activeMenuId === pkg.id ? null : pkg.id);
+                              }}
+                              className="p-1.5 rounded-lg bg-[#282D13]/85 hover:bg-[#282D13] text-[#F8EDD5] border border-[#6b7a35] shadow-md transition-colors cursor-pointer"
+                              title="Mais opções do Mestre"
+                            >
+                              <span className="text-xs font-bold leading-none px-0.5">⋮</span>
+                            </button>
 
-                        {item.link && (
-                          <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-1 text-[#6ee7b7] hover:text-white"
-                            title="Ver link do produto"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#d1d5db]">
-                    {(selectedPackageDetails.itensInclusos || []).map((it, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-[#34d399] font-bold">✔</span>
-                        <span>{it}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                            {activeMenuId === pkg.id && (
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute right-0 mt-1 w-48 bg-[#F8EDD5] text-[#302414] rounded-xl shadow-xl border border-[#C6AD78] py-1.5 z-50 animate-in fade-in-50"
+                              >
+                                <button
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    onEditPackage(pkg);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5 text-[#48551F]" />
+                                  <span>Editar Pacote</span>
+                                </button>
 
-              {/* Cotistas e Histórico de Pagamentos (Requirement 7 & 8) */}
-              <div className="p-4 rounded-2xl bg-[#0c150e] border border-[#1f3524] space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-[#f4ecd8] flex items-center gap-1.5 text-xs">
-                      <Users className="w-3.5 h-3.5 text-[#d49e2a]" />
-                      <span>Participantes do Financiamento:</span>
-                    </span>
-                    {/* Contadores exigidos */}
-                    {(() => {
-                      const aps = selectedPackageDetails.apoiadores || [];
-                      const pags = selectedPackageDetails.pagamentos || {};
-                      const informedCount = aps.filter(
-                        (a) => a.pagamentoInformado || (pags[a.id] && pags[a.id].informouPagamento)
-                      ).length;
-                      const pendingCount = Math.max(0, aps.length - informedCount);
+                                <button
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    handleOpenDriveEdit(pkg);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                                >
+                                  <LinkIcon className="w-3.5 h-3.5 text-[#716016]" />
+                                  <span>Editar Link do Drive</span>
+                                </button>
 
-                      return (
-                        <div className="flex items-center gap-3 text-[11px] text-[#8a9d8c] pt-0.5">
-                          <span>Total: <strong className="text-[#f4ecd8] font-mono">{aps.length}</strong></span>
-                          <span>·</span>
-                          <span>Pagamento Informado: <strong className="text-[#34d399] font-mono">{informedCount}</strong></span>
-                          <span>·</span>
-                          <span>Pendentes: <strong className="text-amber-400 font-mono">{pendingCount}</strong></span>
-                        </div>
-                      );
-                    })()}
-                  </div>
+                                <button
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    handleCopyPaidEmails(pkg);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                                >
+                                  <Copy className="w-3.5 h-3.5 text-[#48551F]" />
+                                  <span>Copiar E-mails Pagos</span>
+                                </button>
 
-                  {/* Botão exclusivo do Mestre: Copiar E-mails (Requirement 8) */}
-                  {isMaster && (
-                    <button
-                      type="button"
-                      onClick={() => handleCopyPaidEmails(selectedPackageDetails)}
-                      className="px-3 py-1.5 rounded-xl bg-[#1b3322] hover:bg-[#254930] border border-[#34d399]/40 text-[#6ee7b7] font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                      title="Copiar e-mails de quem informou pagamento (1 por linha) para colar no Drive"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copiar e-mails de quem informou pagamento</span>
-                    </button>
-                  )}
-                </div>
+                                <div className="border-t border-[#D6C296] my-1" />
 
-                {/* Lista de Participantes com Status de Pagamento (sem expor e-mails a usuários comuns) */}
-                <div className="max-h-48 overflow-y-auto divide-y divide-[#182a1c] border border-[#1f3524] rounded-xl bg-[#09110a] p-2">
-                  {(selectedPackageDetails.apoiadores || []).length === 0 ? (
-                    <p className="text-[11px] text-[#6e8571] p-2 italic text-center">
-                      Nenhum participante registrado originalmente.
-                    </p>
-                  ) : (
-                    (selectedPackageDetails.apoiadores || []).map((ap, idx) => {
-                      const isPaid = Boolean(
-                        ap.pagamentoInformado ||
-                          (selectedPackageDetails.pagamentos?.[ap.id]?.informouPagamento)
-                      );
-                      const payDate =
-                        ap.dataPagamentoInformado ||
-                        selectedPackageDetails.pagamentos?.[ap.id]?.dataPagamentoInformado;
-
-                      return (
-                        <div key={ap.id || idx} className="py-1.5 px-2 flex items-center justify-between text-xs">
-                          <span className="font-medium text-[#d1d5db]">
-                            {idx + 1}. {ap.nome}
-                          </span>
-
-                          <div className="flex items-center gap-2">
-                            {isPaid ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#142e1d] text-[#6ee7b7] border border-[#34d399]/40">
-                                <Check className="w-3 h-3 text-[#34d399]" />
-                                <span>Pagamento Informado</span>
-                                {payDate && (
-                                  <span className="text-[9px] text-[#8e9f90] ml-1">
-                                    ({formatDateDisplay(payDate.split('T')[0])})
-                                  </span>
-                                )}
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#282110] text-amber-400 border border-amber-500/30">
-                                <span>Pendente</span>
-                              </span>
+                                <button
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    onDeletePackage(pkg);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 text-[#8b261b] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-[#8b261b]" />
+                                  <span>Excluir do Catálogo</span>
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
-                      );
-                    })
+                      )}
+                    </div>
+
+                    {/* Conteúdo do Card */}
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                      <div>
+                        {/* Etiquetas: Sistema + Tipo de Produto */}
+                        <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F]">
+                            {pkg.sistema || 'Foundry VTT Geral'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F]">
+                            {pkg.tipo || 'Material para VTT'}
+                          </span>
+                        </div>
+
+                        {/* Título do Pacote */}
+                        <h3 className="font-rpg text-base sm:text-lg font-bold text-[#302414] leading-snug line-clamp-1 group-hover:text-[#48551F] transition-colors">
+                          {pkg.titulo}
+                        </h3>
+
+                        {/* Itens Inclusos */}
+                        <div className="flex items-center gap-1.5 text-xs text-[#71634D] mt-1">
+                          <Package className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                          <span>{itemCount} itens inclusos</span>
+                        </div>
+                      </div>
+
+                      {/* Rodapé: Preço & Botão de Ação */}
+                      <div className="pt-3 border-t border-[#D6C296] flex items-center justify-between gap-2">
+                        <div>
+                          <span className="font-mono text-lg font-bold text-[#302414]">
+                            R$ {catalogPrice.toFixed(2).replace('.', ',')}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => setSelectedPackageDetails(pkg)}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          <span>Ver pacote</span>
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        </div>
+
+      </div>
+
+      {/* ==================== MODAIS ==================== */}
+
+      {/* 1. Modal de Detalhes do Pacote */}
+      {selectedPackageDetails && (
+        <div className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="parchment-card w-full max-w-2xl overflow-hidden shadow-2xl my-8 animate-in fade-in-50 duration-150">
+            
+            {/* Header da Capa */}
+            <div className="relative aspect-[21/9] bg-[#282D13]">
+              {selectedPackageDetails.imageUrl ? (
+                <img
+                  src={selectedPackageDetails.imageUrl}
+                  alt={selectedPackageDetails.titulo}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[#8c9c64]">
+                  <Package className="w-12 h-12 opacity-60" />
+                </div>
+              )}
+              <button
+                onClick={() => setSelectedPackageDetails(null)}
+                className="absolute top-3 right-3 p-1.5 rounded-full bg-[#282D13]/80 hover:bg-[#282D13] text-[#F8EDD5] border border-[#6b7a35] transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+              
+              {/* Título & Badges */}
+              <div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F]">
+                    {selectedPackageDetails.sistema || 'Foundry VTT Geral'}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F]">
+                    {selectedPackageDetails.tipo || 'Material para VTT'}
+                  </span>
+                </div>
+                <h2 className="font-rpg text-2xl font-bold text-[#302414]">
+                  {selectedPackageDetails.titulo}
+                </h2>
+                {selectedPackageDetails.descricao && (
+                  <p className="text-xs sm:text-sm text-[#71634D] mt-2 whitespace-pre-wrap leading-relaxed">
+                    {selectedPackageDetails.descricao}
+                  </p>
+                )}
+              </div>
+
+              {/* Itens Inclusos */}
+              {Array.isArray(selectedPackageDetails.itens) && selectedPackageDetails.itens.length > 0 && (
+                <div className="p-4 rounded-xl bg-[#FBF4E4] border border-[#D6C296] space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#71634D] flex items-center gap-1.5">
+                    <Package className="w-3.5 h-3.5 text-[#716016]" />
+                    <span>Itens incluídos no pacote ({selectedPackageDetails.itens.length})</span>
+                  </h4>
+                  <ul className="divide-y divide-[#E3D1AC] text-xs">
+                    {selectedPackageDetails.itens.map((it, idx) => (
+                      <li key={idx} className="py-1.5 flex items-center justify-between gap-2">
+                        <span className="font-medium text-[#302414]">{it.nome}</span>
+                        {it.link && (
+                          <a
+                            href={it.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#48551F] hover:underline flex items-center gap-1 text-[11px]"
+                          >
+                            <span>Ver link original</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Seção de Acesso ao Drive ou Compra */}
+              {(() => {
+                const isUserParticipant = (selectedPackageDetails.apoiadores || []).some(
+                  (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
+                );
+                const catalogPrice =
+                  typeof selectedPackageDetails.valorCatalogoBRL === 'number'
+                    ? selectedPackageDetails.valorCatalogoBRL
+                    : selectedPackageDetails.valorTotalBRL;
+
+                return (
+                  <div className="p-4 rounded-xl bg-[#EDE2CA] border border-[#C6AD78] flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                      <span className="text-xs text-[#71634D] block">Preço de aquisição:</span>
+                      <span className="font-mono text-2xl font-bold text-[#302414]">
+                        R$ {catalogPrice.toFixed(2).replace('.', ',')}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                      {isUserParticipant ? (
+                        selectedPackageDetails.linkDrive ? (
+                          <a
+                            href={selectedPackageDetails.linkDrive}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            <FolderCheck className="w-4 h-4" />
+                            <span>Acessar Google Drive</span>
+                          </a>
+                        ) : (
+                          <div className="text-xs text-[#71634D] bg-[#F8EDD5] px-3 py-2 rounded-lg border border-[#D6C296]">
+                            Pasta do Drive sendo atualizada pelo Mestre.
+                          </div>
+                        )
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setPackageToBuy(selectedPackageDetails);
+                            setSelectedPackageDetails(null);
+                          }}
+                          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          <span>Adquirir Acesso</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Participantes que financiaram (Transparência) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#71634D] flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-[#716016]" />
+                    <span>Cotistas que financiaram ({selectedPackageDetails.apoiadores?.length || 0})</span>
+                  </h4>
+                  {isMaster && (
+                    <button
+                      onClick={() => handleCopyPaidEmails(selectedPackageDetails)}
+                      className="text-xs text-[#48551F] hover:underline font-semibold flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>Copiar e-mails</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-36 overflow-y-auto p-2.5 rounded-xl bg-[#FBF4E4] border border-[#D6C296] text-xs">
+                  {selectedPackageDetails.apoiadores && selectedPackageDetails.apoiadores.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedPackageDetails.apoiadores.map((ap) => (
+                        <span
+                          key={ap.id}
+                          className="px-2 py-1 rounded bg-[#F8EDD5] text-[#302414] border border-[#C6AD78] text-[11px] font-medium"
+                        >
+                          {ap.nome}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[#71634D]">Nenhum participante registrado.</span>
                   )}
                 </div>
               </div>
 
-              {/* Botões do Footer */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#1f3524]">
-                <button
-                  type="button"
-                  onClick={() => setSelectedPackageDetails(null)}
-                  className="px-4 py-2 rounded-xl text-xs text-[#8a9d8c] hover:text-[#f4ecd8] cursor-pointer"
-                >
-                  Fechar
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPackageToBuy(selectedPackageDetails);
-                    setSelectedPackageDetails(null);
-                  }}
-                  className="px-5 py-2.5 rounded-xl bg-[#236336] hover:bg-[#2c7842] text-white font-bold text-xs sm:text-sm shadow-lg shadow-black/40 transition-all flex items-center gap-2 cursor-pointer hover:scale-[1.02]"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span>Comprar este Financiamento</span>
-                </button>
-              </div>
-
             </div>
 
-          </div>
-        </div>
-      )}
-
-      {/* ==================== MODAL DE EDIÇÃO DO LINK DO DRIVE (Requirement 5) ==================== */}
-      {driveEditPkg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#122015] border-2 border-[#34d399]/70 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="px-5 py-4 bg-gradient-to-r from-[#173320] to-[#122015] border-b border-[#25462d] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FolderCheck className="w-4 h-4 text-[#34d399]" />
-                <h3 className="font-rpg text-base font-bold text-[#f4ecd8]">
-                  Editar Link da Pasta no Google Drive
-                </h3>
-              </div>
+            <div className="p-4 bg-[#EDE2CA] border-t border-[#D6C296] flex justify-end">
               <button
-                onClick={() => setDriveEditPkg(null)}
-                className="p-1 rounded-lg text-[#8a9d8c] hover:text-[#f4ecd8] cursor-pointer"
+                onClick={() => setSelectedPackageDetails(null)}
+                className="px-4 py-2 rounded-xl bg-[#F8EDD5] hover:bg-[#FBF4E4] text-[#302414] border border-[#C6AD78] text-xs font-semibold cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                Fechar
               </button>
             </div>
 
-            <form onSubmit={handleSaveDriveLink} className="p-5 space-y-4 text-xs">
-              <div>
-                <strong className="text-[#f4ecd8] block mb-1">{driveEditPkg.titulo}</strong>
-                <p className="text-[11px] text-[#8a9d8c]">
-                  Adicione, substitua ou remova o link da pasta de materiais compartilhada com os membros.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#a4b5a6] mb-1">
-                  URL da Pasta no Google Drive:
-                </label>
-                <input
-                  type="url"
-                  value={editDriveUrl}
-                  onChange={(e) => setEditDriveUrl(e.target.value)}
-                  placeholder="https://drive.google.com/drive/folders/..."
-                  className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] font-mono focus:outline-none focus:border-[#34d399]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#f4ecd8] mb-1">
-                  Senha do Mestre para Salvar:
-                </label>
-                <div className="relative">
-                  <KeyRound className="w-4 h-4 text-[#7a8e7d] absolute left-3 top-2.5" />
-                  <input
-                    type="password"
-                    required
-                    value={driveAdminPassword}
-                    onChange={(e) => setDriveAdminPassword(e.target.value)}
-                    placeholder="Ponte#dos#trolls"
-                    className="w-full pl-9 pr-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#34d399]"
-                  />
-                </div>
-              </div>
-
-              {driveEditError && (
-                <div className="p-2.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs">
-                  {driveEditError}
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setDriveEditPkg(null)}
-                  className="px-3.5 py-2 text-xs text-[#8a9d8c] hover:text-[#f4ecd8] cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSavingDrive}
-                  className="px-4 py-2 rounded-xl bg-[#236336] hover:bg-[#2c7842] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{isSavingDrive ? 'Salvando...' : 'Salvar Link do Drive'}</span>
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
 
-      {/* Modal de Regras de Aquisição */}
-      {showRulesNotice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#122015] border-2 border-[#d49e2a]/70 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#282110] border border-[#d49e2a]/40 flex items-center justify-center text-[#d49e2a] shrink-0">
-                <Info className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
-                  📢 Regras de Aquisição do Catálogo
-                </h3>
-                <p className="text-[11px] text-[#8a9d8c]">
-                  Diretrizes oficiais para aquisição tardia de materiais no acervo
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-[#0c150e] border border-[#203625] text-xs space-y-3 text-[#d1d5db] leading-relaxed">
-              <div className="space-y-1">
-                <strong className="text-[#d49e2a] block text-xs">
-                  1. Pacotes Indivisíveis:
-                </strong>
-                <p>
-                  Os itens dentro dos pacotes foram financiados em conjunto e <strong>são vendidos sem separação</strong> (não é possível adquirir apenas um item avulso de dentro de um pacote).
-                </p>
-              </div>
-
-              <div className="space-y-1 pt-2 border-t border-[#1a2d1f]">
-                <strong className="text-amber-400 block text-xs">
-                  2. Vantagem do Financiamento em Andamento:
-                </strong>
-                <p>
-                  O valor de aquisição no Catálogo <strong>possui acréscimo em comparação ao rateio original da época da vaquinha</strong>. Participar durante a coleta de membros é sempre a forma mais econômica de garantir os materiais!
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setShowRulesNotice(false)}
-                className="px-5 py-2.5 font-bold text-xs sm:text-sm rounded-xl bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-lg shadow-black/40 transition-all cursor-pointer"
-              >
-                Entendi, explorar vitrine
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Compra via WhatsApp */}
+      {/* 2. Modal de Compra via WhatsApp */}
       {packageToBuy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#122015] border-2 border-[#34d399]/70 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden">
-            
-            <div className="px-6 py-4 bg-gradient-to-r from-[#173320] to-[#122015] border-b border-[#25462d] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#1f4228] border border-[#34d399]/40 flex items-center justify-center text-[#34d399]">
-                  <ShoppingCart className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
-                    Comprar Pacote do Catálogo
-                  </h3>
-                  <p className="text-[11px] text-[#8a9d8c]">
-                    Mensagem pronta para enviar ao Mestre no WhatsApp
-                  </p>
-                </div>
-              </div>
+        <div className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="parchment-card w-full max-w-lg p-6 space-y-4 shadow-2xl animate-in fade-in-50">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
+              <h3 className="font-rpg text-lg font-bold text-[#302414] flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-[#48551F]" />
+                <span>Adquirir no Catálogo</span>
+              </h3>
               <button
                 onClick={() => setPackageToBuy(null)}
-                className="p-1.5 rounded-lg text-[#8a9d8c] hover:text-[#f4ecd8] hover:bg-[#1a2f20] transition-colors cursor-pointer"
+                className="p-1 text-[#71634D] hover:text-[#302414] rounded-lg"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-5 sm:p-6 space-y-4 text-xs">
-              <div>
-                <label className="block text-[11px] font-semibold text-[#a4b5a6] mb-1.5">
-                  Mensagem formatada para o pedido:
-                </label>
-                <textarea
-                  readOnly
-                  rows={6}
-                  value={buyMessageText}
-                  className="w-full p-3 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] font-mono leading-relaxed focus:outline-none"
-                />
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-[#142618] border border-[#274c30] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-[#a4b5a6]">
-                  <Phone className="w-4 h-4 text-[#34d399]" />
-                  <span>WhatsApp do Mestre:</span>
-                </div>
-                <strong className="text-[#6ee7b7] font-mono font-bold text-sm">
-                  (19) 98151-2030
-                </strong>
-              </div>
-
-              <div className="space-y-2 pt-1">
-                <button
-                  type="button"
-                  onClick={handleSendWhatsApp}
-                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-950 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01]"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>📲 Abrir no WhatsApp do Mestre (19 98151-2030)</span>
-                </button>
-
-                <div className="flex justify-between items-center pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setPackageToBuy(null)}
-                    className="px-3 py-1.5 text-xs text-[#8a9d8c] hover:text-[#f4ecd8] cursor-pointer"
-                  >
-                    Fechar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCopyBuyMessage}
-                    className="px-4 py-2 rounded-xl bg-[#1a2f20] hover:bg-[#25422d] border border-[#2f5539] text-[#d49e2a] hover:text-[#f4ecd8] font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    {copiedBuyMsg ? <Check className="w-3.5 h-3.5 text-[#34d399]" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedBuyMsg ? 'Mensagem Copiada!' : '📋 Copiar Mensagem'}</span>
-                  </button>
-                </div>
-              </div>
-
+            <div className="p-4 rounded-xl bg-[#FBF4E4] border border-[#D6C296] space-y-2">
+              <p className="text-xs font-bold text-[#302414]">
+                Pacote: {packageToBuy.titulo}
+              </p>
+              <p className="font-mono text-xl font-bold text-[#48551F]">
+                R$ {(packageToBuy.valorCatalogoBRL || packageToBuy.valorTotalBRL).toFixed(2).replace('.', ',')}
+              </p>
+              <p className="text-[11px] text-[#71634D]">
+                Envie o comprovante de pagamento ao Mestre no WhatsApp para receber o acesso à pasta do Google Drive.
+              </p>
             </div>
 
+            {/* Mensagem Formatada */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold uppercase text-[#71634D]">
+                Mensagem pré-formatada para o WhatsApp:
+              </label>
+              <textarea
+                readOnly
+                value={buyMessageText}
+                rows={4}
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl p-3 text-xs text-[#302414] font-mono resize-none focus:outline-none"
+              />
+            </div>
+
+            {/* Ações */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
+              <button
+                onClick={handleCopyBuyMessage}
+                className="flex-1 py-2.5 px-4 bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] rounded-xl text-xs font-semibold text-[#302414] flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Copy className="w-4 h-4 text-[#716016]" />
+                <span>{copiedBuyMsg ? '✓ Mensagem Copiada!' : 'Copiar Mensagem'}</span>
+              </button>
+
+              <button
+                onClick={handleSendWhatsApp}
+                className="flex-1 py-2.5 px-4 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Abrir WhatsApp</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Modal de Editar Imagem da Capa (Requirement 3) */}
-      {imageEditPkg && (
+      {/* 3. Modal de Edição Rápida do Link do Drive (Mestre) */}
+      {driveEditPkg && (
+        <div className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSaveDriveLink}
+            className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
+              <h3 className="font-rpg text-base font-bold text-[#302414] flex items-center gap-2">
+                <LinkIcon className="w-4 h-4 text-[#716016]" />
+                <span>Link do Google Drive</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setDriveEditPkg(null)}
+                className="p-1 text-[#71634D] hover:text-[#302414]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#71634D]">
+              Pacote: <strong>{driveEditPkg.titulo}</strong>
+            </p>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">URL da Pasta do Drive:</label>
+              <input
+                type="url"
+                required
+                value={editDriveUrl}
+                onChange={(e) => setEditDriveUrl(e.target.value)}
+                placeholder="https://drive.google.com/drive/folders/..."
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#302414]">Senha do Mestre:</label>
+              <input
+                type="password"
+                required
+                value={driveAdminPassword}
+                onChange={(e) => setDriveAdminPassword(e.target.value)}
+                placeholder="Digite a senha de administrador"
+                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+              />
+            </div>
+
+            {driveEditError && (
+              <p className="text-xs text-[#8b261b] font-medium">{driveEditError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDriveEditPkg(null)}
+                className="px-3.5 py-2 bg-[#EADBBE] rounded-xl text-xs font-semibold text-[#302414]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSavingDrive}
+                className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                {isSavingDrive ? 'Salvando...' : 'Salvar Link'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* 4. Modal de Edição da Imagem da Capa */}
+      {imageEditPkg && onUpdatePackageImage && (
         <EditPackageImageModal
           isOpen={Boolean(imageEditPkg)}
-          pkg={imageEditPkg}
+          packageItem={imageEditPkg}
           onClose={() => setImageEditPkg(null)}
-          onSave={async (packageId, newImageUrl, adminPassword) => {
-            if (onUpdatePackageImage) {
-              await onUpdatePackageImage(packageId, newImageUrl, adminPassword);
-            }
-          }}
+          onUpdateImage={onUpdatePackageImage}
           onToast={onToast}
         />
       )}

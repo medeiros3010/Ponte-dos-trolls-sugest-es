@@ -1,32 +1,58 @@
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  :root {
+    --bg-parchment: #F3E5C5;
+    --surface-parchment: #F8EDD5;
+    --surface-parchment-subtle: #FBF4E4;
+    --border-parchment: #C6AD78;
+    --border-parchment-light: #DDD0B0;
+    --text-primary: #302414;
+    --text-secondary: #71634D;
+    --header-bg: #282D13;
+    --primary-btn: #48551F;
+    --primary-btn-hover: #59672A;
+    --accent-gold: #716016;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background-color: #0c150e;
-    color: #f1ede4;
+    background-color: #F3E5C5;
+    color: #302414;
+    min-height: 100vh;
   }
 }
 
 .font-rpg {
-  font-family: 'Cinzel', serif;
+  font-family: 'Cinzel', Georgia, serif;
 }
 
-/* Custom scrollbars in deep moss green */
+/* Custom scrollbars matching the vintage parchment & olive theme */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f1c13;
+  background: #EADBBE;
 }
 ::-webkit-scrollbar-thumb {
-  background: #253d2b;
+  background: #A99363;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #36593e;
+  background: #8B7647;
 }
 
+/* Subtle parchment card styling */
+.parchment-card {
+  background-color: #F8EDD5;
+  border: 1px solid #C6AD78;
+  border-radius: 1rem;
+  box-shadow: 0 2px 6px rgba(48, 36, 20, 0.05);
+}
 
+.parchment-card-subtle {
+  background-color: #FBF4E4;
+  border: 1px solid #D6C296;
+  border-radius: 0.75rem;
+}

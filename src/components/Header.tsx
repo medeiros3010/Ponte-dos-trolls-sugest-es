@@ -1,5 +1,23 @@
-import React, { useState } from 'react';
-import { Plus, Cloud, RefreshCw, MessageSquareShare, Link2, Check, User, Users, Shield, Crown, ArrowLeft, Download } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  User,
+  Users,
+  Shield,
+  Crown,
+  ChevronDown,
+  DollarSign,
+  Link2,
+  Check,
+  MessageSquareShare,
+  Download,
+  Cloud,
+  LogOut,
+  RefreshCw,
+  Plus,
+  Wrench,
+  Menu,
+  X,
+} from 'lucide-react';
 import { UserProfile, AppView } from '../types';
 import { getShareableGroupLink } from '../utils/cloudStorage';
 
@@ -8,6 +26,7 @@ interface HeaderProps {
   currentUser: UserProfile | null;
   currentView: AppView;
   pendingUsersCount?: number;
+  onNavigate: (view: AppView) => void;
   onChangeUser: () => void;
   onGoHome: () => void;
   exchangeRate: number;
@@ -27,6 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   currentView,
   pendingUsersCount = 0,
+  onNavigate,
   onChangeUser,
   onGoHome,
   exchangeRate,
@@ -40,16 +60,38 @@ export const Header: React.FC<HeaderProps> = ({
   isSyncing = false,
   onToast,
 }) => {
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
   const [isEditingRate, setIsEditingRate] = useState(false);
   const [tempRate, setTempRate] = useState(exchangeRate.toString());
   const [copiedLink, setCopiedLink] = useState(false);
 
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const toolsMenuRef = useRef<HTMLDivElement>(null);
+
   const isMaster = Boolean(currentUser?.isMaster);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(event.target as Node)) {
+        setIsToolsMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSaveRate = () => {
     const parsed = parseFloat(tempRate.replace(',', '.'));
     if (!isNaN(parsed) && parsed > 0) {
       onExchangeRateChange(parsed);
+      onToast(`Cotação atualizada para R$ ${parsed.toFixed(2)}`);
     } else {
       setTempRate(exchangeRate.toString());
     }
@@ -62,237 +104,308 @@ export const Header: React.FC<HeaderProps> = ({
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2200);
     onToast('Link com banco compartilhado copiado! Envie no WhatsApp do grupo.');
+    setIsToolsMenuOpen(false);
   };
 
+  const navItems: { id: AppView; label: string }[] = [
+    { id: 'home', label: 'Início' },
+    { id: 'sugestoes', label: 'Sugestões' },
+    { id: 'financiamento', label: 'Financiamentos' },
+    { id: 'catalogo', label: 'Catálogo' },
+    { id: 'membros', label: 'Membros' },
+  ];
+
   return (
-    <header className="border-b border-[#1f3524] bg-[#0c150e]/95 sticky top-0 z-30 backdrop-blur-md">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
-        <div className="flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-40 bg-[#282D13] border-b border-[#3f471e] shadow-md text-[#F8EDD5]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between h-16 sm:h-[68px]">
           
-          {/* Left: Avatar/Icon + Title + User indicator */}
-          <div className="flex items-center gap-3">
+          {/* Left Brand: Bridge Silhouette + Site Title */}
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <button
               onClick={onGoHome}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-md shadow-black/40 shrink-0 bg-[#16271a] hover:scale-105 transition-transform cursor-pointer"
-              title="Voltar ao Menu Inicial"
+              className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer focus:outline-none"
+              title="A Ponte dos Trolls - Início"
             >
               <img
-                src="/troll-mascot.png"
+                src="/bridge-logo.png"
                 alt="A Ponte dos Trolls"
-                className="w-full h-full object-cover"
+                className="h-7 sm:h-8 w-auto object-contain filter drop-shadow brightness-110 group-hover:scale-105 transition-transform"
               />
+              <span className="font-rpg font-bold tracking-widest text-[#F8EDD5] text-base sm:text-lg uppercase group-hover:text-[#e4cf98] transition-colors whitespace-nowrap">
+                A PONTE DOS TROLLS
+              </span>
             </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={onGoHome}
-                  className="font-rpg text-base sm:text-xl font-bold tracking-wide text-[#f4ecd8] leading-tight hover:text-[#d49e2a] transition-colors text-left cursor-pointer"
-                >
-                  A Ponte dos Trolls
-                </button>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-[#1e3422] text-[#d49e2a] border border-[#d49e2a]/30 rounded">
-                  Rateios RPG
-                </span>
-                {isMaster && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-[#38260b] text-[#fbbf24] border border-[#fbbf24]/50 rounded-full shadow-sm animate-pulse">
-                    <Crown className="w-2.5 h-2.5 text-[#fbbf24]" />
-                    <span>Mestre da Ponte</span>
-                  </span>
-                )}
-              </div>
-              
-              {/* User indicator & Cloud status */}
-              <div className="flex items-center gap-2 text-[11px] mt-0.5">
-                {currentUser && (
-                  <div className="flex items-center gap-1 text-[#d49e2a]">
-                    {isMaster ? (
-                      <Shield className="w-3 h-3 text-[#fbbf24]" />
-                    ) : (
-                      <User className="w-3 h-3 text-[#d49e2a]" />
-                    )}
-                    <span className="font-semibold truncate max-w-[120px] sm:max-w-[180px]">
-                      {currentUser.nome}
-                    </span>
-                    <button
-                      onClick={onChangeUser}
-                      className="text-[10px] text-[#8a9d8c] hover:text-[#f4ecd8] underline ml-0.5 cursor-pointer"
-                      title="Trocar de usuário"
-                    >
-                      [Trocar]
-                    </button>
-                  </div>
-                )}
 
-                {isMaster && (
-                  <>
-                    <span className="hidden sm:inline text-[#3a523f]">·</span>
-                    <button
-                      onClick={onOpenSettingsModal}
-                      className="hidden sm:inline-flex items-center gap-1.5 hover:underline cursor-pointer"
-                      title="Clique para gerenciar o banco na nuvem e compartilhamento"
-                    >
-                      <span
-                        className={`w-2 h-2 rounded-full inline-block ${
-                          isSyncing
-                            ? 'bg-amber-400 animate-ping'
-                            : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
-                        }`}
-                      />
-                      <span className="text-[#6ee7b7] font-medium text-[10px]">
-                        {isSyncing ? 'Sincronizando...' : `Nuvem: ${binId}`}
-                      </span>
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+            {/* Subtle Divider */}
+            <span className="hidden md:inline-block h-6 w-px bg-[#434b21]" />
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            
-            {/* Botão Voltar ao Menu quando dentro de uma sub-tela */}
-            {currentView !== 'home' && (
-              <button
-                onClick={onGoHome}
-                className="px-2.5 py-1.5 text-xs font-semibold text-[#a4b5a6] hover:text-[#f4ecd8] bg-[#122015] hover:bg-[#1a2e1f] border border-[#203625] rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
-                title="Voltar ao Menu Inicial"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Voltar ao Menu</span>
-              </button>
-            )}
-
-            {/* Botão Meu Perfil para usuário comum */}
-            {!isMaster && currentUser && (
-              <button
-                onClick={onOpenProfileModal}
-                className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-[#142318] hover:bg-[#1a2e1f] border border-[#27442d] text-[#6ee7b7] flex items-center gap-1.5 transition-colors cursor-pointer"
-                title="Conferir meu cadastro, estatísticas e strikes"
-              >
-                <User className="w-3.5 h-3.5 text-[#34d399]" />
-                <span className="hidden sm:inline">Meu Perfil</span>
-              </button>
-            )}
-
-            {/* BOTÕES EXCLUSIVOS DO MESTRE ADMIN */}
-            {isMaster && (
-              <>
-                {/* Dollar Rate */}
-                <div className="hidden lg:flex items-center gap-1.5 bg-[#122015] px-2.5 py-1.5 rounded-xl border border-[#203625] text-xs">
-                  <span className="text-[#7a8e7d] text-[11px]">1 USD =</span>
-                  {isEditingRate ? (
-                    <div className="flex items-center gap-1">
-                      <span className="text-[#d49e2a] font-mono">R$</span>
-                      <input
-                        type="text"
-                        value={tempRate}
-                        onChange={(e) => setTempRate(e.target.value)}
-                        onBlur={handleSaveRate}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSaveRate()}
-                        className="w-14 bg-[#0a120c] border border-[#d49e2a] rounded px-1.5 py-0.5 text-[#f4ecd8] font-mono text-xs focus:outline-none"
-                        autoFocus
-                      />
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setTempRate(exchangeRate.toFixed(2));
-                        setIsEditingRate(true);
-                      }}
-                      title="Ajustar cotação do dólar"
-                      className="font-mono font-bold text-[#d49e2a] hover:underline px-0.5 cursor-pointer"
-                    >
-                      R$ {exchangeRate.toFixed(2)}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      onExchangeRateChange(5.80);
-                      setTempRate('5.80');
-                    }}
-                    title="Redefinir para 5.80"
-                    className="text-[#556957] hover:text-[#9aa39b] p-0.5 cursor-pointer"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                  </button>
-                </div>
-
-                {/* 🔗 Copiar Link Sincronizado para o Grupo */}
+          {/* Center Navigation Links (matching the 4 references) */}
+          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
+            {navItems.map((item) => {
+              const isActive = currentView === item.id;
+              return (
                 <button
-                  onClick={handleCopyLink}
-                  className={`p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    copiedLink
-                      ? 'bg-[#183824] text-[#6ee7b7] border-[#34d399]'
-                      : 'bg-[#16271a] hover:bg-[#1f3724] text-[#d49e2a] border-[#2e5035]'
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  className={`px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer select-none ${
+                    isActive
+                      ? 'bg-[#525c28] text-[#F8EDD5] shadow-sm border border-[#6b7a35]'
+                      : 'text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a]'
                   }`}
-                  title="Copiar link com o banco sincronizado para colar no WhatsApp"
                 >
-                  {copiedLink ? <Check className="w-4 h-4 text-[#34d399]" /> : <Link2 className="w-4 h-4" />}
-                  <span className="hidden sm:inline">{copiedLink ? 'Copiado!' : 'Copiar Link'}</span>
-                </button>
-
-                {/* 👥 Gerenciar Membros com badge vermelha de pendentes */}
-                <button
-                  onClick={onOpenMembersModal}
-                  className="relative p-2 sm:px-3 sm:py-2 text-xs font-semibold text-[#f4ecd8] bg-[#16271a] hover:bg-[#203625] border border-[#2e5035] rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-                  title="Gerenciar lista de membros e aprovar solicitações"
-                >
-                  <Users className="w-4 h-4 text-[#d49e2a]" />
-                  <span className="hidden md:inline">Membros</span>
-                  {pendingUsersCount > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-red-600 text-white animate-pulse">
+                  {item.label}
+                  {item.id === 'membros' && pendingUsersCount > 0 && (
+                    <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-600 text-white">
                       {pendingUsersCount}
                     </span>
                   )}
                 </button>
+              );
+            })}
+          </nav>
 
-                {/* 📋 Boletim WhatsApp */}
+          {/* Right Area: Tools Menu + User Account */}
+          <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Ferramentas do Mestre (Dropdown compacto e organizado) */}
+            {isMaster && (
+              <div className="relative" ref={toolsMenuRef}>
                 <button
-                  onClick={onOpenBulletinModal}
-                  className="p-2 sm:px-3 sm:py-2 text-xs font-semibold text-[#43aa6a] hover:text-[#52c27c] bg-[#122015] hover:bg-[#1a2e1f] border border-[#203625] rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-                  title="Gerar boletim para colar no WhatsApp"
+                  onClick={() => setIsToolsMenuOpen(!isToolsMenuOpen)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                    isToolsMenuOpen
+                      ? 'bg-[#3d451c] text-[#F8EDD5] border-[#65732f]'
+                      : 'bg-[#20240f] text-[#cfc4a6] border-[#3f471e] hover:bg-[#323917] hover:text-[#F8EDD5]'
+                  }`}
+                  title="Ferramentas Administrativas"
                 >
-                  <MessageSquareShare className="w-4 h-4" />
-                  <span className="hidden md:inline">Boletim</span>
+                  <Wrench className="w-3.5 h-3.5 text-[#d6be8c]" />
+                  <span className="hidden lg:inline">Ferramentas</span>
+                  <ChevronDown className="w-3 h-3 text-[#cfc4a6]" />
                 </button>
 
-                {/* 📥 Exportar Todos os Dados */}
-                <button
-                  onClick={onOpenExportModal}
-                  className="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border flex items-center gap-1.5 transition-colors bg-[#182b1d] text-[#fbbf24] border-[#fbbf24]/40 hover:bg-[#24402c] cursor-pointer"
-                  title="Exportar dados completos (Planilha Excel/CSV e Backup JSON)"
-                >
-                  <Download className="w-4 h-4 text-[#fbbf24]" />
-                  <span className="hidden md:inline">Exportar Dados</span>
-                </button>
+                {isToolsMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-[#F8EDD5] text-[#302414] rounded-2xl shadow-xl border border-[#C6AD78] py-2 z-50 animate-in fade-in-50 duration-150">
+                    <div className="px-3 py-1.5 border-b border-[#E3D1AC] mb-1">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-[#71634D]">
+                        Painel do Mestre
+                      </p>
+                    </div>
 
-                {/* ☁️ Nuvem / Configurações */}
-                <button
-                  onClick={onOpenSettingsModal}
-                  className="p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl border flex items-center gap-1.5 transition-colors bg-[#122015] text-[#a4b5a6] border-[#203625] hover:text-[#f4ecd8] hover:bg-[#182b1d] cursor-pointer"
-                  title="Gerenciar banco em nuvem"
-                >
-                  <Cloud className="w-4 h-4 text-[#d49e2a]" />
-                  <span className="hidden md:inline">Nuvem</span>
-                </button>
-              </>
+                    {/* Cotação do Dólar */}
+                    <div className="px-3 py-2 flex items-center justify-between text-xs hover:bg-[#EFE3C8] transition-colors">
+                      <span className="text-[#71634D] font-medium flex items-center gap-1.5">
+                        <DollarSign className="w-3.5 h-3.5 text-[#716016]" />
+                        1 USD =
+                      </span>
+                      {isEditingRate ? (
+                        <div className="flex items-center gap-1">
+                          <span className="font-bold text-[#716016]">R$</span>
+                          <input
+                            type="text"
+                            value={tempRate}
+                            onChange={(e) => setTempRate(e.target.value)}
+                            onBlur={handleSaveRate}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveRate()}
+                            className="w-16 bg-[#FFF9EC] border border-[#C6AD78] rounded px-1.5 py-0.5 text-xs text-[#302414] font-mono focus:outline-none"
+                            autoFocus
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setTempRate(exchangeRate.toFixed(2));
+                            setIsEditingRate(true);
+                          }}
+                          className="font-mono font-bold text-[#48551F] hover:underline"
+                          title="Clique para editar cotação"
+                        >
+                          R$ {exchangeRate.toFixed(2)}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Copiar Link Sincronizado */}
+                    <button
+                      onClick={handleCopyLink}
+                      className="w-full px-3 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                    >
+                      <Link2 className="w-3.5 h-3.5 text-[#716016]" />
+                      <span>{copiedLink ? '✓ Link Copiado!' : 'Copiar Link do Grupo'}</span>
+                    </button>
+
+                    {/* Boletim WhatsApp */}
+                    <button
+                      onClick={() => {
+                        setIsToolsMenuOpen(false);
+                        onOpenBulletinModal();
+                      }}
+                      className="w-full px-3 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                    >
+                      <MessageSquareShare className="w-3.5 h-3.5 text-[#48551F]" />
+                      <span>Gerar Boletim WhatsApp</span>
+                    </button>
+
+                    {/* Exportar Dados */}
+                    <button
+                      onClick={() => {
+                        setIsToolsMenuOpen(false);
+                        onOpenExportModal();
+                      }}
+                      className="w-full px-3 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#716016]" />
+                      <span>Exportar Dados (Excel / Backup)</span>
+                    </button>
+
+                    {/* Sincronização e Nuvem */}
+                    <button
+                      onClick={() => {
+                        setIsToolsMenuOpen(false);
+                        onOpenSettingsModal();
+                      }}
+                      className="w-full px-3 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                    >
+                      <Cloud className="w-3.5 h-3.5 text-[#48551F]" />
+                      <div className="flex items-center justify-between flex-1">
+                        <span>Configurações da Nuvem</span>
+                        <span className="text-[10px] text-[#71634D] font-mono">
+                          {isSyncing ? 'Sincronizando...' : binId.substring(0, 10)}
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
-            {/* + Sugerir Compra: SÓ APARECE QUANDO ESTÁ NA ABA "SUGERIR COMPRAS" */}
-            {currentView === 'sugestoes' && (
+            {/* User Account Capsule (matching top right in references) */}
+            <div className="relative" ref={userMenuRef}>
               <button
-                onClick={onOpenNewItemModal}
-                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-bold text-[#122015] bg-[#d49e2a] hover:bg-[#e5b23d] rounded-xl shadow-md shadow-black/30 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-[#1e220e] hover:bg-[#323917] border border-[#3f471e] transition-colors cursor-pointer"
+                title="Opções da conta"
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Sugerir Compra</span>
+                {/* Avatar circle */}
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden border border-[#C6AD78] bg-[#3a4419] flex items-center justify-center shrink-0">
+                  {isMaster ? (
+                    <img
+                      src="/avatar-mestre.png"
+                      alt="Mestre"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-rpg font-bold text-xs text-[#F8EDD5]">
+                      {currentUser?.nome ? currentUser.nome.substring(0, 2).toUpperCase() : 'U'}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-semibold text-[#F8EDD5] max-w-[110px] sm:max-w-[140px] truncate">
+                    {isMaster ? 'Mestre' : (currentUser?.nome || 'Aventureiro')}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-[#cfc4a6]" />
+                </div>
               </button>
-            )}
+
+              {/* User Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-[#F8EDD5] text-[#302414] rounded-2xl shadow-xl border border-[#C6AD78] py-2 z-50 animate-in fade-in-50 duration-150">
+                  <div className="px-3.5 py-2 border-b border-[#E3D1AC] mb-1">
+                    <p className="text-xs font-bold text-[#302414] truncate">
+                      {currentUser?.nome || 'Usuário'}
+                    </p>
+                    <p className="text-[11px] text-[#71634D]">
+                      {isMaster ? 'Mestre da Ponte (Admin)' : 'Membro da Ponte'}
+                    </p>
+                  </div>
+
+                  {!isMaster && (
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onOpenProfileModal();
+                      }}
+                      className="w-full px-3.5 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                    >
+                      <User className="w-3.5 h-3.5 text-[#48551F]" />
+                      <span>Meu Perfil & Acervo</span>
+                    </button>
+                  )}
+
+                  {isMaster && (
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onNavigate('membros');
+                      }}
+                      className="w-full px-3.5 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                    >
+                      <Users className="w-3.5 h-3.5 text-[#48551F]" />
+                      <span>Gerenciar Membros</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      onChangeUser();
+                    }}
+                    className="w-full px-3.5 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#8b261b] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-[#8b261b]" />
+                    <span>Trocar de Conta</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Hamburger */}
+            <button
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              className="md:hidden p-2 text-[#cfc4a6] hover:text-[#F8EDD5] rounded-xl hover:bg-[#323917] transition-colors cursor-pointer"
+              aria-label="Abrir menu de navegação"
+            >
+              {isMobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
 
           </div>
 
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        {isMobileNavOpen && (
+          <div className="md:hidden py-3 border-t border-[#3f471e] flex flex-col gap-1 pb-4">
+            {navItems.map((item) => {
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    onNavigate(item.id);
+                    setIsMobileNavOpen(false);
+                  }}
+                  className={`px-4 py-2.5 rounded-xl text-left text-sm font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                    isActive
+                      ? 'bg-[#525c28] text-[#F8EDD5] border border-[#6b7a35]'
+                      : 'text-[#cfc4a6] hover:bg-[#363e1a] hover:text-[#F8EDD5]'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {item.id === 'membros' && pendingUsersCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-600 text-white">
+                      {pendingUsersCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
       </div>
     </header>
   );

@@ -1,7 +1,19 @@
 import React from 'react';
 import { AppView, UserProfile, FundingPackage } from '../types';
-import { ShoppingBag, Flame, BookOpen, Users, ArrowRight, Sparkles, Lock, CreditCard, ChevronRight } from 'lucide-react';
+import {
+  Lightbulb,
+  Coins,
+  BookOpen,
+  Users,
+  ArrowRight,
+  Sparkles,
+  CreditCard,
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+} from 'lucide-react';
 import { formatDateDisplay } from '../utils/helpers';
+import { PageBanner } from './PageBanner';
 
 interface HomeHubProps {
   currentUser: UserProfile;
@@ -25,121 +37,179 @@ export const HomeHub: React.FC<HomeHubProps> = ({
 }) => {
   const openPackages = activePackages.filter((p) => p.status === 'Financiamento');
 
+  // Identifica financiamentos em processo de pagamento pendentes para o usuário atual
+  const pendingPaymentsForUser = openPackages.filter((pkg) => {
+    if (pkg.etapaFinanciamento !== 'PAGAMENTO') return false;
+    const isParticipant = (pkg.apoiadores || []).some(
+      (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
+    );
+    if (!isParticipant) return false;
+    const paymentInfo = pkg.pagamentos && pkg.pagamentos[currentUser.id];
+    return !paymentInfo?.informouPagamento;
+  });
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col justify-center animate-in fade-in duration-200 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col justify-center animate-in fade-in duration-200 space-y-6">
       
-      {/* Banner de Boas-vindas com Mascote do Troll */}
-      <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-xl shadow-black/60 mx-auto mb-2 bg-[#16271a] hover:scale-105 transition-transform">
-          <img
-            src="/troll-mascot.png"
-            alt="A Ponte dos Trolls"
-            className="w-full h-full object-cover"
-          />
+      {/* Banner Superior com Arte dos Trolls */}
+      <PageBanner
+        title="A Ponte dos Trolls"
+        subtitle="Central de compras coletivas, vaquinhas e rateios RPG."
+      />
+
+      {/* Saudação Compacta */}
+      <div className="parchment-card p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#C6AD78] bg-[#282D13] shrink-0">
+            <img
+              src="/troll-mascot.png"
+              alt="Mascote Troll"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="font-rpg text-lg sm:text-xl font-bold text-[#302414]">
+                Saudações, {currentUser.nome.split(' ')[0]}!
+              </h2>
+              {currentUser.isMaster && (
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#384518] text-[#F8EDD5]">
+                  Mestre
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[#71634D]">
+              Acompanhe as vaquinhas abertas, explore o catálogo com acesso ao Google Drive ou faça novas sugestões de materiais.
+            </p>
+          </div>
         </div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#182c1d] border border-[#27442d] text-xs font-semibold text-[#d49e2a]">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Saudações, {currentUser.nome.split(' ')[0]}! Bem-vindo à Ponte dos Trolls</span>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => onNavigate('financiamento')}
+            className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+          >
+            Ver Financiamentos
+          </button>
         </div>
-        <h2 className="font-rpg text-2xl sm:text-3xl md:text-4xl font-bold text-[#f4ecd8] tracking-wide leading-tight">
-          Central de Compras Coletivas & Rateios RPG
-        </h2>
-        <p className="text-xs sm:text-sm text-[#8a9d8c] leading-relaxed">
-          Escolha um dos portais abaixo para sugerir materiais, entrar nas vaquinhas abertas da nossa mesa, explorar o acervo no Drive ou ver os membros da comunidade.
-        </p>
       </div>
 
-      {/* 4 BOTÕES GIGANTES DE DESTAQUE */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      {/* Alerta de Pagamento Urgente (se o usuário tiver rateios abertos para pagamento) */}
+      {pendingPaymentsForUser.length > 0 && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#FFF6DE] border-2 border-[#D4A538] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#D4A538] text-[#322105] flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-rpg text-sm sm:text-base font-bold text-[#322105]">
+                Atenção: Você possui {pendingPaymentsForUser.length} rateio{pendingPaymentsForUser.length > 1 ? 's' : ''} em fase de pagamento!
+              </h3>
+              <p className="text-xs text-[#71634D]">
+                {pendingPaymentsForUser.map((p) => p.titulo).join(', ')}. Efetue o Pix e confirme no site para garantir seu acesso ao Drive.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate('financiamento')}
+            className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold rounded-xl shrink-0 cursor-pointer shadow-sm"
+          >
+            Pagar Agora
+          </button>
+        </div>
+      )}
+
+      {/* 4 CARDS PRINCIPAIS DE NAVEGAÇÃO (Fiel ao tema pergaminho) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
-        {/* Card 1: Sugerir Compras */}
+        {/* Card 1: Sugestões */}
         <button
           onClick={() => onNavigate('sugestoes')}
-          className="group relative text-left bg-gradient-to-b from-[#142318] to-[#0e1911] hover:from-[#1a2e20] hover:to-[#122216] border-2 border-[#203625] hover:border-[#d49e2a]/70 rounded-3xl p-5 sm:p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#d49e2a]/10 flex flex-col justify-between cursor-pointer"
+          className="parchment-card p-5 text-left flex flex-col justify-between hover:shadow-md transition-all group cursor-pointer border-[#C6AD78]"
         >
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-[#1b2f20] border border-[#2e5035] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ShoppingBag className="w-6 h-6 text-[#d49e2a]" />
+              <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] group-hover:scale-105 transition-transform">
+                <Lightbulb className="w-5 h-5" />
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-[#1c3222] text-[#d49e2a] border border-[#d49e2a]/30">
-                {countSugestoes}
+              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#EADBBE] text-[#302414] border border-[#C6AD78]">
+                {countSugestoes} sugestões
               </span>
             </div>
 
             <div>
-              <h3 className="font-rpg text-lg font-bold text-[#f4ecd8] group-hover:text-[#d49e2a] transition-colors">
-                Sugerir Compras
+              <h3 className="font-rpg text-lg font-bold text-[#302414] group-hover:text-[#48551F] transition-colors">
+                Sugestões
               </h3>
-              <p className="text-xs text-[#8a9d8c] mt-1.5 leading-relaxed">
-                Envie novas ideias de módulos, mapas ou livros e apoie sugestões da galera.
+              <p className="text-xs text-[#71634D] mt-1 leading-relaxed">
+                Envie novas ideias de materiais e apoie sugestões da comunidade para virarem rateios.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 pt-3.5 border-t border-[#1f3524] flex items-center justify-between text-xs font-bold text-[#d49e2a]">
+          <div className="pt-4 mt-3 border-t border-[#D6C296] flex items-center justify-between text-xs font-bold text-[#48551F]">
             <span>Acessar Sugestões</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
 
-        {/* Card 2: Financiamento em Andamento */}
+        {/* Card 2: Financiamento */}
         <button
           onClick={() => onNavigate('financiamento')}
-          className="group relative text-left bg-gradient-to-b from-[#182a1c] to-[#101e13] hover:from-[#1e3422] hover:to-[#142618] border-2 border-[#d49e2a]/50 hover:border-[#d49e2a] rounded-3xl p-5 sm:p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#d49e2a]/20 flex flex-col justify-between cursor-pointer"
+          className="parchment-card p-5 text-left flex flex-col justify-between hover:shadow-md transition-all group cursor-pointer border-[#C6AD78]"
         >
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-[#203a27] border border-[#d49e2a]/50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Flame className="w-6 h-6 text-[#e5b23d] animate-pulse" />
+              <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] group-hover:scale-105 transition-transform">
+                <Coins className="w-5 h-5" />
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-[#d49e2a] text-[#122015] shadow-sm">
-                {countFinanciamento} abertas
+              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#48551F] text-[#F8EDD5]">
+                {countFinanciamento} abertos
               </span>
             </div>
 
             <div>
-              <h3 className="font-rpg text-lg font-bold text-[#f4ecd8] group-hover:text-[#e5b23d] transition-colors">
-                Financiamento
+              <h3 className="font-rpg text-lg font-bold text-[#302414] group-hover:text-[#48551F] transition-colors">
+                Financiamentos
               </h3>
-              <p className="text-xs text-[#8a9d8c] mt-1.5 leading-relaxed">
-                Vaquinhas ativas recolhendo rateios com regras de valor máximo por pessoa.
+              <p className="text-xs text-[#71634D] mt-1 leading-relaxed">
+                Vaquinhas ativas em coleta de cotistas ou em processo de pagamento e liberação.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 pt-3.5 border-t border-[#25462d] flex items-center justify-between text-xs font-bold text-[#e5b23d]">
-            <span>Ver Vaquinhas</span>
+          <div className="pt-4 mt-3 border-t border-[#D6C296] flex items-center justify-between text-xs font-bold text-[#48551F]">
+            <span>Ver Financiamentos</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
 
-        {/* Card 3: Catálogo de Produtos */}
+        {/* Card 3: Catálogo */}
         <button
           onClick={() => onNavigate('catalogo')}
-          className="group relative text-left bg-gradient-to-b from-[#142318] to-[#0e1911] hover:from-[#1a2e20] hover:to-[#122216] border-2 border-[#203625] hover:border-[#43aa6a]/70 rounded-3xl p-5 sm:p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#43aa6a]/10 flex flex-col justify-between cursor-pointer"
+          className="parchment-card p-5 text-left flex flex-col justify-between hover:shadow-md transition-all group cursor-pointer border-[#C6AD78]"
         >
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-[#1b2f20] border border-[#2e5035] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <BookOpen className="w-6 h-6 text-[#43aa6a]" />
+              <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] group-hover:scale-105 transition-transform">
+                <BookOpen className="w-5 h-5" />
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-[#1a3824] text-[#52c27c] border border-[#2f5e3b]">
-                {countCatalogo} no Drive
+              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#EADBBE] text-[#302414] border border-[#C6AD78]">
+                {countCatalogo} pacotes
               </span>
             </div>
 
             <div>
-              <h3 className="font-rpg text-lg font-bold text-[#f4ecd8] group-hover:text-[#52c27c] transition-colors">
+              <h3 className="font-rpg text-lg font-bold text-[#302414] group-hover:text-[#48551F] transition-colors">
                 Catálogo
               </h3>
-              <p className="text-xs text-[#8a9d8c] mt-1.5 leading-relaxed">
-                Acervo de pacotes finalizados para adquirir com acesso imediato ao Drive.
+              <p className="text-xs text-[#71634D] mt-1 leading-relaxed">
+                Acervo de pacotes finalizados para você acessar suas pastas no Drive ou adquirir pacotes anteriores.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 pt-3.5 border-t border-[#1f3524] flex items-center justify-between text-xs font-bold text-[#52c27c]">
+          <div className="pt-4 mt-3 border-t border-[#D6C296] flex items-center justify-between text-xs font-bold text-[#48551F]">
             <span>Explorar Acervo</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -148,135 +218,35 @@ export const HomeHub: React.FC<HomeHubProps> = ({
         {/* Card 4: Membros */}
         <button
           onClick={() => onNavigate('membros')}
-          className="group relative text-left bg-gradient-to-b from-[#142318] to-[#0e1911] hover:from-[#1a2e20] hover:to-[#122216] border-2 border-[#203625] hover:border-[#38bdf8]/70 rounded-3xl p-5 sm:p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#38bdf8]/10 flex flex-col justify-between cursor-pointer"
+          className="parchment-card p-5 text-left flex flex-col justify-between hover:shadow-md transition-all group cursor-pointer border-[#C6AD78]"
         >
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-[#162725] border border-[#224b42] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Users className="w-6 h-6 text-[#38bdf8]" />
+              <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] group-hover:scale-105 transition-transform">
+                <Users className="w-5 h-5" />
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-[#13302b] text-[#38bdf8] border border-[#1d4f45]">
-                {countMembros}
+              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#EADBBE] text-[#302414] border border-[#C6AD78]">
+                {countMembros} membros
               </span>
             </div>
 
             <div>
-              <h3 className="font-rpg text-lg font-bold text-[#f4ecd8] group-hover:text-[#38bdf8] transition-colors">
+              <h3 className="font-rpg text-lg font-bold text-[#302414] group-hover:text-[#48551F] transition-colors">
                 Membros
               </h3>
-              <p className="text-xs text-[#8a9d8c] mt-1.5 leading-relaxed">
-                Comunidade da Ponte, histórico de participação e gerenciamento da mesa.
+              <p className="text-xs text-[#71634D] mt-1 leading-relaxed">
+                Nossa comunidade de aventureiros, estatísticas de participação e contatos.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 pt-3.5 border-t border-[#1f3524] flex items-center justify-between text-xs font-bold text-[#38bdf8]">
-            <span>Ver Comunidade</span>
+          <div className="pt-4 mt-3 border-t border-[#D6C296] flex items-center justify-between text-xs font-bold text-[#48551F]">
+            <span>Ver Membros</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
 
       </div>
-
-      {/* ==================== RESUMO DOS FINANCIAMENTOS ATIVOS (Requirement 6) ==================== */}
-      {openPackages.length > 0 && (
-        <div className="bg-[#0e1911] border border-[#1f3524] rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
-                <Flame className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
-                  Vaquinhas em Andamento
-                </h3>
-                <p className="text-[11px] text-[#8a9d8c]">
-                  Acompanhe as etapas ativas de cada financiamento coletivo
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => onNavigate('financiamento')}
-              className="text-xs font-bold text-[#d49e2a] hover:text-[#f4ecd8] flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <span>Ver todas</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            {openPackages.map((pkg) => {
-              const isPagamento = pkg.etapaFinanciamento === 'PAGAMENTO';
-              const apoiadores = pkg.apoiadores || [];
-              const count = apoiadores.length;
-              const minimo = pkg.minimoParticipantes || 35;
-              const maxVal = pkg.valorMaximoPorPessoa || (pkg.valorTotalBRL / minimo);
-
-              return (
-                <div
-                  key={pkg.id}
-                  onClick={() => onNavigate('financiamento')}
-                  className="p-4 rounded-2xl bg-[#122015] border border-[#203625] hover:border-[#d49e2a]/60 transition-all hover:bg-[#16271a] cursor-pointer flex flex-col justify-between space-y-3 group"
-                >
-                  {/* Banner de Etapa bem Visível */}
-                  <div
-                    className={`px-3 py-1.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
-                      isPagamento
-                        ? 'bg-[#152a1d] border-emerald-500/60 text-emerald-300'
-                        : 'bg-[#291f0a] border-amber-500/60 text-amber-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      {isPagamento ? <Lock className="w-3.5 h-3.5 text-emerald-400" /> : <Flame className="w-3.5 h-3.5 text-amber-400" />}
-                      <span className="font-mono text-[11px] tracking-wide">
-                        {isPagamento ? 'PROCESSO DE PAGAMENTO' : 'EM PROCESSO DE COLETA DE MEMBROS'}
-                      </span>
-                    </div>
-                    <span className="text-[10px] opacity-80">
-                      {isPagamento ? 'Cobrança Travada' : 'Aberto'}
-                    </span>
-                  </div>
-
-                  {/* Título & Detalhes */}
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1a3321] text-[#d49e2a] border border-[#d49e2a]/30">
-                        {pkg.sistema || 'Foundry VTT'}
-                      </span>
-                      {pkg.tipo && (
-                        <span className="px-2 py-0.5 rounded text-[10px] text-[#86efac] bg-[#142618] border border-[#22c55e]/20">
-                          {pkg.tipo}
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="font-rpg text-sm sm:text-base font-bold text-[#f4ecd8] group-hover:text-[#d49e2a] transition-colors leading-snug line-clamp-1">
-                      {pkg.titulo}
-                    </h4>
-                  </div>
-
-                  {/* Rodapé da Card */}
-                  <div className="flex items-center justify-between text-xs pt-2 border-t border-[#1a2d1f] text-[#8e9f90]">
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-[#34d399]" />
-                      <span>
-                        <strong className="text-[#f4ecd8]">{count}</strong> / {minimo} cotistas
-                      </span>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="text-[10px] text-[#7a8e7d] mr-1">Máx/pessoa:</span>
-                      <strong className="text-[#fbbf24] font-mono">
-                        R$ {maxVal.toFixed(2).replace('.', ',')}
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
     </div>
   );

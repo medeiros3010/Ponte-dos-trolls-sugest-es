@@ -761,7 +761,7 @@ export default function App() {
   }, [users]);
 
   return (
-    <div className="min-h-screen bg-[#0c150e] text-[#f1ede4] flex flex-col font-sans selection:bg-[#d49e2a]/30 selection:text-[#f4ecd8]">
+    <div className="min-h-screen bg-[#F3E5C5] text-[#302414] flex flex-col font-sans selection:bg-[#48551F]/20 selection:text-[#302414]">
       
       {/* Modal de Entrada Obrigatório */}
       {!currentUser && (
@@ -772,12 +772,13 @@ export default function App() {
         />
       )}
 
-      {/* Cabeçalho Compacto */}
+      {/* Cabeçalho */}
       <Header
         binId={binId}
         currentUser={currentUser}
         currentView={view}
         pendingUsersCount={pendingUsersCount}
+        onNavigate={(v) => setView(v)}
         onChangeUser={handleChangeUser}
         onGoHome={() => setView('home')}
         exchangeRate={exchangeRate}

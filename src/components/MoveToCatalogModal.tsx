@@ -25,7 +25,6 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
   React.useEffect(() => {
     if (packageItem) {
       setLinkDrive(packageItem.linkDrive || '');
-      // Sugere o valor de catálogo já salvo ou com acréscimo de 20-25%
       const suggestedCatalogVal = packageItem.valorCatalogoBRL || (packageItem.valorTotalBRL * 1.25);
       setValorCatalogo(suggestedCatalogVal.toFixed(2));
       setAdminPassword('');
@@ -54,47 +53,47 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#122015] border-2 border-[#43aa6a]/70 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="parchment-card w-full max-w-lg shadow-2xl flex flex-col overflow-hidden border-[#C6AD78]">
         
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#173320] to-[#122015] border-b border-[#25462d] flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#282D13] border-b border-[#3f471e] flex items-center justify-between text-[#F8EDD5]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#1f4228] border border-[#43aa6a]/50 flex items-center justify-center text-[#6ee7b7]">
+            <div className="w-8 h-8 rounded-lg bg-[#3a4419] border border-[#C6AD78] flex items-center justify-center text-[#F8EDD5]">
               <CheckCircle2 className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
+              <h2 className="font-rpg text-base sm:text-lg font-bold text-[#F8EDD5]">
                 Mover para o Catálogo de Produtos
               </h2>
-              <p className="text-[11px] text-[#8a9d8c]">
-                Finalizar vaquinha e disponibilizar no acervo com valor de aquisição tardia
+              <p className="text-[11px] text-[#cfc4a6]">
+                Finalizar vaquinha e disponibilizar no acervo com valor de aquisição
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#7a8e7d] hover:text-[#f1ede4] hover:bg-[#1a2f20] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 text-xs text-[#302414]">
           
-          <div className="p-3.5 bg-[#0c150e] border border-[#203625] rounded-2xl space-y-2">
-            <h3 className="font-bold text-[#f4ecd8] text-sm">{packageItem.titulo}</h3>
-            <div className="flex items-center gap-3 text-[11px] text-[#a4b5a6]">
-              <span>Valor Original da Vaquinha: <strong className="text-[#d49e2a] font-mono">R$ {packageItem.valorTotalBRL.toFixed(2)}</strong></span>
+          <div className="p-3.5 bg-[#FBF4E4] border border-[#D6C296] rounded-2xl space-y-2">
+            <h3 className="font-bold text-[#302414] text-sm font-rpg">{packageItem.titulo}</h3>
+            <div className="flex items-center gap-3 text-[11px] text-[#71634D]">
+              <span>Valor Original: <strong className="text-[#302414] font-mono">R$ {packageItem.valorTotalBRL.toFixed(2)}</strong></span>
               <span>·</span>
-              <span>Cotistas: <strong className="text-[#6ee7b7]">{packageItem.apoiadores.length} membros</strong></span>
+              <span>Cotistas: <strong className="text-[#48551F]">{packageItem.apoiadores.length} membros</strong></span>
             </div>
           </div>
 
           <div>
-            <label className="block font-semibold text-[#f4ecd8] mb-1 flex items-center gap-1">
-              <DollarSign className="w-3.5 h-3.5 text-[#d49e2a]" />
+            <label className="block font-semibold text-[#302414] mb-1 flex items-center gap-1">
+              <DollarSign className="w-3.5 h-3.5 text-[#716016]" />
               <span>Valor do Pacote no Catálogo (R$) *:</span>
             </label>
             <input
@@ -103,16 +102,16 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
               value={valorCatalogo}
               onChange={(e) => setValorCatalogo(e.target.value)}
               placeholder="Ex: 120.00"
-              className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] font-mono font-bold focus:outline-none focus:border-[#43aa6a]"
+              className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-mono font-bold focus:outline-none focus:border-[#48551F]"
             />
-            <p className="text-[11px] text-[#8a9d8c] mt-1">
-              O valor de aquisição no Catálogo normalmente possui acréscimo em relação ao valor original do rateio.
+            <p className="text-[11px] text-[#71634D] mt-1">
+              O valor de aquisição no Catálogo normalmente possui acréscimo em relação ao rateio original.
             </p>
           </div>
 
           <div>
-            <label className="block font-semibold text-[#a4b5a6] mb-1 flex items-center gap-1">
-              <Folder className="w-3.5 h-3.5 text-[#7a8e7d]" />
+            <label className="block font-semibold text-[#71634D] mb-1 flex items-center gap-1">
+              <Folder className="w-3.5 h-3.5 text-[#71634D]" />
               <span>Link da Pasta no Google Drive (para acesso dos membros):</span>
             </label>
             <input
@@ -120,16 +119,13 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
               value={linkDrive}
               onChange={(e) => setLinkDrive(e.target.value)}
               placeholder="https://drive.google.com/drive/folders/..."
-              className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
+              className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
             />
-            <p className="text-[11px] text-[#7a8e7d] mt-1">
-              Os membros que participaram poderão clicar no link do Drive diretamente pelo Catálogo para baixar os materiais.
-            </p>
           </div>
 
           <div>
-            <label className="block font-semibold text-[#f4ecd8] mb-1 flex items-center gap-1">
-              <KeyRound className="w-3.5 h-3.5 text-[#d49e2a]" />
+            <label className="block font-semibold text-[#302414] mb-1 flex items-center gap-1">
+              <KeyRound className="w-3.5 h-3.5 text-[#716016]" />
               <span>Senha do Mestre para Confirmar:</span>
             </label>
             <input
@@ -137,34 +133,33 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
               required
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
-              placeholder="Ponte#dos#trolls"
-              className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#43aa6a]"
+              placeholder="Digite a senha de administrador..."
+              className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
             />
           </div>
 
           {errorMsg && (
-            <div className="p-2.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs">
-              {errorMsg}
+            <div className="p-2.5 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-[#DC2626]" />
+              <span>{errorMsg}</span>
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 border-t border-[#D6C296]">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-2 text-xs text-[#8a9d8c] hover:text-[#f4ecd8] cursor-pointer"
+              className="px-4 py-2 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] rounded-xl text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 font-bold text-xs rounded-xl bg-[#236336] hover:bg-[#2c7842] text-white shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Confirmar e Mover para o Catálogo</span>
+              Confirmar Transferência
             </button>
           </div>
-
         </form>
 
       </div>

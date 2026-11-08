@@ -139,46 +139,46 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#122015] border-2 border-[#d49e2a]/60 rounded-3xl w-full max-w-3xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/70 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="parchment-card w-full max-w-3xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden border-[#C6AD78]">
         
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#182d1d] to-[#122015] border-b border-[#203625] flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#282D13] border-b border-[#3f471e] flex items-center justify-between text-[#F8EDD5]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#1f3524] border border-[#d49e2a]/40 flex items-center justify-center text-[#d49e2a]">
+            <div className="w-8 h-8 rounded-lg bg-[#3a4419] border border-[#C6AD78] flex items-center justify-center text-[#F8EDD5]">
               <Users className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="font-rpg text-lg font-bold text-[#f4ecd8] flex items-center gap-2">
+              <h2 className="font-rpg text-base sm:text-lg font-bold text-[#F8EDD5] flex items-center gap-2">
                 <span>Gerenciar Membros da Mesa</span>
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#1e3422] text-[#d49e2a] border border-[#d49e2a]/30">
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#3a4419] text-[#F8EDD5] border border-[#C6AD78]/40">
                   {activeMembers.length} membros
                 </span>
               </h2>
-              <p className="text-[11px] text-[#8a9d8c]">
+              <p className="text-[11px] text-[#cfc4a6]">
                 Cadastro exclusivo pelo Mestre, controle de contatos e strikes de pagamento
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#8a9d8c] hover:text-[#f4ecd8] hover:bg-[#1f3524] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-5 sm:p-6 overflow-y-auto max-h-[75vh] space-y-6 text-xs">
+        <div className="p-5 sm:p-6 overflow-y-auto max-h-[75vh] space-y-6 text-xs text-[#302414]">
           
-          {/* 1. FORMULÁRIO CLARO NO TOPO: + CADASTRAR NOVO MEMBRO (Exclusivo Mestre) */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#0c150e] border-2 border-[#d49e2a]/50 shadow-md space-y-3.5">
+          {/* 1. FORMULÁRIO: + CADASTRAR NOVO MEMBRO (Exclusivo Mestre) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#FBF4E4] border border-[#D6C296] space-y-3.5 shadow-sm">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-xs sm:text-sm text-[#d49e2a] uppercase tracking-wider flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-[#d49e2a]" />
+              <h3 className="font-bold text-xs sm:text-sm text-[#716016] uppercase tracking-wider flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-[#716016]" />
                 <span>+ Cadastrar Novo Membro</span>
               </h3>
-              <span className="text-[10px] text-[#8a9d8c] bg-[#16271a] px-2 py-0.5 rounded border border-[#203625]">
+              <span className="text-[10px] text-[#71634D] bg-[#EDE2CA] px-2 py-0.5 rounded border border-[#D5C49F]">
                 Ativação Imediata
               </span>
             </div>
@@ -186,7 +186,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
             <form onSubmit={handleCreateMember} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#f4ecd8] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#302414] mb-1">
                     Nome Completo *
                   </label>
                   <input
@@ -195,12 +195,12 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Ex: Pedro Henrique"
-                    className="w-full px-3 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#f4ecd8] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#302414] mb-1">
                     Telefone/WhatsApp (Senha) *
                   </label>
                   <input
@@ -209,12 +209,12 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                     value={newPhone}
                     onChange={(e) => handlePhoneMask(e.target.value)}
                     placeholder="(11) 98765-4321"
-                    className="w-full px-3 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#f4ecd8] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#302414] mb-1">
                     E-mail
                   </label>
                   <input
@@ -222,12 +222,12 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="pedro@exemplo.com"
-                    className="w-full px-3 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#f4ecd8] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#302414] mb-1">
                     Data de Entrada
                   </label>
                   <input
@@ -235,19 +235,19 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                     required
                     value={newDataEntrada}
                     onChange={(e) => setNewDataEntrada(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#122015] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
                   />
                 </div>
               </div>
 
               {formError && (
-                <p className="text-xs text-red-400 font-semibold">{formError}</p>
+                <p className="text-xs text-[#8b261b] font-semibold">{formError}</p>
               )}
 
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="px-5 py-2 font-bold text-xs rounded-xl bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015] shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2 font-bold text-xs rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Salvar e Ativar Membro</span>
@@ -259,31 +259,31 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
           {/* 2. Barra de Busca e Toolbar */}
           <div className="flex flex-col sm:flex-row gap-2 justify-between items-center">
             <div className="relative w-full sm:w-72">
-              <Search className="w-4 h-4 text-[#7a8e7d] absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-[#71634D] absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar membro na mesa..."
-                className="w-full pl-9 pr-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-[#d49e2a]"
+                className="w-full pl-9 pr-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
               />
             </div>
 
             <button
               type="button"
               onClick={handleCopyPhoneList}
-              className="px-3 py-2 text-xs font-semibold rounded-xl bg-[#16271a] hover:bg-[#1f3724] border border-[#2e5035] text-[#d49e2a] flex items-center gap-1.5 transition-colors cursor-pointer w-full sm:w-auto justify-center"
+              className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] flex items-center gap-1.5 transition-colors cursor-pointer w-full sm:w-auto justify-center"
               title="Copiar lista de contatos para transmissão no WhatsApp"
             >
-              <Phone className="w-3.5 h-3.5" />
+              <Phone className="w-3.5 h-3.5 text-[#716016]" />
               <span>Copiar Contatos WhatsApp</span>
             </button>
           </div>
 
           {/* 3. Lista de Membros com Gerenciamento de Strikes */}
-          <div className="border border-[#203625] rounded-2xl bg-[#0c150e] overflow-hidden divide-y divide-[#1a2f20]">
+          <div className="border border-[#D6C296] rounded-2xl bg-[#FBF4E4] overflow-hidden divide-y divide-[#E3D1AC]">
             {filteredMembers.length === 0 ? (
-              <div className="p-8 text-center text-xs text-[#7a8e7d]">
+              <div className="p-8 text-center text-xs text-[#71634D]">
                 Nenhum membro encontrado com este termo.
               </div>
             ) : (
@@ -292,40 +292,40 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                 return (
                   <div
                     key={u.id}
-                    className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#142318] transition-colors"
+                    className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#F8EDD5] transition-colors"
                   >
                     <div className="space-y-1">
-                      <div className="font-semibold text-xs sm:text-sm text-[#f1ede4] flex items-center gap-2">
+                      <div className="font-semibold text-xs sm:text-sm text-[#302414] flex items-center gap-2">
                         <span>{u.nome}</span>
                         {strikesCount === 0 ? (
-                          <span className="text-[10px] bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded font-bold">
+                          <span className="text-[10px] bg-[#dbe6c2] text-[#354817] border border-[#8ea259] px-1.5 py-0.5 rounded font-bold">
                             Regular (0 strikes)
                           </span>
                         ) : strikesCount < 3 ? (
-                          <span className="text-[10px] bg-amber-950/80 text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded font-bold flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3 text-amber-400" />
+                          <span className="text-[10px] bg-[#FEF3C7] text-[#92400E] border border-[#F59E0B] px-1.5 py-0.5 rounded font-bold flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3 text-[#B45309]" />
                             <span>{strikesCount}/3 Strikes</span>
                           </span>
                         ) : (
-                          <span className="text-[10px] bg-red-950 text-red-200 border border-red-500 px-1.5 py-0.2 rounded font-bold animate-pulse">
+                          <span className="text-[10px] bg-[#FEE2E2] text-[#991B1B] border border-[#EF4444] px-1.5 py-0.5 rounded font-bold animate-pulse">
                             ⚠️ 3 Strikes (Limite Atingido)
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#8a9d8c]">
-                        <span className="text-[#a4b5a6] flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-[#d49e2a]" />
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#71634D]">
+                        <span className="text-[#302414] flex items-center gap-1 font-mono">
+                          <Phone className="w-3 h-3 text-[#716016]" />
                           {u.telefone || 'Sem telefone'}
                         </span>
                         {u.email && (
                           <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3 text-[#7a8e7d]" />
+                            <Mail className="w-3 h-3 text-[#71634D]" />
                             {u.email}
                           </span>
                         )}
                         {(u.dataEntrada || u.createdAt) && (
-                          <span className="text-[#637965] flex items-center gap-1">
+                          <span className="text-[#71634D] flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             Entrada: {formatDateDisplay(u.dataEntrada || u.createdAt?.split('T')[0])}
                           </span>
@@ -336,19 +336,19 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                     {/* Controles de Strikes & Exclusão */}
                     <div className="flex items-center gap-3">
                       {/* Painel de Strikes */}
-                      <div className="flex items-center gap-1.5 bg-[#122015] px-2 py-1 rounded-xl border border-[#203625]">
-                        <span className="text-[10px] text-[#7a8e7d] font-semibold mr-1">Strikes:</span>
+                      <div className="flex items-center gap-1.5 bg-[#FAF4E6] px-2 py-1 rounded-xl border border-[#C6AD78]">
+                        <span className="text-[10px] text-[#71634D] font-semibold mr-1">Strikes:</span>
                         <button
                           type="button"
                           onClick={() => handleAdjustStrikes(u, -1)}
                           disabled={strikesCount === 0}
-                          className="w-5 h-5 rounded flex items-center justify-center bg-[#1a2f20] hover:bg-[#25442e] text-[#a4b5a6] hover:text-[#f4ecd8] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                          className="w-5 h-5 rounded flex items-center justify-center bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                           title="Remover 1 strike"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className={`font-mono font-bold text-xs px-1 ${
-                          strikesCount === 0 ? 'text-emerald-400' : strikesCount < 3 ? 'text-amber-400' : 'text-red-400'
+                          strikesCount === 0 ? 'text-[#48551F]' : strikesCount < 3 ? 'text-[#B45309]' : 'text-[#8b261b]'
                         }`}>
                           {strikesCount}
                         </span>
@@ -356,7 +356,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                           type="button"
                           onClick={() => handleAdjustStrikes(u, 1)}
                           disabled={strikesCount >= 3}
-                          className="w-5 h-5 rounded flex items-center justify-center bg-[#1a2f20] hover:bg-[#3d2424] text-[#a4b5a6] hover:text-red-400 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                          className="w-5 h-5 rounded flex items-center justify-center bg-[#EADBBE] hover:bg-[#FEE2E2] text-[#302414] hover:text-[#8b261b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                           title="Adicionar 1 strike por atraso de pagamento"
                         >
                           <Plus className="w-3 h-3" />
@@ -370,7 +370,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                           setDeletePassword('');
                           setDeleteError('');
                         }}
-                        className="p-1.5 rounded-lg text-[#6e8571] hover:text-red-400 hover:bg-red-950/40 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-[#71634D] hover:text-[#8b261b] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
                         title="Remover membro"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -386,18 +386,18 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
 
         {/* Modal Confirmação de Exclusão com Senha */}
         {userToDelete && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-[#122015] border-2 border-red-500/60 rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl">
-              <div className="flex items-center gap-2 text-red-400">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#282D13]/70 backdrop-blur-sm">
+            <div className="parchment-card border-2 border-[#8b261b]/60 rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl">
+              <div className="flex items-center gap-2 text-[#8b261b]">
                 <Trash2 className="w-5 h-5" />
-                <h4 className="font-bold text-sm text-[#f4ecd8]">Excluir Membro da Mesa</h4>
+                <h4 className="font-bold text-sm text-[#302414]">Excluir Membro da Mesa</h4>
               </div>
-              <p className="text-xs text-[#a4b5a6]">
-                Tem certeza que deseja remover <strong>{userToDelete.nome}</strong> da lista?
+              <p className="text-xs text-[#71634D]">
+                Tem certeza que deseja remover <strong className="text-[#302414]">{userToDelete.nome}</strong> da lista?
               </p>
               <form onSubmit={handleConfirmDelete} className="space-y-3 pt-1">
                 <div>
-                  <label className="block text-[11px] text-[#8a9d8c] mb-1">
+                  <label className="block text-[11px] text-[#71634D] mb-1">
                     Senha do Mestre para confirmar:
                   </label>
                   <input
@@ -406,24 +406,24 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
                     placeholder="Ponte#dos#trolls"
-                    className="w-full px-3 py-2 bg-[#0c150e] border border-[#203625] rounded-xl text-xs text-[#f1ede4] focus:outline-none focus:border-red-500"
+                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#8b261b]"
                     autoFocus
                   />
                 </div>
                 {deleteError && (
-                  <p className="text-xs text-red-400">{deleteError}</p>
+                  <p className="text-xs text-[#8b261b]">{deleteError}</p>
                 )}
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setUserToDelete(null)}
-                    className="px-3 py-1.5 text-xs text-[#8a9d8c] hover:text-[#f4ecd8] cursor-pointer"
+                    className="px-3 py-1.5 text-xs text-[#71634D] hover:text-[#302414] cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-1.5 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-500 text-white cursor-pointer"
+                    className="px-4 py-1.5 text-xs font-bold rounded-xl bg-[#8b261b] hover:bg-[#a12e20] text-white cursor-pointer"
                   >
                     Confirmar Exclusão
                   </button>
