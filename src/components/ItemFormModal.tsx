@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ItemRPG, SISTEMAS_PADRAO, ADMIN_PASSWORD, ItemStatus, UserProfile, OFFICIAL_PRODUCT_TYPES, ProductType } from '../types';
+import { ItemRPG, SISTEMAS_PADRAO, ItemStatus, UserProfile, OFFICIAL_PRODUCT_TYPES, ProductType } from '../types';
 import { formatPhone, getTodayISODate } from '../utils/helpers';
 import { X, Save, PlusCircle, Pencil, Lock, AlertCircle, User, Image as ImageIcon, Upload, Trash2 } from 'lucide-react';
 
@@ -8,7 +8,7 @@ interface ItemFormModalProps {
   itemToEdit: ItemRPG | null;
   currentUser: UserProfile | null;
   onClose: () => void;
-  onSave: (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string }) => void;
+  onSave: (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string; adminPassword?: string }) => void;
 }
 
 export const ItemFormModal: React.FC<ItemFormModalProps> = ({
@@ -138,13 +138,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       return;
     }
 
-    if (isEditing) {
-      if (adminPassword !== ADMIN_PASSWORD) {
-        setPasswordError('Senha incorreta! Digite a senha de administrador para salvar ou mudar status.');
-        return;
-      }
-    }
-
     const finalSistema = isCustomSistema && customSistema.trim() ? customSistema.trim() : sistema;
     const finalValor = parseFloat(valorNumerico.replace(',', '.')) || 0;
 
@@ -166,6 +159,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       observacaoValor: observacaoValor.trim(),
       status: isEditing ? status : 'Sugestão',
       data: itemToEdit?.data || getTodayISODate(),
+      adminPassword: adminPassword.trim(),
     });
 
     onClose();

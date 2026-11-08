@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UserProfile, ADMIN_PASSWORD } from '../types';
+import { UserProfile } from '../types';
 import { Users, UserPlus, Trash2, Search, X, Shield, Phone, Mail, Calendar, AlertTriangle, Check, Plus, Minus, UserCheck } from 'lucide-react';
 import { formatDateDisplay } from '../utils/helpers';
 
@@ -115,8 +115,8 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
     e.preventDefault();
     if (!userToDelete) return;
 
-    if (deletePassword !== ADMIN_PASSWORD) {
-      setDeleteError('Senha de administrador incorreta!');
+    if (!deletePassword.trim()) {
+      setDeleteError('A senha do Mestre é necessária para confirmar a exclusão.');
       return;
     }
 

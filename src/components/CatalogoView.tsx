@@ -5,7 +5,6 @@ import {
   SISTEMAS_PADRAO,
   OFFICIAL_PRODUCT_TYPES,
   ProductType,
-  ADMIN_PASSWORD,
 } from '../types';
 import {
   Search,
@@ -46,7 +45,7 @@ interface CatalogoViewProps {
   onGoHome: () => void;
   onEditPackage: (pkg: FundingPackage) => void;
   onDeletePackage: (pkg: FundingPackage) => void;
-  onUpdateDriveLink?: (packageId: string, linkDrive: string) => Promise<void>;
+  onUpdateDriveLink?: (packageId: string, linkDrive: string, adminPassword?: string) => Promise<void>;
   onUpdatePackageImage?: (packageId: string, newImageUrl: string, adminPassword?: string) => Promise<void>;
   cartPackageIds?: string[];
   onAddToCart?: (pkg: FundingPackage) => void;
@@ -123,15 +122,11 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
       onToast('Selecione um membro para liberar acesso.');
       return;
     }
-    if (buyerPassword !== ADMIN_PASSWORD) {
-      onToast('Senha do Mestre incorreta.');
-      return;
-    }
     if (!onAddPosteriorBuyer) return;
 
     try {
       setIsBuyerSaving(true);
-      const ok = await onAddPosteriorBuyer(pkgId, newBuyerId, buyerPassword);
+      const ok = await onAddPosteriorBuyer(pkgId, newBuyerId, buyerPassword.trim());
       if (ok) {
         onToast('Acesso de comprador posterior liberado com sucesso!');
         setNewBuyerId('');
@@ -163,15 +158,11 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
 
   const handleRemoveBuyer = async (pkgId: string, memberId: string) => {
     const pwd = prompt('Digite a Senha do Mestre para remover o acesso deste membro:');
-    if (!pwd) return;
-    if (pwd !== ADMIN_PASSWORD) {
-      onToast('Senha do Mestre incorreta.');
-      return;
-    }
+    if (pwd === null) return;
     if (!onRemovePosteriorBuyer) return;
 
     try {
-      const ok = await onRemovePosteriorBuyer(pkgId, memberId, pwd);
+      const ok = await onRemovePosteriorBuyer(pkgId, memberId, pwd.trim());
       if (ok) {
         onToast('Acesso removido com sucesso.');
         if (selectedPackageDetails && selectedPackageDetails.id === pkgId) {
@@ -356,17 +347,12 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
 
   const handleSaveDriveLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (driveAdminPassword !== ADMIN_PASSWORD) {
-      setDriveEditError('Senha do Mestre incorreta! Acesso negado.');
-      return;
-    }
-
     if (!driveEditPkg) return;
 
     try {
       setIsSavingDrive(true);
       if (onUpdateDriveLink) {
-        await onUpdateDriveLink(driveEditPkg.id, editDriveUrl.trim());
+        await onUpdateDriveLink(driveEditPkg.id, editDriveUrl.trim(), driveAdminPassword.trim());
       }
       if (selectedPackageDetails && selectedPackageDetails.id === driveEditPkg.id) {
         setSelectedPackageDetails({ ...selectedPackageDetails, linkDrive: editDriveUrl.trim() });

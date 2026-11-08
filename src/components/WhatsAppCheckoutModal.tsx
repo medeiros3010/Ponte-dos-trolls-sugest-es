@@ -31,10 +31,11 @@ export const WhatsAppCheckoutModal: React.FC<WhatsAppCheckoutModalProps> = ({
   const [copied, setCopied] = useState(false);
 
   const totalBRL = useMemo(() => {
-    return items.reduce((acc, pkg) => {
+    const totalCents = items.reduce((accCents, pkg) => {
       const price = typeof pkg.valorCatalogoBRL === 'number' ? pkg.valorCatalogoBRL : pkg.valorTotalBRL;
-      return acc + (price || 0);
+      return accCents + Math.round((price || 0) * 100);
     }, 0);
+    return totalCents / 100;
   }, [items]);
 
   // Mensagem padronizada conforme as especificações do prompt
@@ -49,7 +50,7 @@ export const WhatsAppCheckoutModal: React.FC<WhatsAppCheckoutModalProps> = ({
       // Regra de link da pasta: se houver link público cadastrado, exibe; caso contrário, proteção de acesso
       const driveInfo = pkg.linkDrive && pkg.linkDrive.trim()
         ? pkg.linkDrive.trim()
-        : 'Pasta ainda não disponibilizada';
+        : 'Pasta disponibilizada após confirmação';
 
       lines.push(`${pkg.titulo} — R$ ${price} — ${driveInfo}`);
     });
@@ -67,10 +68,14 @@ export const WhatsAppCheckoutModal: React.FC<WhatsAppCheckoutModalProps> = ({
   if (!isOpen) return null;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(messageText);
-    setCopied(true);
-    onToast('Mensagem copiada para a área de transferência!');
-    setTimeout(() => setCopied(false), 2500);
+    try {
+      navigator.clipboard.writeText(messageText);
+      setCopied(true);
+      onToast('Mensagem copiada para a área de transferência!');
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      onToast('Não foi possível acessar a área de transferência. Selecione o texto abaixo para copiar.');
+    }
   };
 
   const handleOpenWhatsApp = () => {
@@ -78,6 +83,19 @@ export const WhatsAppCheckoutModal: React.FC<WhatsAppCheckoutModalProps> = ({
     const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
     const encodedText = encodeURIComponent(messageText);
     const url = `https://wa.me/${phoneWithCountry}?text=${encodedText}`;
+
+    // Limite prático seguro de URLs para o WhatsApp Web / Mobile
+    if (url.length > 2000) {
+      try {
+        navigator.clipboard.writeText(messageText);
+        onToast('Seu carrinho é extenso! A mensagem foi copiada para a área de transferência. Basta colar (Ctrl+V) no WhatsApp.');
+      } catch {
+        onToast('Copie a mensagem na caixa abaixo antes de abrir o WhatsApp.');
+      }
+      window.open(`https://wa.me/${phoneWithCountry}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 

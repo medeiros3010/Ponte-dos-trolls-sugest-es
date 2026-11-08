@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FundingPackage, ADMIN_PASSWORD } from '../types';
+import { FundingPackage } from '../types';
 import { X, CheckCircle2, Folder, KeyRound, DollarSign, AlertCircle } from 'lucide-react';
 
 interface MoveToCatalogModalProps {
@@ -36,8 +36,8 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPassword !== ADMIN_PASSWORD) {
-      setErrorMsg('Senha do Mestre incorreta! Acesso negado.');
+    if (!adminPassword.trim()) {
+      setErrorMsg('A senha do Mestre é necessária para confirmar a operação.');
       return;
     }
 

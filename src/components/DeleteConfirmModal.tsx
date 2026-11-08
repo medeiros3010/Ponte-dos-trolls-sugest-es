@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ItemRPG, ADMIN_PASSWORD } from '../types';
+import { ItemRPG } from '../types';
 import { AlertTriangle, Trash2, X, Lock, AlertCircle } from 'lucide-react';
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
   item: ItemRPG | null;
-  onConfirm: () => void;
+  onConfirm: (adminPassword?: string) => void;
   onCancel: () => void;
 }
 
@@ -26,11 +26,11 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   }, [isOpen, item]);
 
   const handleConfirm = () => {
-    if (password !== ADMIN_PASSWORD) {
-      setErrorMessage('Senha incorreta! Digite a senha de administrador.');
+    if (!password.trim()) {
+      setErrorMessage('Digite a senha de administrador.');
       return;
     }
-    onConfirm();
+    onConfirm(password.trim());
   };
 
   if (!isOpen || !item) return null;

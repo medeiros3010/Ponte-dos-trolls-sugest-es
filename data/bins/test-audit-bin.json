@@ -1,0 +1,308 @@
+{
+  "id": "test-audit-bin",
+  "name": "Base de Teste Isolada - Auditoria",
+  "updatedAt": "2026-11-08T17:40:42.570Z",
+  "usersVersion": "v2_125_oficial",
+  "items": [
+    {
+      "id": "item-audit-1",
+      "data": "2026-03-01",
+      "nome": "Livro de Regras Fictício V1",
+      "produto": "Livros",
+      "sistema": "PF2E",
+      "descricao": "Manual de testes para auditoria",
+      "link": "https://loja.exemplo.com/livro-teste",
+      "sugeridoPorId": "usr-teste-a",
+      "sugeridoPorNome": "Aventureiro Alpha",
+      "sugeridoPorTelefone": "(11) 98888-1111",
+      "sugeridoPorEmail": "alpha@teste.com",
+      "moeda": "BRL",
+      "valorNumerico": 150,
+      "status": "Sugestão",
+      "apoiadores": []
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-master",
+      "nome": "Ponte dos Trolls",
+      "telefone": "(19) 98151-2030",
+      "email": "mestre@teste.com",
+      "dataEntrada": "2026-01-01",
+      "status": "aprovado",
+      "isMaster": true,
+      "strikes": []
+    },
+    {
+      "id": "usr-teste-a",
+      "nome": "Aventureiro Alpha",
+      "telefone": "(11) 98888-1111",
+      "email": "alpha@teste.com",
+      "dataEntrada": "2026-02-01",
+      "status": "aprovado",
+      "strikes": 0
+    },
+    {
+      "id": "usr-teste-b",
+      "nome": "Aventureiro Beta",
+      "telefone": "(11) 98888-2222",
+      "email": "beta@teste.com",
+      "dataEntrada": "2026-02-15",
+      "status": "aprovado",
+      "strikes": 1
+    },
+    {
+      "id": "usr-teste-pendente",
+      "nome": "Candidato Pendente",
+      "telefone": "(11) 98888-3333",
+      "email": "pendente@teste.com",
+      "dataEntrada": "2026-03-01",
+      "status": "pendente",
+      "strikes": 0
+    },
+    {
+      "id": "usr-teste-recusado",
+      "nome": "Candidato Recusado",
+      "telefone": "(11) 98888-4444",
+      "email": "recusado@teste.com",
+      "dataEntrada": "2026-03-01",
+      "status": "recusado",
+      "strikes": 0
+    }
+  ],
+  "packages": [
+    {
+      "id": "pack-audit-coleta",
+      "titulo": "Pacote Teste em Coleta",
+      "sistema": "DnD5e",
+      "tipo": "Material para VTT",
+      "descricao": "Pacote fictício em fase de coleta",
+      "itens": [
+        {
+          "id": "it-sub-1",
+          "nome": "Módulo Teste 1",
+          "sistema": "DnD5e",
+          "tipo": "Material para VTT",
+          "link": "https://loja.exemplo.com/mod1",
+          "precoBRL": 100
+        }
+      ],
+      "valorTotalBRL": 100,
+      "dataFinalizar": "2026-04-01",
+      "dataPagamento": "2026-04-05",
+      "minimoParticipantes": 10,
+      "valorMaximoPorPessoa": 10,
+      "valorCatalogoBRL": 12,
+      "linkLoja": "",
+      "linkDrive": "",
+      "itensInclusos": [],
+      "sugestoesIds": [],
+      "status": "Financiamento",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [
+        {
+          "id": "usr-teste-a",
+          "nome": "Aventureiro Alpha",
+          "telefone": "(11) 98888-1111",
+          "email": "alpha@teste.com",
+          "data": "2026-03-01T10:00:00Z"
+        }
+      ],
+      "criadoEm": "2026-03-01"
+    },
+    {
+      "id": "pack-audit-pagamento",
+      "titulo": "Pacote Teste em Pagamento",
+      "sistema": "PF2E",
+      "tipo": "Material para VTT",
+      "descricao": "Pacote fictício em cobrança ativa",
+      "itens": [
+        {
+          "id": "it-sub-2",
+          "nome": "Mapas Animados V1",
+          "sistema": "PF2E",
+          "tipo": "Mapas",
+          "link": "https://loja.exemplo.com/mapas",
+          "precoBRL": 200
+        }
+      ],
+      "valorTotalBRL": 200,
+      "dataFinalizar": "2026-03-20",
+      "dataPagamento": "2026-03-25",
+      "minimoParticipantes": 20,
+      "valorMaximoPorPessoa": 10,
+      "valorCatalogoBRL": 15,
+      "linkLoja": "",
+      "linkDrive": "",
+      "itensInclusos": [],
+      "sugestoesIds": [],
+      "status": "Financiamento",
+      "etapaFinanciamento": "PAGAMENTO",
+      "valorFinalPorParticipante": 10,
+      "chavePix": "pix-teste@pontedostrolls.com",
+      "instrucoesPix": "Enviar comprovante no WhatsApp do Mestre",
+      "pagamentos": {
+        "usr-teste-b": {
+          "memberId": "usr-teste-b",
+          "nome": "Aventureiro Beta",
+          "informouPagamento": true,
+          "dataPagamentoInformado": "2026-03-02T15:00:00Z"
+        },
+        "usr-teste-a": {
+          "memberId": "usr-teste-a",
+          "informouPagamento": true,
+          "dataPagamentoInformado": "2026-11-08T17:15:04.525Z"
+        }
+      },
+      "apoiadores": [
+        {
+          "id": "usr-teste-a",
+          "nome": "Aventureiro Alpha",
+          "telefone": "(11) 98888-1111",
+          "email": "alpha@teste.com",
+          "data": "2026-03-01T10:00:00Z",
+          "pagamentoInformado": true,
+          "dataPagamentoInformado": "2026-11-08T17:15:04.525Z"
+        },
+        {
+          "id": "usr-teste-b",
+          "nome": "Aventureiro Beta",
+          "telefone": "(11) 98888-2222",
+          "email": "beta@teste.com",
+          "data": "2026-03-01T11:00:00Z",
+          "pagamentoInformado": true,
+          "dataPagamentoInformado": "2026-03-02T15:00:00Z"
+        }
+      ],
+      "criadoEm": "2026-03-01"
+    },
+    {
+      "id": "pack-audit-catalogo",
+      "titulo": "Compêndio de Monstros Catálogo",
+      "sistema": "Tormenta20",
+      "tipo": "Livros",
+      "descricao": "Item concluído disponível no catálogo",
+      "itens": [
+        {
+          "id": "it-sub-3",
+          "nome": "Compêndio V1",
+          "sistema": "Tormenta20",
+          "tipo": "Livros",
+          "link": "https://loja.exemplo.com/compendio",
+          "precoBRL": 80
+        }
+      ],
+      "valorTotalBRL": 80,
+      "dataFinalizar": "",
+      "dataPagamento": "",
+      "minimoParticipantes": 10,
+      "valorMaximoPorPessoa": 8,
+      "valorCatalogoBRL": 10,
+      "linkLoja": "",
+      "linkDrive": "https://drive.google.com/drive/folders/ficticio-pasta-secreta-catalogo",
+      "itensInclusos": [],
+      "sugestoesIds": [],
+      "status": "Catálogo",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {
+        "usr-teste-a": {
+          "memberId": "usr-teste-a",
+          "nome": "Aventureiro Alpha",
+          "informouPagamento": true,
+          "dataPagamentoInformado": "2026-02-05T10:00:00Z"
+        }
+      },
+      "apoiadores": [
+        {
+          "id": "usr-teste-a",
+          "nome": "Aventureiro Alpha",
+          "telefone": "(11) 98888-1111",
+          "email": "alpha@teste.com",
+          "data": "2026-02-01T10:00:00Z",
+          "pagamentoInformado": true,
+          "dataPagamentoInformado": "2026-02-05T10:00:00Z"
+        }
+      ],
+      "criadoEm": "2026-02-01",
+      "finalizadoEm": "2026-02-10"
+    },
+    {
+      "id": "pack-audit-catalogo-secreto",
+      "titulo": "Aventura Secreta Só Para Beta",
+      "sistema": "Call of Cthulhu",
+      "tipo": "Livros",
+      "descricao": "Item exclusivo do Beta",
+      "itens": [],
+      "valorTotalBRL": 90,
+      "dataFinalizar": "",
+      "dataPagamento": "",
+      "minimoParticipantes": 5,
+      "valorMaximoPorPessoa": 18,
+      "valorCatalogoBRL": 25,
+      "linkLoja": "",
+      "linkDrive": "https://drive.google.com/drive/folders/pasta-secreta-do-beta",
+      "itensInclusos": [],
+      "sugestoesIds": [],
+      "status": "Catálogo",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {
+        "usr-teste-b": {
+          "memberId": "usr-teste-b",
+          "nome": "Aventureiro Beta",
+          "informouPagamento": true,
+          "dataPagamentoInformado": "2026-02-05T10:00:00Z"
+        }
+      },
+      "apoiadores": [
+        {
+          "id": "usr-teste-b",
+          "nome": "Aventureiro Beta",
+          "telefone": "(11) 98888-2222",
+          "email": "beta@teste.com",
+          "data": "2026-02-01T10:00:00Z",
+          "pagamentoInformado": true,
+          "dataPagamentoInformado": "2026-02-05T10:00:00Z"
+        }
+      ],
+      "criadoEm": "2026-02-01",
+      "finalizadoEm": "2026-02-10"
+    }
+  ],
+  "solicitacoes": [
+    {
+      "id": "sol-teste-pendente",
+      "nome": "Candidato Pendente",
+      "email": "pendente@teste.com",
+      "telefone": "(11) 98888-3333",
+      "comoConheceu": "Amigo",
+      "indicadoPor": "Aventureiro Alpha",
+      "respostas": {
+        "1": "Resposta teste"
+      },
+      "regrasTextoAceito": "Regras da comunidade",
+      "regrasVersao": "1.0.0",
+      "aceitouTermos": true,
+      "aceitouEm": "2026-03-05T10:00:00Z",
+      "criadoEm": "2026-03-05T10:00:00Z",
+      "status": "pendente"
+    },
+    {
+      "id": "sol-teste-recusado",
+      "nome": "Candidato Recusado",
+      "email": "recusado@teste.com",
+      "telefone": "(11) 98888-4444",
+      "comoConheceu": "Reddit",
+      "respostas": {
+        "1": "Outra resposta"
+      },
+      "regrasTextoAceito": "Regras da comunidade",
+      "regrasVersao": "1.0.0",
+      "aceitouTermos": true,
+      "aceitouEm": "2026-03-01T10:00:00Z",
+      "criadoEm": "2026-03-01T10:00:00Z",
+      "status": "recusado",
+      "observacoesMestre": "Não atendeu aos critérios da mesa."
+    }
+  ]
+}

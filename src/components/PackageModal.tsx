@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { FundingPackage, PackageSubItem, ProductType, OFFICIAL_PRODUCT_TYPES, SISTEMAS_PADRAO, ADMIN_PASSWORD } from '../types';
+import { FundingPackage, PackageSubItem, ProductType, OFFICIAL_PRODUCT_TYPES, SISTEMAS_PADRAO } from '../types';
 import { X, Layers, Plus, Trash2, KeyRound, DollarSign, Calendar, Users, ExternalLink, Image as ImageIcon, Upload, FolderCheck, AlertCircle, AlertTriangle } from 'lucide-react';
 import { uploadImageFile } from '../utils/cloudStorage';
 
 interface PackageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (pkgData: Omit<FundingPackage, 'id' | 'criadoEm'> & { id?: string }) => Promise<any> | void;
+  onSave: (pkgData: Omit<FundingPackage, 'id' | 'criadoEm'> & { id?: string; adminPassword?: string }) => Promise<any> | void;
   existingPackage?: FundingPackage | null;
   onToast: (msg: string) => void;
 }
@@ -236,10 +236,8 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     }
 
     // 4. Validação da Senha do Mestre
-    if (!adminPassword) {
-      errors.adminPassword = 'A senha do Mestre é obrigatória para publicar ou editar pacotes.';
-    } else if (adminPassword !== ADMIN_PASSWORD) {
-      errors.adminPassword = 'Senha do Mestre incorreta! Acesso negado.';
+    if (!adminPassword.trim()) {
+      errors.adminPassword = 'A senha do Mestre é necessária para confirmar a operação.';
     }
 
     // Se houver algum erro, foca o primeiro campo inválido com scroll suave
@@ -299,6 +297,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         valorFinalPorParticipante: existingPackage?.valorFinalPorParticipante,
         chavePix: existingPackage?.chavePix,
         instrucoesPix: existingPackage?.instrucoesPix,
+        adminPassword: adminPassword.trim(),
       });
 
       onToast(existingPackage ? 'Pacote atualizado com sucesso!' : 'Novo pacote de financiamento criado com sucesso!');

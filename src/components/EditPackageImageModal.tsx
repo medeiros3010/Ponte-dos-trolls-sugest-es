@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FundingPackage, ADMIN_PASSWORD } from '../types';
+import { FundingPackage } from '../types';
 import { uploadImageFile } from '../utils/cloudStorage';
 import { X, Image as ImageIcon, Upload, Trash2, Save, Lock, AlertCircle } from 'lucide-react';
 
@@ -62,17 +62,13 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPassword !== ADMIN_PASSWORD) {
-      setPasswordError('Senha de administrador incorreta.');
-      return;
-    }
 
     try {
       setIsSaving(true);
       if (onSave) {
-        await onSave(currentPkg.id, imageUrl.trim(), adminPassword);
+        await onSave(currentPkg.id, imageUrl.trim(), adminPassword.trim());
       } else if (onUpdateImage) {
-        await onUpdateImage(currentPkg.id, imageUrl.trim(), adminPassword);
+        await onUpdateImage(currentPkg.id, imageUrl.trim(), adminPassword.trim());
       }
       onToast('Capa do pacote atualizada com sucesso!');
       onClose();

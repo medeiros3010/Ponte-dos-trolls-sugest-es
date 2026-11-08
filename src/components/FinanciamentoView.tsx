@@ -3,7 +3,6 @@ import {
   FundingPackage,
   UserProfile,
   FundingStage,
-  ADMIN_PASSWORD,
 } from '../types';
 import {
   Plus,
@@ -206,16 +205,11 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
 
   const handleConfirmReopenColeta = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (stageAdminPassword !== ADMIN_PASSWORD) {
-      setStageError('Senha do Mestre incorreta! Acesso negado.');
-      return;
-    }
-
     if (!reopenColetaPkg) return;
 
     try {
       setIsUpdatingStage(true);
-      await onUpdateStage(reopenColetaPkg.id, 'COLETA', stageAdminPassword);
+      await onUpdateStage(reopenColetaPkg.id, 'COLETA', stageAdminPassword.trim());
       onToast('Coleta de membros reaberta! A lista de participantes voltou a ficar liberada.');
       setReopenColetaPkg(null);
     } catch (err: any) {

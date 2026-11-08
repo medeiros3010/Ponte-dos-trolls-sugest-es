@@ -7,7 +7,6 @@ import {
   Apoiador,
   ItemStatus,
   ProductType,
-  ADMIN_PASSWORD,
   MembershipApplication,
 } from './types';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './data/seedData';
@@ -32,6 +31,14 @@ import {
   apiRejectApplication,
   apiAddPosteriorBuyer,
   apiRemovePosteriorBuyer,
+  apiVerifySession,
+  apiLogout,
+  apiSaveItem,
+  apiDeleteItem,
+  apiToggleItemSupport,
+  apiSavePackage,
+  apiDeletePackage,
+  setSessionToken,
   DEFAULT_BIN_ID,
   USERS_VERSION,
 } from './utils/cloudStorage';
@@ -271,8 +278,7 @@ export default function App() {
       if (!binId) return;
       try {
         setIsSyncing(true);
-        const adminPw = currentUser?.isMaster ? ADMIN_PASSWORD : '';
-        const cloudData = await fetchCloudData(binId, adminPw, currentUser?.id, currentUser?.telefone);
+        const cloudData = await fetchCloudData(binId, undefined, currentUser?.id, currentUser?.telefone);
         if (isMounted && cloudData) {
           if (Array.isArray(cloudData.items)) {
             setItems(cloudData.items);
@@ -462,6 +468,9 @@ export default function App() {
 
   const handleChangeUser = () => {
     // Requirement 7: Limpar sessão, fechar modais e resetar para a tela inicial
+    apiLogout();
+    setSessionToken(null);
+    setCart([]);
     setView('home');
     setCatalogMyAcervoFilter(false);
     setIsProfileOpen(false);
@@ -569,135 +578,76 @@ export default function App() {
   };
 
   // Sugestões Handlers
-  const handleSaveItem = (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string }) => {
-    if (itemData.id) {
-      // Editar: preserva o autor original inalterado
-      const originalItem = items.find((it) => it.id === itemData.id);
-      const nextItems = items.map((it) =>
-        it.id === itemData.id
-          ? {
-              ...it,
-              ...itemData,
-              sugeridoPorId: originalItem?.sugeridoPorId || it.sugeridoPorId,
-              sugeridoPorNome: originalItem?.sugeridoPorNome || it.sugeridoPorNome,
-              sugeridoPorTelefone: originalItem?.sugeridoPorTelefone || it.sugeridoPorTelefone,
-              sugeridoPorEmail: originalItem?.sugeridoPorEmail || it.sugeridoPorEmail,
-              status: itemData.status as ItemStatus,
-            }
-          : it
-      );
-      setItems(nextItems);
-      syncWithCloud(nextItems, users, packages);
-      showToast('Sugestão atualizada!');
-    } else {
-      // Criar Novo: estritamente determinado pela sessão autenticada
-      if (!currentUser) {
-        showToast('Você precisa estar autenticado para sugerir um material.');
+  const handleSaveItem = async (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string; adminPassword?: string }) => {
+    const isEdit = Boolean(itemData.id);
+    try {
+      const res = await apiSaveItem(binId, itemData, itemData.adminPassword);
+      if (res && res.item) {
+        if (isEdit) {
+          setItems((prev) => prev.map((it) => (it.id === itemData.id ? res.item! : it)));
+          showToast('Sugestão atualizada!');
+        } else {
+          setItems((prev) => [res.item!, ...prev]);
+          showToast('Sugestão enviada com sucesso!');
+        }
+        setIsFormOpen(false);
+        setItemToEdit(null);
         return;
       }
-      const newItem: ItemRPG = {
-        ...itemData,
-        id: `item-${Date.now()}`,
-        status: 'Sugestão',
-        sugeridoPorId: currentUser.id,
-        sugeridoPorNome: currentUser.nome,
-        sugeridoPorTelefone: currentUser.telefone,
-        sugeridoPorEmail: currentUser.email,
-        apoiadores: [
-          {
-            id: currentUser.id,
-            nome: currentUser.nome,
-            telefone: currentUser.telefone,
-            email: currentUser.email,
-          },
-        ],
-      };
-      const nextItems = [newItem, ...items];
-      setItems(nextItems);
-      syncWithCloud(nextItems, users, packages);
-      showToast('Sugestão enviada com sucesso!');
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao salvar sugestão.');
     }
-    setIsFormOpen(false);
-    setItemToEdit(null);
   };
 
-  const handleToggleSupportItem = (itemId: string) => {
+  const handleToggleSupportItem = async (itemId: string) => {
     if (!currentUser) return;
     const targetItem = items.find((it) => it.id === itemId);
     if (!targetItem) return;
 
-    const alreadySupporting = (targetItem.apoiadores || []).some(
-      (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
-    );
-
-    let nextApoiadores: Apoiador[];
-    if (alreadySupporting) {
-      nextApoiadores = (targetItem.apoiadores || []).filter(
-        (ap) => ap.id !== currentUser.id && ap.nome.toLowerCase() !== currentUser.nome.toLowerCase()
-      );
-      showToast(`Você retirou seu apoio da sugestão "${targetItem.nome}".`);
-    } else {
-      const novoApoiador: Apoiador = {
-        id: currentUser.id,
-        nome: currentUser.nome,
-        telefone: currentUser.telefone,
-        email: currentUser.email,
-        data: new Date().toISOString(),
-      };
-      // Garante ausência total de duplicatas por ID ou nome
-      const filtered = (targetItem.apoiadores || []).filter(
-        (ap) => ap.id !== currentUser.id && ap.nome.toLowerCase() !== currentUser.nome.toLowerCase()
-      );
-      nextApoiadores = [...filtered, novoApoiador];
-      showToast(`Você apoiou "${targetItem.nome}"!`);
+    try {
+      const res = await apiToggleItemSupport(binId, itemId, currentUser);
+      if (res && res.item) {
+        setItems((prev) => prev.map((it) => (it.id === itemId ? res.item! : it)));
+        const already = (targetItem.apoiadores || []).some((a) => a.id === currentUser.id);
+        showToast(already ? `Você retirou seu apoio da sugestão "${targetItem.nome}".` : `Você apoiou "${targetItem.nome}"!`);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao alternar apoio');
     }
-
-    const nextItems = items.map((it) => (it.id === itemId ? { ...it, apoiadores: nextApoiadores } : it));
-    setItems(nextItems);
-    syncWithCloud(nextItems, users, packages);
   };
 
-  const handleConfirmDeleteItem = () => {
+  const handleConfirmDeleteItem = async (adminPassword?: string) => {
     if (!itemToDelete) return;
-    const nextItems = items.filter((it) => it.id !== itemToDelete.id);
-    setItems(nextItems);
-    syncWithCloud(nextItems, users, packages);
-    showToast(`Item "${itemToDelete.nome}" excluído.`);
-    setItemToDelete(null);
+    try {
+      await apiDeleteItem(binId, itemToDelete.id, adminPassword);
+      setItems((prev) => prev.filter((it) => it.id !== itemToDelete.id));
+      showToast(`Item "${itemToDelete.nome}" excluído.`);
+      setItemToDelete(null);
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao excluir item');
+    }
   };
 
   // Funding Packages Handlers
   const handleSavePackage = async (
-    pkgData: Omit<FundingPackage, 'id' | 'criadoEm'> & { id?: string }
+    pkgData: Omit<FundingPackage, 'id' | 'criadoEm'> & { id?: string; adminPassword?: string }
   ) => {
-    let nextPackages: FundingPackage[];
-    if (pkgData.id) {
-      // Editar
-      nextPackages = packages.map((p) =>
-        p.id === pkgData.id
-          ? {
-              ...p,
-              ...pkgData,
-            }
-          : p
-      );
-    } else {
-      // Criar Novo Pacote
-      const newPkg: FundingPackage = {
-        ...pkgData,
-        id: `pack-${Date.now()}`,
-        criadoEm: new Date().toISOString().split('T')[0],
-      };
-      nextPackages = [newPkg, ...packages];
+    try {
+      const res = await apiSavePackage(binId, pkgData, pkgData.adminPassword);
+      if (res && res.package) {
+        if (pkgData.id) {
+          setPackages((prev) => prev.map((p) => (p.id === pkgData.id ? res.package! : p)));
+          showToast('Pacote atualizado com sucesso!');
+        } else {
+          setPackages((prev) => [res.package!, ...prev]);
+          showToast('Novo pacote de financiamento criado!');
+        }
+        setPackageToEdit(null);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao salvar pacote');
+      throw err;
     }
-
-    setPackages(nextPackages);
-    localStorage.setItem(STORAGE_KEY_PACKAGES, JSON.stringify(nextPackages));
-    const ok = await syncWithCloud(items, users, nextPackages);
-    if (!ok) {
-      throw new Error('Falha ao sincronizar o pacote com o servidor. Verifique sua conexão.');
-    }
-    setPackageToEdit(null);
   };
 
   const handleToggleSupportPackage = async (packageId: string) => {
@@ -711,63 +661,32 @@ export default function App() {
     }
 
     try {
-      const res = await apiTogglePackageSupport(binId, packageId, currentUser, ADMIN_PASSWORD);
+      const res = await apiTogglePackageSupport(binId, packageId, currentUser);
       if (res && res.package) {
         setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
         const already = (pkg.apoiadores || []).some((a) => a.id === currentUser.id);
         showToast(already ? `Você saiu do rateio de "${pkg.titulo}".` : `Você entrou na vaquinha de "${pkg.titulo}"!`);
-        return;
       }
-    } catch (e) {
-      console.warn('Fallback to local support toggle', e);
+    } catch (e: any) {
+      showToast(e.message || 'Erro ao atualizar participação');
     }
-
-    const alreadySupporting = (pkg.apoiadores || []).some(
-      (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
-    );
-
-    let nextApoiadores: Apoiador[];
-    if (alreadySupporting) {
-      nextApoiadores = (pkg.apoiadores || []).filter(
-        (ap) => ap.id !== currentUser.id && ap.nome.toLowerCase() !== currentUser.nome.toLowerCase()
-      );
-      showToast(`Você saiu do rateio de "${pkg.titulo}".`);
-    } else {
-      const novoApoiador: Apoiador = {
-        id: currentUser.id,
-        nome: currentUser.nome,
-        telefone: currentUser.telefone,
-        email: currentUser.email,
-        data: new Date().toISOString(),
-      };
-      nextApoiadores = [...(pkg.apoiadores || []), novoApoiador];
-      showToast(`Você entrou na vaquinha de "${pkg.titulo}"!`);
-    }
-
-    const nextPackages = packages.map((p) => (p.id === packageId ? { ...p, apoiadores: nextApoiadores } : p));
-    setPackages(nextPackages);
-    syncWithCloud(items, users, nextPackages);
   };
 
-  const handleUpdatePackageStage = async (packageId: string, etapa: 'COLETA' | 'PAGAMENTO') => {
+  const handleUpdatePackageStage = async (packageId: string, etapa: 'COLETA' | 'PAGAMENTO', adminPassword?: string) => {
     try {
-      await apiUpdatePackageStage(binId, packageId, etapa, ADMIN_PASSWORD);
+      await apiUpdatePackageStage(binId, packageId, etapa, adminPassword);
       setPackages((prev) =>
         prev.map((p) => (p.id === packageId ? { ...p, etapaFinanciamento: etapa } : p))
       );
     } catch (err: any) {
       console.error('Error updating stage:', err);
-      const nextPackages = packages.map((p) =>
-        p.id === packageId ? { ...p, etapaFinanciamento: etapa } : p
-      );
-      setPackages(nextPackages);
-      syncWithCloud(items, users, nextPackages);
+      showToast(err.message || 'Erro ao atualizar etapa');
     }
   };
 
-  const handleUpdatePackagePayment = async (packageId: string, memberId: string, informouPagamento: boolean) => {
+  const handleUpdatePackagePayment = async (packageId: string, memberId: string, informouPagamento: boolean, adminPassword?: string) => {
     try {
-      await apiUpdatePackagePayment(binId, packageId, memberId, informouPagamento, ADMIN_PASSWORD);
+      await apiUpdatePackagePayment(binId, packageId, memberId, informouPagamento, adminPassword);
       setPackages((prev) =>
         prev.map((p) => {
           if (p.id !== packageId) return p;
@@ -792,62 +711,32 @@ export default function App() {
       );
     } catch (err: any) {
       console.error('Error updating payment:', err);
-      const nextPackages = packages.map((p) => {
-        if (p.id !== packageId) return p;
-        const pagamentos = { ...(p.pagamentos || {}) };
-        pagamentos[memberId] = {
-          memberId,
-          informouPagamento,
-          dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
-        };
-        const apoiadores = (p.apoiadores || []).map((a) => {
-          if (a.id === memberId) {
-            return {
-              ...a,
-              pagamentoInformado: informouPagamento,
-              dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
-            };
-          }
-          return a;
-        });
-        return { ...p, pagamentos, apoiadores };
-      });
-      setPackages(nextPackages);
-      syncWithCloud(items, users, nextPackages);
+      showToast(err.message || 'Erro ao registrar declaração de pagamento');
     }
   };
 
-  const handleUpdateDriveLink = async (packageId: string, linkDrive: string) => {
+  const handleUpdateDriveLink = async (packageId: string, linkDrive: string, adminPassword?: string) => {
     try {
-      await apiUpdatePackageDriveLink(binId, packageId, linkDrive, ADMIN_PASSWORD);
+      await apiUpdatePackageDriveLink(binId, packageId, linkDrive, adminPassword);
       setPackages((prev) =>
         prev.map((p) => (p.id === packageId ? { ...p, linkDrive } : p))
       );
     } catch (err: any) {
       console.error('Error updating drive link:', err);
-      const nextPackages = packages.map((p) =>
-        p.id === packageId ? { ...p, linkDrive } : p
-      );
-      setPackages(nextPackages);
-      syncWithCloud(items, users, nextPackages);
+      showToast(err.message || 'Erro ao atualizar link do Drive');
     }
   };
 
   const handleUpdatePackageImage = async (packageId: string, newImageUrl: string, adminPassword?: string) => {
     try {
-      await apiUpdatePackageImage(binId, packageId, newImageUrl, adminPassword || ADMIN_PASSWORD);
+      await apiUpdatePackageImage(binId, packageId, newImageUrl, adminPassword);
       setPackages((prev) =>
-        prev.map((p) => (p.id === packageId ? { ...p, imagemUrl: newImageUrl } : p))
+        prev.map((p) => (p.id === packageId ? { ...p, imageUrl: newImageUrl } : p))
       );
       showToast('Imagem de capa do pacote atualizada com sucesso!');
     } catch (err: any) {
       console.error('Error updating package image:', err);
-      const nextPackages = packages.map((p) =>
-        p.id === packageId ? { ...p, imagemUrl: newImageUrl } : p
-      );
-      setPackages(nextPackages);
-      syncWithCloud(items, users, nextPackages);
-      showToast('Imagem salva e sincronizada!');
+      showToast(err.message || 'Erro ao atualizar imagem da capa');
     }
   };
 
@@ -995,6 +884,7 @@ export default function App() {
         <UserAuthModal
           isOpen={true}
           users={users}
+          binId={binId}
           onSelectExistingUser={handleSelectExistingUser}
           onOpenNewMemberApplication={() => setEntryModalState('solicitacao')}
         />
@@ -1166,7 +1056,7 @@ export default function App() {
                   const member = users.find((u) => u.id === memberId);
                   if (!member) return false;
                   try {
-                    const res = await apiAddPosteriorBuyer(binId, packageId, member, adminPassword || ADMIN_PASSWORD);
+                    const res = await apiAddPosteriorBuyer(binId, packageId, member, adminPassword);
                     if (res && res.package) {
                       setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
                       showToast(`Acesso liberado para ${member.nome}!`);
@@ -1179,7 +1069,7 @@ export default function App() {
                 }}
                 onRemovePosteriorBuyer={async (packageId, memberId, adminPassword) => {
                   try {
-                    const res = await apiRemovePosteriorBuyer(binId, packageId, memberId, adminPassword || ADMIN_PASSWORD);
+                    const res = await apiRemovePosteriorBuyer(binId, packageId, memberId, adminPassword);
                     if (res && res.package) {
                       setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
                       showToast('Acesso removido.');

@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { UserProfile, ADMIN_PASSWORD, MASTER_ADMIN_NAME } from '../types';
-import { Users, Shield, Phone, CheckCircle2, Search, KeyRound, AlertTriangle, Scroll } from 'lucide-react';
+import { UserProfile, MASTER_ADMIN_NAME } from '../types';
+import { Users, Shield, Phone, CheckCircle2, Search, KeyRound, AlertTriangle, Scroll, Loader2 } from 'lucide-react';
+import { apiMasterLogin, apiMemberLogin, getInitialBinId } from '../utils/cloudStorage';
 
 interface UserAuthModalProps {
   isOpen: boolean;
   users: UserProfile[];
+  binId?: string;
   onSelectExistingUser: (user: UserProfile, updatedEmail?: string, updatedPhone?: string) => void;
   onOpenNewMemberApplication?: () => void;
 }
@@ -12,10 +14,12 @@ interface UserAuthModalProps {
 export const UserAuthModal: React.FC<UserAuthModalProps> = ({
   isOpen,
   users,
+  binId,
   onSelectExistingUser,
   onOpenNewMemberApplication,
 }) => {
   const [activeTab, setActiveTab] = useState<'existing' | 'master'>('existing');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Tab 1: Existing member
   const [searchMember, setSearchMember] = useState('');
@@ -71,8 +75,10 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
     setExistingUserPhone('');
   };
 
-  const handleExistingSubmit = (e: React.FormEvent) => {
+  const handleExistingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setExistingUserError('');
+
     if (!selectedMemberName || candidateUsers.length === 0) {
       setExistingUserError('Selecione seu nome na lista da mesa.');
       return;
@@ -98,46 +104,42 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
       return false;
     };
 
-    const matchedUser = candidateUsers.find((candidate) => isPhoneMatch(candidate.telefone));
+    const matchedUser = candidateUsers.find((candidate) => isPhoneMatch(candidate.telefone)) || candidateUsers[0];
 
-    if (matchedUser) {
-      onSelectExistingUser(matchedUser);
-      return;
+    try {
+      setIsLoggingIn(true);
+      const effectiveBin = binId || getInitialBinId();
+      const res = await apiMemberLogin(matchedUser.id, existingUserPhone.trim(), effectiveBin);
+      if (res && res.user) {
+        onSelectExistingUser(res.user);
+      }
+    } catch (err: any) {
+      setExistingUserError(err.message || 'Erro ao autenticar membro. Verifique o número digitado.');
+    } finally {
+      setIsLoggingIn(false);
     }
-
-    if (candidateUsers.length === 1 && !(candidateUsers[0].telefone || '').replace(/\D/g, '')) {
-      onSelectExistingUser(candidateUsers[0], candidateUsers[0].email, existingUserPhone.trim());
-      return;
-    }
-
-    setExistingUserError(
-      'Número de celular incorreto para este membro! O celular cadastrado funciona como sua confirmação de acesso.'
-    );
   };
 
-  const handleMasterSubmit = (e: React.FormEvent) => {
+  const handleMasterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMasterError('');
 
-    if (masterPassword !== ADMIN_PASSWORD) {
-      setMasterError('Senha do Mestre incorreta! Acesso negado.');
+    if (!masterPassword.trim()) {
+      setMasterError('Digite a senha do Mestre.');
       return;
     }
 
-    const existingMaster = users.find((u) => u.isMaster || u.nome === MASTER_ADMIN_NAME);
-    if (existingMaster) {
-      onSelectExistingUser(existingMaster);
-    } else {
-      const newMaster: UserProfile = {
-        id: 'master-guardiao',
-        nome: MASTER_ADMIN_NAME,
-        telefone: '(19) 98151-2030',
-        email: 'ericksantos500@hotmail.com',
-        isMaster: true,
-        status: 'aprovado',
-        createdAt: new Date().toISOString(),
-      };
-      onSelectExistingUser(newMaster);
+    try {
+      setIsLoggingIn(true);
+      const effectiveBin = binId || getInitialBinId();
+      const res = await apiMasterLogin(masterPassword.trim(), effectiveBin);
+      if (res && res.user) {
+        onSelectExistingUser(res.user);
+      }
+    } catch (err: any) {
+      setMasterError(err.message || 'Senha do Mestre incorreta ou acesso bloqueado.');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -299,15 +301,19 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
 
               <button
                 type="submit"
-                disabled={!selectedMemberName}
+                disabled={!selectedMemberName || isLoggingIn}
                 className={`w-full py-3 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 ${
-                  selectedMemberName
+                  selectedMemberName && !isLoggingIn
                     ? 'bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] cursor-pointer'
                     : 'bg-[#D4C198] text-[#71634D] cursor-not-allowed opacity-60'
                 }`}
               >
-                <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-                <span>Entrar na Central</span>
+                {isLoggingIn ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                )}
+                <span>{isLoggingIn ? 'Autenticando...' : 'Entrar na Central'}</span>
               </button>
 
               {/* Botão de Solicitação para Novo Membro */}
@@ -381,10 +387,15 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isLoggingIn}
+                className="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
-                <Shield className="w-4 h-4 stroke-[2.5]" />
-                <span>Entrar como Mestre da Ponte</span>
+                {isLoggingIn ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Shield className="w-4 h-4 stroke-[2.5]" />
+                )}
+                <span>{isLoggingIn ? 'Autenticando...' : 'Entrar como Mestre da Ponte'}</span>
               </button>
             </form>
           )}

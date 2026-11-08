@@ -152,7 +152,6 @@ export const SISTEMAS_PADRAO: string[] = [
   'Outro',
 ];
 
-export const ADMIN_PASSWORD = 'Ponte#dos#trolls';
 export const MASTER_ADMIN_NAME = 'Ponte dos Trolls';
 
 /**

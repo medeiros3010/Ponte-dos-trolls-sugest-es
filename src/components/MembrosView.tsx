@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UserProfile, FundingPackage, ItemRPG, ADMIN_PASSWORD, MembershipApplication } from '../types';
+import { UserProfile, FundingPackage, ItemRPG, MembershipApplication } from '../types';
 import {
   Users,
   UserPlus,
@@ -387,8 +387,8 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   // Exclusão com senha
   const handleConfirmDelete = (e: React.FormEvent) => {
     e.preventDefault();
-    if (deletePassword !== ADMIN_PASSWORD) {
-      setDeleteError('Senha do Mestre incorreta! Operação cancelada.');
+    if (!deletePassword.trim()) {
+      setDeleteError('A senha do Mestre é necessária para confirmar a exclusão.');
       return;
     }
 

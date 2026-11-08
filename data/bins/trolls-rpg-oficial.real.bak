@@ -1,0 +1,1001 @@
+{
+  "id": "trolls-rpg-oficial",
+  "name": "A Ponte dos Trolls - Rateios RPG",
+  "updatedAt": "2026-11-08T17:10:59.499Z",
+  "usersVersion": "v2_125_oficial",
+  "items": [
+    {
+      "id": "seed-1",
+      "data": "2026-02-10",
+      "nome": "Daggerheart Bundle",
+      "produto": "Material para VTT",
+      "sistema": "Outro",
+      "descricao": "Daggerheart Core Book + Expansão Hope & Fear + Duality Dices oficiais configurados no Foundry VTT.",
+      "link": "https://www.foundryvtt.store/bundles/daggerheart-bundle",
+      "sugeridoPorNome": "Augusto F. Sant'ana",
+      "sugeridoPorTelefone": "(27) 99908-4467",
+      "sugeridoPorEmail": "",
+      "moeda": "USD",
+      "valorNumerico": 89.98,
+      "observacaoValor": "Pacote de Lançamento",
+      "status": "Sugestão",
+      "apoiadores": [
+        {
+          "id": "ap-1",
+          "nome": "Augusto F. Sant'ana",
+          "telefone": "(27) 99908-4467"
+        },
+        {
+          "id": "ap-2",
+          "nome": "Rafael Motta",
+          "telefone": "(71) 99196-0427"
+        },
+        {
+          "id": "ap-3",
+          "nome": "Erick Santos",
+          "telefone": "(19) 98151-2030"
+        }
+      ]
+    },
+    {
+      "id": "seed-4",
+      "data": "2026-09-05",
+      "nome": "Symbaroum - Trilogia Trono de Espinhos",
+      "produto": "Material para VTT",
+      "sistema": "Symbaroum",
+      "descricao": "Pacote de campanhas de alta fantasia sombria da Free League com mapas e compêndios oficiais.",
+      "link": "https://freeleaguepublishing.com/games/symbaroum/",
+      "sugeridoPorNome": "Matheus Bueno",
+      "sugeridoPorTelefone": "(11) 99523-4946",
+      "sugeridoPorEmail": "",
+      "moeda": "USD",
+      "valorNumerico": 20.71,
+      "observacaoValor": "Preço promocional",
+      "status": "Sugestão",
+      "apoiadores": [
+        {
+          "id": "ap-10",
+          "nome": "Matheus Bueno",
+          "telefone": "(11) 99523-4946"
+        },
+        {
+          "id": "ap-11",
+          "nome": "Ivan",
+          "telefone": "(43) 99952-8095"
+        }
+      ]
+    },
+    {
+      "id": "seed-5",
+      "data": "2026-09-10",
+      "nome": "Humblewood Campaign Setting - 5e D&D",
+      "produto": "Livros",
+      "sistema": "DnD5e",
+      "descricao": "Cenário fantástico e acolhedor de floresta para 5e com raças de animais antropomórficos e magia da natureza.",
+      "link": "https://hitpointpress.com/pages/humblewood",
+      "sugeridoPorNome": "Murillo Duran",
+      "sugeridoPorTelefone": "(11) 99379-9630",
+      "sugeridoPorEmail": "",
+      "moeda": "USD",
+      "valorNumerico": 50,
+      "observacaoValor": "",
+      "status": "Sugestão",
+      "apoiadores": [
+        {
+          "id": "ap-12",
+          "nome": "Murillo Duran",
+          "telefone": "(11) 99379-9630"
+        },
+        {
+          "id": "ap-12b",
+          "nome": "Lomenha",
+          "telefone": "(21) 97668-4894"
+        }
+      ]
+    },
+    {
+      "id": "seed-2",
+      "data": "2026-02-15",
+      "nome": "Season Of Ghosts Remastered",
+      "produto": "Material para VTT",
+      "sistema": "PF2E",
+      "descricao": "Adventure Path completa da Paizo ambientada em Shenmen, 100% refeita para o remaster de Pathfinder 2e no Foundry.",
+      "link": "https://www.foundryvtt.store/products/pf2e-season-of-ghosts",
+      "sugeridoPorNome": "Rafael Motta",
+      "sugeridoPorTelefone": "(71) 99196-0427",
+      "sugeridoPorEmail": "",
+      "moeda": "USD",
+      "valorNumerico": 64.99,
+      "observacaoValor": "",
+      "status": "Em Financiamento",
+      "apoiadores": [
+        {
+          "id": "ap-4",
+          "nome": "Rafael Motta",
+          "telefone": "(71) 99196-0427"
+        },
+        {
+          "id": "ap-5",
+          "nome": "Gustavo Mozer",
+          "telefone": "(27) 99818-7614"
+        },
+        {
+          "id": "ap-6",
+          "nome": "Daniel Nach",
+          "telefone": "(31) 97234-7005"
+        },
+        {
+          "id": "ap-7",
+          "nome": "Igor Santos",
+          "telefone": "(37) 99116-3440"
+        }
+      ]
+    },
+    {
+      "id": "seed-3",
+      "data": "2026-05-07",
+      "nome": "SWADE Fantasy Companion",
+      "produto": "Material para VTT",
+      "sistema": "SWADE",
+      "descricao": "Compêndio de Fantasia oficial para Savage Worlds Adventure Edition: regras de cerco, magias e novas ancestralidades.",
+      "link": "https://peginc.com/product/fantasy-companion-swade/",
+      "sugeridoPorNome": "Rodrigo Miranda",
+      "sugeridoPorTelefone": "(21) 98385-3177",
+      "sugeridoPorEmail": "",
+      "moeda": "USD",
+      "valorNumerico": 44.99,
+      "observacaoValor": "",
+      "status": "Em Financiamento",
+      "apoiadores": [
+        {
+          "id": "ap-8",
+          "nome": "Rodrigo Miranda",
+          "telefone": "(21) 98385-3177"
+        },
+        {
+          "id": "ap-9",
+          "nome": "Lomenha",
+          "telefone": "(21) 97668-4894"
+        },
+        {
+          "id": "ap-9b",
+          "nome": "Fernando A T Brito",
+          "telefone": "(21) 99531-2089"
+        }
+      ]
+    },
+    {
+      "id": "seed-6",
+      "data": "2026-02-15",
+      "nome": "Battlezoo Adventures: Release the Kraken! PF2e",
+      "produto": "Material para VTT",
+      "sistema": "PF2E",
+      "descricao": "Aventura de nível 5 com mapas dinâmicos e iluminação para enfrentar a fúria das profundezas no Foundry VTT.",
+      "link": "https://www.foundryvtt.store/products/battlezoo-release-the-kraken-pf2e",
+      "sugeridoPorNome": "Erick Santos",
+      "sugeridoPorTelefone": "(19) 98151-2030",
+      "sugeridoPorEmail": "",
+      "moeda": "USD",
+      "valorNumerico": 20,
+      "observacaoValor": "Módulo Premium",
+      "status": "Sugestão",
+      "apoiadores": [
+        {
+          "id": "ap-13",
+          "nome": "Erick Santos",
+          "telefone": "(19) 98151-2030"
+        },
+        {
+          "id": "ap-14",
+          "nome": "Rafael Motta",
+          "telefone": "(71) 99196-0427"
+        },
+        {
+          "id": "ap-15",
+          "nome": "Gustavo Mozer",
+          "telefone": "(27) 99818-7614"
+        }
+      ]
+    },
+    {
+      "id": "seed-7",
+      "data": "2026-02-19",
+      "nome": "CoC - No Time to Scream (Call of Cthulhu)",
+      "produto": "Material para VTT",
+      "sistema": "Cthulhu",
+      "descricao": "Três cenários rápidos de horror investigativo para Call of Cthulhu com áudios e pistas interativas.",
+      "link": "https://www.foundryvtt.store/products/cha-coc-fvtt-en-notimetoscream",
+      "sugeridoPorNome": "Igor Santos",
+      "sugeridoPorTelefone": "(37) 99116-3440",
+      "sugeridoPorEmail": "",
+      "moeda": "USD",
+      "valorNumerico": 14.99,
+      "observacaoValor": "",
+      "status": "Sugestão",
+      "apoiadores": [
+        {
+          "id": "ap-18",
+          "nome": "Igor Santos",
+          "telefone": "(37) 99116-3440"
+        },
+        {
+          "id": "ap-19",
+          "nome": "Daniel Nach",
+          "telefone": "(31) 97234-7005"
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-1",
+      "nome": "Augusto F. Sant'ana",
+      "telefone": "(27) 99908-4467",
+      "email": "augusto.santana@gmail.com",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-2",
+      "nome": "Erick Santos",
+      "telefone": "(19) 98151-2030",
+      "email": "erick.santos@gmail.com",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-3",
+      "nome": "Gustavo Mozer",
+      "telefone": "(27) 99818-7614",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-4",
+      "nome": "Rafael Motta",
+      "telefone": "(71) 99196-0427",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-5",
+      "nome": "Mateus de Medeiros (rato)",
+      "telefone": "(48) 99637-7018",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-6",
+      "nome": "Ivan",
+      "telefone": "(43) 99952-8095",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-7",
+      "nome": "Lomenha",
+      "telefone": "(21) 97668-4894",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-8",
+      "nome": "Daniel Nach",
+      "telefone": "(31) 97234-7005",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-9",
+      "nome": "Igor Santos",
+      "telefone": "(37) 99116-3440",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-10",
+      "nome": "Fernando A T Brito",
+      "telefone": "(21) 99531-2089",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-11",
+      "nome": "Ilan Mendes",
+      "telefone": "(21) 97951-2634",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-12",
+      "nome": "Rodrigo Miranda",
+      "telefone": "(21) 98385-3177",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-13",
+      "nome": "Nelson Neto",
+      "telefone": "(11) 95557-2486",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-14",
+      "nome": "Murillo Duran",
+      "telefone": "(11) 99379-9630",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-15",
+      "nome": "Matheus Bueno",
+      "telefone": "(11) 99523-4946",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-16",
+      "nome": "Joalisson",
+      "telefone": "(84) 99473-5050",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-17",
+      "nome": "Diego Santos",
+      "telefone": "(21) 97607-0637",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-18",
+      "nome": "William",
+      "telefone": "(15) 99157-3318",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-19",
+      "nome": "Rafael Lima",
+      "telefone": "(91) 98247-5432",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-20",
+      "nome": "Henrique Müller",
+      "telefone": "(51) 99312-0758",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-21",
+      "nome": "Luiz Eduardo Vilar (Duds)",
+      "telefone": "(32) 99818-9166",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-22",
+      "nome": "Trizz",
+      "telefone": "(91) 98400-2651",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-23",
+      "nome": "A. Oliveira",
+      "telefone": "(24) 99814-2803",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-24",
+      "nome": "Rafael",
+      "telefone": "(11) 92747-5005",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-25",
+      "nome": "Marcos",
+      "telefone": "(19) 99111-5613",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-26",
+      "nome": "Daniel",
+      "telefone": "(96) 99124-5826",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": [
+        {
+          "id": "strike-1794157854961",
+          "data": "2026-11-08T17:10:54.961Z",
+          "motivo": "Aviso de inadimplência/falta de pagamento"
+        }
+      ]
+    },
+    {
+      "id": "usr-27",
+      "nome": "Fernando Motta",
+      "telefone": "",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-28",
+      "nome": "Henrique Andrade",
+      "telefone": "",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    },
+    {
+      "id": "usr-29",
+      "nome": "Felipe César",
+      "telefone": "",
+      "email": "",
+      "createdAt": "2026-11-08T17:09:31.294Z",
+      "isMaster": false,
+      "status": "aprovado",
+      "strikes": []
+    }
+  ],
+  "packages": [
+    {
+      "id": "pack-1",
+      "titulo": "Mega Bundle Foundry V12 - Season of Ghosts Remastered (PF2e)",
+      "sistema": "PF2E",
+      "tipo": "Outros",
+      "descricao": "Adventure Path completa da Paizo ambientada em Shenmen, com módulos automatizados, macros de combate, trilha sonora e mapas em alta definição para Foundry VTT.",
+      "itens": [
+        {
+          "id": "it-1",
+          "nome": "Módulo Premium Season of Ghosts (Vol 1 a 4)",
+          "sistema": "PF2E",
+          "tipo": "Outros",
+          "link": "https://paizo.com/products/season-of-ghosts-foundry",
+          "precoBRL": 260
+        },
+        {
+          "id": "it-2",
+          "nome": "Tokens em Alta Resolução de Shenmen",
+          "sistema": "PF2E",
+          "tipo": "Outros",
+          "link": "https://paizo.com/products/tokens-shenmen",
+          "precoBRL": 60
+        },
+        {
+          "id": "it-3",
+          "nome": "Compêndio de Monstros e Feitiços Remaster",
+          "sistema": "PF2E",
+          "tipo": "Outros",
+          "link": "https://paizo.com/products/monster-core-vtt",
+          "precoBRL": 60
+        }
+      ],
+      "valorTotalBRL": 380,
+      "dataFinalizar": "2026-03-25",
+      "dataPagamento": "2026-03-30",
+      "minimoParticipantes": 35,
+      "valorMaximoPorPessoa": 10.86,
+      "valorCatalogoBRL": 450,
+      "linkLoja": "https://www.foundryvtt.store/products/pf2e-season-of-ghosts",
+      "linkDrive": "",
+      "itensInclusos": [
+        "Módulo Premium Season of Ghosts (Vol 1 a 4)",
+        "Tokens em Alta Resolução de Shenmen",
+        "Compêndio de Monstros e Feitiços Remaster"
+      ],
+      "sugestoesIds": [],
+      "status": "Financiamento",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [
+        {
+          "id": "ap-p1",
+          "nome": "Rafael Motta",
+          "telefone": "(71) 99196-0427",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-p2",
+          "nome": "Gustavo Mozer",
+          "telefone": "(27) 99818-7614",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-p3",
+          "nome": "Daniel Nach",
+          "telefone": "(31) 97234-7005",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-p4",
+          "nome": "Igor Santos",
+          "telefone": "(37) 99116-3440",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-p5",
+          "nome": "Erick Santos",
+          "telefone": "(19) 98151-2030",
+          "email": "",
+          "pagamentoInformado": false
+        }
+      ],
+      "criadoEm": "2026-02-15"
+    },
+    {
+      "id": "pack-2",
+      "titulo": "Compêndio de Fantasia Sombria SWADE + Pack de Mapas VTT",
+      "sistema": "SWADE",
+      "tipo": "Outros",
+      "descricao": "Pacote oficial de regras de fantasia sombria, magias expandidas e cerco para Savage Worlds, acompanhado de pack de 40 mapas táticos dinâmicos.",
+      "itens": [
+        {
+          "id": "it-4",
+          "nome": "Módulo Oficial SWADE Fantasy Companion",
+          "sistema": "SWADE",
+          "tipo": "Outros",
+          "link": "https://peginc.com/product/fantasy-companion-swade/",
+          "precoBRL": 160
+        },
+        {
+          "id": "it-5",
+          "nome": "Pack de 40 Mapas Táticos com Paredes e Iluminação",
+          "sistema": "Foundry VTT Geral",
+          "tipo": "Outros",
+          "link": "https://www.patreon.com/c/czepeku",
+          "precoBRL": 60
+        },
+        {
+          "id": "it-6",
+          "nome": "Compêndio de Magias e Ancestralidades VTT",
+          "sistema": "SWADE",
+          "tipo": "Outros",
+          "link": "https://peginc.com/store/swade-spells",
+          "precoBRL": 40
+        }
+      ],
+      "valorTotalBRL": 260,
+      "dataFinalizar": "2026-03-22",
+      "dataPagamento": "2026-03-28",
+      "minimoParticipantes": 25,
+      "valorMaximoPorPessoa": 10.4,
+      "valorCatalogoBRL": 320,
+      "linkLoja": "https://peginc.com/product/fantasy-companion-swade/",
+      "linkDrive": "",
+      "itensInclusos": [
+        "Módulo Oficial SWADE Fantasy Companion",
+        "Pack de 40 Mapas Táticos com Paredes e Iluminação",
+        "Compêndio de Magias e Ancestralidades VTT"
+      ],
+      "sugestoesIds": [],
+      "status": "Financiamento",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [
+        {
+          "id": "ap-p6",
+          "nome": "Rodrigo Miranda",
+          "telefone": "(21) 98385-3177",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-p7",
+          "nome": "Lomenha",
+          "telefone": "(21) 97668-4894",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-p8",
+          "nome": "Fernando A T Brito",
+          "telefone": "(21) 99531-2089",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-p9",
+          "nome": "Augusto F. Sant'ana",
+          "telefone": "(27) 99908-4467",
+          "email": "",
+          "pagamentoInformado": false
+        }
+      ],
+      "criadoEm": "2026-03-01"
+    },
+    {
+      "id": "pack-3",
+      "titulo": "Bundle Pathfinder 2e Remaster - Player Core & Monster Core",
+      "sistema": "PF2E",
+      "tipo": "Outros",
+      "descricao": "Os livros basilares do novo Remaster de Pathfinder 2e para Foundry VTT, com integração total de fichas, feitiços e bestiário completo.",
+      "itens": [
+        {
+          "id": "it-7",
+          "nome": "Módulo Oficial Foundry Player Core Remaster",
+          "sistema": "PF2E",
+          "tipo": "Outros",
+          "link": "https://paizo.com/products/player-core-foundry",
+          "precoBRL": 210
+        },
+        {
+          "id": "it-8",
+          "nome": "Módulo Oficial Foundry Monster Core (Bestiário)",
+          "sistema": "PF2E",
+          "tipo": "Outros",
+          "link": "https://paizo.com/products/monster-core-foundry",
+          "precoBRL": 160
+        },
+        {
+          "id": "it-9",
+          "nome": "PDFs em Alta Qualidade dos Manuais",
+          "sistema": "PF2E",
+          "tipo": "Outros",
+          "link": "https://paizo.com/products/remaster-pdfs",
+          "precoBRL": 50
+        }
+      ],
+      "valorTotalBRL": 420,
+      "dataFinalizar": "2026-03-25",
+      "dataPagamento": "2026-03-30",
+      "minimoParticipantes": 35,
+      "valorMaximoPorPessoa": 12,
+      "valorCatalogoBRL": 480,
+      "linkLoja": "https://paizo.com/pathfinder/remaster",
+      "linkDrive": "https://drive.google.com/drive/folders/ponte-dos-trolls-pf2e-core",
+      "itensInclusos": [
+        "Módulo Oficial Foundry Player Core Remaster",
+        "Módulo Oficial Foundry Monster Core (Bestiário Completo)",
+        "PDFs em Alta Qualidade dos Manuais"
+      ],
+      "sugestoesIds": [],
+      "status": "Catálogo",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [
+        {
+          "id": "ap-c1",
+          "nome": "Augusto F. Sant'ana",
+          "telefone": "(27) 99908-4467",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c2",
+          "nome": "Erick Santos",
+          "telefone": "(19) 98151-2030",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c3",
+          "nome": "Gustavo Mozer",
+          "telefone": "(27) 99818-7614",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c4",
+          "nome": "Rafael Motta",
+          "telefone": "(71) 99196-0427",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c5",
+          "nome": "Igor Santos",
+          "telefone": "(37) 99116-3440",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c6",
+          "nome": "Daniel Nach",
+          "telefone": "(31) 97234-7005",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c7",
+          "nome": "Nelson Neto",
+          "telefone": "(11) 95557-2486",
+          "email": "",
+          "pagamentoInformado": false
+        }
+      ],
+      "criadoEm": "2026-01-10",
+      "finalizadoEm": "2026-01-28"
+    },
+    {
+      "id": "pack-4",
+      "titulo": "Tormenta20 - Ameaças de Arton & Deuses e Heróis",
+      "sistema": "Tormenta20",
+      "tipo": "Outros",
+      "descricao": "Bestiário expandido com mais de 300 ameaças de Arton e o suplemento de divindades, totalmente configurado com módulos e fichas para VTT.",
+      "itens": [
+        {
+          "id": "it-10",
+          "nome": "PDF Completo Ameaças de Arton com Marcadores",
+          "sistema": "Tormenta20",
+          "tipo": "Outros",
+          "link": "https://jamboeditora.com.br/produto/ameacas-de-arton/",
+          "precoBRL": 120
+        },
+        {
+          "id": "it-11",
+          "nome": "Compêndio T20 Foundry VTT com Tokens e Fichas Prontas",
+          "sistema": "Tormenta20",
+          "tipo": "Outros",
+          "link": "https://jamboeditora.com.br/produto/t20-vtt/",
+          "precoBRL": 120
+        },
+        {
+          "id": "it-12",
+          "nome": "Aventuras Rápidas em PDF",
+          "sistema": "Tormenta20",
+          "tipo": "Outros",
+          "link": "https://jamboeditora.com.br/produto/aventuras-breves/",
+          "precoBRL": 40
+        }
+      ],
+      "valorTotalBRL": 280,
+      "dataFinalizar": "2026-03-25",
+      "dataPagamento": "2026-03-30",
+      "minimoParticipantes": 30,
+      "valorMaximoPorPessoa": 9.33,
+      "valorCatalogoBRL": 340,
+      "linkLoja": "https://jamboeditora.com.br/produto/ameacas-de-arton/",
+      "linkDrive": "https://drive.google.com/drive/folders/ponte-dos-trolls-t20-ameacas",
+      "itensInclusos": [
+        "PDF Completo Ameaças de Arton com Marcadores",
+        "Compêndio T20 Foundry VTT com Tokens e Fichas Prontas",
+        "Aventuras Rápidas em PDF"
+      ],
+      "sugestoesIds": [],
+      "status": "Catálogo",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [
+        {
+          "id": "ap-c8",
+          "nome": "Mateus de Medeiros (rato)",
+          "telefone": "(48) 99637-7018",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c9",
+          "nome": "Ivan",
+          "telefone": "(43) 99952-8095",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c10",
+          "nome": "Diego Santos",
+          "telefone": "(21) 97607-0637",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c11",
+          "nome": "William",
+          "telefone": "(15) 99157-3318",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c12",
+          "nome": "Murillo Duran",
+          "telefone": "(11) 99379-9630",
+          "email": "",
+          "pagamentoInformado": false
+        }
+      ],
+      "criadoEm": "2026-01-05",
+      "finalizadoEm": "2026-01-20"
+    },
+    {
+      "id": "pack-5",
+      "titulo": "Forbidden Lands - O Sangue dos Corvos & O Pomar Sagrado",
+      "sistema": "Forbidden Land",
+      "tipo": "Outros",
+      "descricao": "Campanhas de exploração e sobrevivência em terras proibidas pela Free League, com gerador de clima e mapa hexagonal interativo para Foundry VTT.",
+      "itens": [
+        {
+          "id": "it-13",
+          "nome": "Módulo Foundry Forbidden Lands Raven Blood Campaign",
+          "sistema": "Forbidden Land",
+          "tipo": "Outros",
+          "link": "https://freeleaguepublishing.com/games/forbidden-lands/",
+          "precoBRL": 120
+        },
+        {
+          "id": "it-14",
+          "nome": "Mapa Hexagonal Interativo com Fog of War",
+          "sistema": "Forbidden Land",
+          "tipo": "Outros",
+          "link": "https://freeleaguepublishing.com/games/forbidden-lands-map/",
+          "precoBRL": 50
+        },
+        {
+          "id": "it-15",
+          "nome": "Trilha Sonora Temática e Efeitos Ambientes",
+          "sistema": "Foundry VTT Geral",
+          "tipo": "Outros",
+          "link": "https://freeleaguepublishing.com/games/soundtrack/",
+          "precoBRL": 40
+        }
+      ],
+      "valorTotalBRL": 210,
+      "dataFinalizar": "2026-03-25",
+      "dataPagamento": "2026-03-30",
+      "minimoParticipantes": 25,
+      "valorMaximoPorPessoa": 8.4,
+      "valorCatalogoBRL": 250,
+      "linkLoja": "https://freeleaguepublishing.com/games/forbidden-lands/",
+      "linkDrive": "https://drive.google.com/drive/folders/ponte-dos-trolls-forbidden-lands",
+      "itensInclusos": [
+        "Módulo Foundry Forbidden Lands Raven Blood Campaign",
+        "Mapa Hexagonal Interativo com Fog of War",
+        "Trilha Sonora Temática e Efeitos Ambientes"
+      ],
+      "sugestoesIds": [],
+      "status": "Catálogo",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [
+        {
+          "id": "ap-c13",
+          "nome": "Henrique Müller",
+          "telefone": "(51) 99312-0758",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c14",
+          "nome": "Matheus Bueno",
+          "telefone": "(11) 99523-4946",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c15",
+          "nome": "Luiz Eduardo Vilar (Duds)",
+          "telefone": "(32) 99818-9166",
+          "email": "",
+          "pagamentoInformado": false
+        },
+        {
+          "id": "ap-c16",
+          "nome": "Trizz",
+          "telefone": "(91) 98400-2651",
+          "email": "",
+          "pagamentoInformado": false
+        }
+      ],
+      "criadoEm": "2026-01-12",
+      "finalizadoEm": "2026-02-02"
+    }
+  ],
+  "solicitacoes": [],
+  "regrasConfig": {
+    "version": "2.0.0",
+    "updatedAt": "2026-11-08T16:00:00.000Z",
+    "textoRegras": "Bem-vindo à Ponte dos Trolls!\n\nCriada em 2023, a Ponte dos Trolls é uma comunidade de compras coletivas de materiais digitais para RPG, como mapas, tokens, assets, livros e módulos.\n\nNosso objetivo é tornar as compras mais acessíveis por meio da divisão dos custos entre os interessados. O acesso aos materiais adquiridos é destinado aos participantes da respectiva compra, respeitando as condições de uso e compartilhamento de cada conteúdo.\n\nNossa história\n\nEntre 2023 e 2024, adquirimos conteúdos variados de plataformas como Patreon e DriveThruRPG. A partir de 2024, passamos a priorizar também módulos oficiais para Foundry VTT.\n\nOs materiais são organizados no Google Drive. As atualizações são disponibilizadas conforme sua existência e as condições de acesso da compra.\n\nComo funciona a comunidade\n\nA Ponte dos Trolls é colaborativa: participar do grupo não dá acesso automático a todo o acervo. Cada pessoa tem acesso aos materiais das compras das quais participa ou que adquire posteriormente.\n\nCanais no WhatsApp\n\nOs três canais obrigatórios são:\n\n• Ponte dos Trolls - Geral: convivência e bate-papo principal.\n• Ponte dos Trolls - Financiamentos: anúncios e acompanhamento das compras coletivas.\n• Sugestões PDT: links e ideias de materiais para futuras compras.\n\nOs canais opcionais são:\n\n• Trolls da Cultura: Pathfinder.\n• Trolls da Costa: D&D e derivados.\n• Trolls Hipsters: outros sistemas de RPG.\n\nComo funciona o financiamento\n\nNormalmente, publicamos cerca de três propostas de compra por mês, conforme as sugestões e o interesse dos membros.\n\nCada proposta apresenta o material, os itens inclusos, o custo estimado, o mínimo de participantes e os prazos.\n\nA inscrição é feita pelo botão de participação no site. Ao entrar no financiamento, você assume o compromisso de pagar caso a compra avance para a etapa de pagamento.\n\nO prazo padrão é de cinco dias para inscrição e cinco dias para pagamento. Confira sempre as datas informadas em cada financiamento: elas são a referência para aquela compra.\n\nA cota costuma ficar em torno de até R$ 15 por pessoa, mas esse valor não é um teto garantido. O valor final depende do material e do rateio. Na etapa de pagamento, confira o valor definitivo e o prazo publicados pelo Mestre.\n\nO pagamento é feito por Pix, usando a chave exibida no site. Na descrição do Pix, informe seu telefone cadastrado para facilitar a identificação.\n\nDepois de realizar o Pix no aplicativo do banco, volte ao site e informe que pagou. Clicar nesse botão é uma declaração sua; não representa conferência bancária automática.\n\nApós a conferência e a liberação pelo responsável, o acesso será disponibilizado pelo Google Drive. Você poderá consultar seus materiais na área “Meus itens”.\n\nRegras de acesso e compartilhamento\n\n• Os materiais são de uso exclusivo dos participantes da respectiva compra.\n• É proibido repassar arquivos ou links de acesso a terceiros, inclusive a membros do grupo que não participaram daquela compra.\n• É proibido compartilhar materiais brasileiros no grupo ou no acervo da Ponte dos Trolls. Não envie, solicite ou disponibilize cópias desses materiais por nossos canais.\n• Respeite as licenças e condições de uso dos conteúdos.\n\nCompromisso, prazos e strikes\n\n• Ao entrar em um financiamento, você assume um compromisso com os demais participantes.\n• Se participar e não pagar até o prazo, receberá um strike.\n• O descumprimento das regras gerais também pode gerar strike.\n• Ao acumular três strikes, o membro ficará impedido de participar das compras por um ano.\n• A aplicação e o acompanhamento das medidas são feitos pelo Mestre.\n\nConvivência\n\n• Racismo, preconceito, xenofobia, homofobia e machismo são proibidos.\n• Não discutir política ou religião nos canais do grupo.\n• Não provocar rivalidades ou hostilizar pessoas por suas preferências de sistemas de RPG.\n• Não divulgar publicamente o grupo ou seus links de convite. Novas entradas passam pela avaliação do Mestre.\n• Trate todos com respeito e educação.\n\nManutenção anual\n\nA contribuição anual de manutenção é obrigatória e tem valor máximo de R$ 10,00 por pessoa.\n\nO valor e o prazo serão comunicados pelo Mestre. Quem não contribuir dentro do prazo informado será removido do grupo.\n\nSolicitação de entrada\n\nLeia as regras e responda às perguntas com suas próprias palavras. Depois, preencha seus dados e envie a solicitação.\n\nO Mestre analisará suas respostas e seu cadastro. O envio não libera acesso automático: você só poderá entrar no site após a aprovação. A entrada nos canais do WhatsApp será orientada pelo responsável.",
+    "termoAceite": "Li, compreendi e concordo com as regras da Ponte dos Trolls.",
+    "perguntas": [
+      {
+        "id": 1,
+        "pergunta": "Qual é o prazo padrão para colocar seu nome em um financiamento?",
+        "guiaAvaliacao": "Cinco dias."
+      },
+      {
+        "id": 2,
+        "pergunta": "O que acontece se você entrar em um financiamento e não pagar no prazo?",
+        "guiaAvaliacao": "Recebe um strike."
+      },
+      {
+        "id": 3,
+        "pergunta": "Você pode compartilhar os materiais ou os links de acesso com amigos de fora do grupo ou com membros que não participaram da compra?",
+        "guiaAvaliacao": "Não, nos dois casos."
+      },
+      {
+        "id": 4,
+        "pergunta": "É permitido compartilhar materiais brasileiros no grupo ou no acervo?",
+        "guiaAvaliacao": "Não."
+      }
+    ]
+  }
+}

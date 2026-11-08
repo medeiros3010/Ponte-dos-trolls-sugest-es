@@ -14,7 +14,7 @@ import {
   AlertTriangle,
   Info,
 } from 'lucide-react';
-import { MembershipApplication, ADMIN_PASSWORD } from '../types';
+import { MembershipApplication } from '../types';
 import { DEFAULT_QUESTIONS, LEGACY_QUESTIONS_V1, RulesConfig } from '../data/rulesAndQuestions';
 
 interface CandidateReviewModalProps {
@@ -53,14 +53,10 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
   const handleApprove = async () => {
     setErrorMsg('');
-    if (adminPassword !== ADMIN_PASSWORD) {
-      setErrorMsg('Senha do Mestre incorreta! Acesso negado.');
-      return;
-    }
 
     try {
       setIsProcessing(true);
-      const ok = await onApprove(application.id, adminPassword);
+      const ok = await onApprove(application.id, adminPassword.trim());
       if (ok) {
         onToast(`Membro "${application.nome}" aprovado com sucesso!`);
         onClose();
@@ -77,14 +73,10 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
   const handleReject = async () => {
     setErrorMsg('');
-    if (adminPassword !== ADMIN_PASSWORD) {
-      setErrorMsg('Senha do Mestre incorreta! Acesso negado.');
-      return;
-    }
 
     try {
       setIsProcessing(true);
-      const ok = await onReject(application.id, rejectNotes.trim(), adminPassword);
+      const ok = await onReject(application.id, rejectNotes.trim(), adminPassword.trim());
       if (ok) {
         onToast(`Solicitação de "${application.nome}" foi recusada.`);
         onClose();

@@ -5,6 +5,25 @@ import { SEED_USERS, SEED_PACKAGES, SEED_ITEMS } from '../data/seedData';
 export const CLOUD_BIN_KEY = 'ponte_trolls_bin_id_v4';
 export const DEFAULT_BIN_ID = 'trolls-rpg-oficial';
 export const CURRENT_USER_KEY = 'ponte_trolls_current_user_v2';
+export const SESSION_TOKEN_KEY = 'ponte_trolls_session_token_v1';
+
+export function getSessionToken(): string | null {
+  try {
+    return localStorage.getItem(SESSION_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setSessionToken(token: string | null): void {
+  try {
+    if (token) {
+      localStorage.setItem(SESSION_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(SESSION_TOKEN_KEY);
+    }
+  } catch {}
+}
 
 // Fallback host if opened offline via file:// or outside Cloud Run
 export const FALLBACK_SERVER_URL = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
@@ -108,6 +127,11 @@ export async function fetchCloudData(
     const headers: Record<string, string> = {
       Accept: 'application/json',
     };
+    const token = getSessionToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['x-session-token'] = token;
+    }
     if (adminPassword) {
       headers['x-admin-password'] = adminPassword;
     }
@@ -121,6 +145,7 @@ export async function fetchCloudData(
     const res = await fetch(url, {
       method: 'GET',
       headers,
+      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -210,12 +235,20 @@ export async function pushCloudData(
       payload.regrasConfig = regrasConfig;
     }
 
+    const token = getSessionToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['x-session-token'] = token;
+    }
+
     const res = await fetch(url, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers,
+      credentials: 'include',
       body: JSON.stringify(payload),
     });
 
@@ -312,6 +345,248 @@ export async function uploadImageFile(file: File): Promise<{ url: string } | nul
   return { url: json.url };
 }
 
+function getAuthHeaders(additionalHeaders: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = { ...additionalHeaders };
+  const token = getSessionToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+    headers['x-session-token'] = token;
+  }
+  return headers;
+}
+
+/**
+ * Autenticação do Mestre via servidor
+ */
+export async function apiMasterLogin(
+  password: string,
+  binId: string = DEFAULT_BIN_ID
+): Promise<{ success: boolean; token: string; user: UserProfile }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/auth/master-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ password, binId }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao autenticar como Mestre');
+  }
+
+  if (data.token) {
+    setSessionToken(data.token);
+  }
+  return data;
+}
+
+/**
+ * Autenticação de membro via servidor
+ */
+export async function apiMemberLogin(
+  memberId: string,
+  telefone?: string,
+  binId: string = DEFAULT_BIN_ID
+): Promise<{ success: boolean; token: string; user: UserProfile }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/auth/member-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ memberId, telefone, binId }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao autenticar membro');
+  }
+
+  if (data.token) {
+    setSessionToken(data.token);
+  }
+  return data;
+}
+
+/**
+ * Verificação de sessão atual com o servidor
+ */
+export async function apiVerifySession(): Promise<{ success: boolean; user?: UserProfile; session?: any } | null> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  try {
+    const res = await fetch(`${base}/api/auth/me`, {
+      method: 'GET',
+      headers: getAuthHeaders({ Accept: 'application/json' }),
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Logout do servidor
+ */
+export async function apiLogout(): Promise<void> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  try {
+    await fetch(`${base}/api/auth/logout`, {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include',
+    });
+  } catch {}
+  setSessionToken(null);
+}
+
+/**
+ * Criação ou edição atômica de sugestão
+ */
+export async function apiSaveItem(
+  binId: string,
+  item: Partial<ItemRPG>,
+  adminPassword?: string
+): Promise<{ success: boolean; item?: ItemRPG }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/item`, {
+    method: 'POST',
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify({ item, adminPassword }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao salvar sugestão');
+  }
+  return data;
+}
+
+/**
+ * Exclusão atômica de sugestão
+ */
+export async function apiDeleteItem(
+  binId: string,
+  itemId: string,
+  adminPassword?: string
+): Promise<{ success: boolean }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/item/${encodeURIComponent(itemId)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify({ adminPassword }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao excluir sugestão');
+  }
+  return data;
+}
+
+/**
+ * Alterna apoio a uma sugestão
+ */
+export async function apiToggleItemSupport(
+  binId: string,
+  itemId: string,
+  user: UserProfile
+): Promise<{ success: boolean; item?: ItemRPG; apoiadores?: any[] }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/item/${encodeURIComponent(itemId)}/apoio`, {
+    method: 'POST',
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify({ user }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao alternar apoio');
+  }
+  return data;
+}
+
+/**
+ * Salva ou edita um pacote de financiamento de forma atômica
+ */
+export async function apiSavePackage(
+  binId: string,
+  pkg: Partial<FundingPackage>,
+  adminPassword?: string
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package`, {
+    method: 'POST',
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify({ package: pkg, adminPassword }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao salvar pacote');
+  }
+  return data;
+}
+
+/**
+ * Exclui um pacote de forma atômica
+ */
+export async function apiDeletePackage(
+  binId: string,
+  packageId: string,
+  adminPassword?: string
+): Promise<{ success: boolean }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify({ adminPassword }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao excluir pacote');
+  }
+  return data;
+}
+
 /**
  * Atualização atômica de pagamento pelo membro ou mestre
  */
@@ -328,7 +603,8 @@ export async function apiUpdatePackagePayment(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/pagamento`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ memberId, informouPagamento, adminPassword }),
   });
 
@@ -355,7 +631,8 @@ export async function apiUpdatePackageStage(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/etapa`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ etapa, adminPassword }),
   });
 
@@ -382,7 +659,8 @@ export async function apiUpdatePackageDriveLink(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/drive-link`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ linkDrive, adminPassword }),
   });
 
@@ -409,7 +687,8 @@ export async function apiTogglePackageSupport(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/apoio`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ user, adminPassword }),
   });
 
@@ -436,7 +715,8 @@ export async function apiUpdatePackageImage(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/image`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ imageUrl, adminPassword }),
   });
 
@@ -469,7 +749,8 @@ export async function apiConfigurePayment(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/configure-payment`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify(params),
   });
 
@@ -499,7 +780,8 @@ export async function apiUpdateUserProfile(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/user/update-profile`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify(params),
   });
 
@@ -524,7 +806,8 @@ export async function apiSubmitApplication(
 
   const res = await fetch(`${base}/api/solicitacoes`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ ...app, binId }),
   });
 
@@ -548,7 +831,8 @@ export async function apiFetchApplications(
 
   const res = await fetch(`${base}/api/solicitacoes?binId=${encodeURIComponent(binId)}`, {
     method: 'GET',
-    headers: { Accept: 'application/json' },
+    headers: getAuthHeaders({ Accept: 'application/json' }),
+    credentials: 'include',
   });
 
   if (!res.ok) {
@@ -564,7 +848,7 @@ export async function apiFetchApplications(
  */
 export async function apiApproveApplication(
   applicationId: string,
-  adminPassword: string,
+  adminPassword?: string,
   observacoesMestre?: string,
   binId: string = DEFAULT_BIN_ID
 ): Promise<{ success: boolean; application?: MembershipApplication; user?: UserProfile; users?: UserProfile[] }> {
@@ -574,7 +858,8 @@ export async function apiApproveApplication(
 
   const res = await fetch(`${base}/api/solicitacoes/${encodeURIComponent(applicationId)}/aprovar`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ adminPassword, observacoesMestre, binId }),
   });
 
@@ -591,7 +876,7 @@ export async function apiApproveApplication(
  */
 export async function apiRejectApplication(
   applicationId: string,
-  adminPassword: string,
+  adminPassword?: string,
   observacoesMestre?: string,
   binId: string = DEFAULT_BIN_ID
 ): Promise<{ success: boolean; application?: MembershipApplication }> {
@@ -601,7 +886,8 @@ export async function apiRejectApplication(
 
   const res = await fetch(`${base}/api/solicitacoes/${encodeURIComponent(applicationId)}/recusar`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ adminPassword, observacoesMestre, binId }),
   });
 
@@ -620,7 +906,7 @@ export async function apiAddPosteriorBuyer(
   binId: string,
   packageId: string,
   member: { id: string; nome: string; telefone?: string; email?: string },
-  adminPassword: string
+  adminPassword?: string
 ): Promise<{ success: boolean; package?: FundingPackage }> {
   const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
     ? window.location.origin
@@ -628,7 +914,8 @@ export async function apiAddPosteriorBuyer(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/posterior-buyer`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({
       memberId: member.id,
       nome: member.nome,
@@ -653,7 +940,7 @@ export async function apiRemovePosteriorBuyer(
   binId: string,
   packageId: string,
   memberId: string,
-  adminPassword: string
+  adminPassword?: string
 ): Promise<{ success: boolean; package?: FundingPackage }> {
   const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
     ? window.location.origin
@@ -661,7 +948,8 @@ export async function apiRemovePosteriorBuyer(
 
   const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/posterior-buyer/${encodeURIComponent(memberId)}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
     body: JSON.stringify({ adminPassword }),
   });
 
@@ -679,20 +967,21 @@ export async function apiRemovePosteriorBuyer(
 export async function apiFetchMemberAcervo(
   binId: string,
   memberId: string,
-  adminPassword: string
+  adminPassword?: string
 ): Promise<{ success: boolean; member: any; packages: FundingPackage[]; count: number }> {
   const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
     ? window.location.origin
     : FALLBACK_SERVER_URL;
 
   const res = await fetch(
-    `${base}/api/bin/${encodeURIComponent(binId)}/member/${encodeURIComponent(memberId)}/acervo?adminPassword=${encodeURIComponent(adminPassword)}`,
+    `${base}/api/bin/${encodeURIComponent(binId)}/member/${encodeURIComponent(memberId)}/acervo`,
     {
       method: 'GET',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json',
-        'x-admin-password': adminPassword,
-      },
+        ...(adminPassword ? { 'x-admin-password': adminPassword } : {}),
+      }),
+      credentials: 'include',
     }
   );
 

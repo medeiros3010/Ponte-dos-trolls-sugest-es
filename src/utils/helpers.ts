@@ -330,6 +330,44 @@ export function generateCatalogBuyMessage(pkg: FundingPackage, user: UserProfile
 👤 Meu Nome: ${user.nome} (${user.telefone || 'Telefone não informado'})`;
 }
 
+/**
+ * Helper de sanitização estrita para células CSV contra CSV Injection / Fórmula maliciosa
+ * Impede que células iniciando com =, +, -, @, \t ou \r executem comandos no Excel/Sheets.
+ */
+export function sanitizeCsvCell(val: any): string {
+  if (val === null || val === undefined) return '""';
+  let str = String(val);
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = "'" + str;
+  }
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
+/**
+ * Escapa caracteres HTML para prevenir XSS
+ */
+export function escapeHtml(str: any): string {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Sanitiza links externos garantindo protocolo seguro http ou https
+ */
+export function sanitizeExternalUrl(url: any): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (trimmed.startsWith('https://') || trimmed.startsWith('http://') || trimmed.startsWith('/uploads/')) {
+    return trimmed;
+  }
+  return '';
+}
+
 export function exportFullDataToCSV(
   users: UserProfile[],
   items: ItemRPG[],
@@ -341,39 +379,39 @@ export function exportFullDataToCSV(
 
   // SEÇÃO 1: USUÁRIOS
   sections.push('=== SEÇÃO 1: USUÁRIOS / MEMBROS CADASTRADOS ===');
-  sections.push(['ID', 'Nome', 'Telefone', 'E-mail', 'Status', 'Data Cadastro', 'É Mestre'].join(sep));
+  sections.push(['ID', 'Nome', 'Telefone', 'E-mail', 'Status', 'Data Cadastro', 'É Mestre'].map(sanitizeCsvCell).join(sep));
   users.forEach(u => {
     sections.push([
-      `"${u.id}"`,
-      `"${u.nome.replace(/"/g, '""')}"`,
-      `"${(u.telefone || '').replace(/"/g, '""')}"`,
-      `"${(u.email || '').replace(/"/g, '""')}"`,
-      `"${(u.status || 'aprovado').replace(/"/g, '""')}"`,
-      `"${(u.createdAt || '').replace(/"/g, '""')}"`,
-      `"${u.isMaster ? 'SIM' : 'NÃO'}"`,
+      sanitizeCsvCell(u.id),
+      sanitizeCsvCell(u.nome),
+      sanitizeCsvCell(u.telefone || ''),
+      sanitizeCsvCell(u.email || ''),
+      sanitizeCsvCell(u.status || 'aprovado'),
+      sanitizeCsvCell(u.createdAt || ''),
+      sanitizeCsvCell(u.isMaster ? 'SIM' : 'NÃO'),
     ].join(sep));
   });
 
   sections.push('');
   // SEÇÃO 2: SUGESTÕES DE COMPRA
   sections.push('=== SEÇÃO 2: SUGESTÕES DE COMPRA DA COMUNIDADE ===');
-  sections.push(['ID', 'Data', 'Nome', 'Produto', 'Sistema', 'Descrição', 'Link', 'Sugerido Por', 'Telefone', 'Moeda', 'Valor', 'Apoiadores (Qtd)', 'Lista Apoiadores'].join(sep));
+  sections.push(['ID', 'Data', 'Nome', 'Produto', 'Sistema', 'Descrição', 'Link', 'Sugerido Por', 'Telefone', 'Moeda', 'Valor', 'Apoiadores (Qtd)', 'Lista Apoiadores'].map(sanitizeCsvCell).join(sep));
   items.forEach(it => {
     const apoios = (it.apoiadores || []).map((a: Apoiador) => a.nome).join(' | ');
     sections.push([
-      `"${it.id}"`,
-      `"${formatDateDisplay(it.data)}"`,
-      `"${it.nome.replace(/"/g, '""')}"`,
-      `"${it.produto}"`,
-      `"${it.sistema}"`,
-      `"${(it.descricao || '').replace(/"/g, '""')}"`,
-      `"${(it.link || '').replace(/"/g, '""')}"`,
-      `"${it.sugeridoPorNome.replace(/"/g, '""')}"`,
-      `"${(it.sugeridoPorTelefone || '').replace(/"/g, '""')}"`,
-      `"${it.moeda}"`,
-      `"${it.valorNumerico.toFixed(2).replace('.', ',')}"`,
-      `"${(it.apoiadores || []).length}"`,
-      `"${apoios.replace(/"/g, '""')}"`,
+      sanitizeCsvCell(it.id),
+      sanitizeCsvCell(formatDateDisplay(it.data)),
+      sanitizeCsvCell(it.nome),
+      sanitizeCsvCell(it.produto),
+      sanitizeCsvCell(it.sistema),
+      sanitizeCsvCell(it.descricao || ''),
+      sanitizeCsvCell(sanitizeExternalUrl(it.link)),
+      sanitizeCsvCell(it.sugeridoPorNome),
+      sanitizeCsvCell(it.sugeridoPorTelefone || ''),
+      sanitizeCsvCell(it.moeda),
+      sanitizeCsvCell(it.valorNumerico.toFixed(2).replace('.', ',')),
+      sanitizeCsvCell((it.apoiadores || []).length),
+      sanitizeCsvCell(apoios),
     ].join(sep));
   });
 
@@ -399,31 +437,31 @@ export function exportFullDataToCSV(
     'Link Drive',
     'Participantes (Qtd)',
     'Lista Participantes',
-  ].join(sep));
+  ].map(sanitizeCsvCell).join(sep));
 
   packages.forEach(pkg => {
     const itensStr = (pkg.itens || []).map((it: PackageSubItem) => `${it.nome} [${it.sistema} - ${it.tipo || 'Outros'}]: R$${it.precoBRL.toFixed(2)}`).join(' | ');
     const partsStr = (pkg.apoiadores || []).map((a: Apoiador) => `${a.nome} (${a.telefone || ''})`).join(' | ');
 
     sections.push([
-      `"${pkg.id}"`,
-      `"${pkg.status}"`,
-      `"${pkg.etapaFinanciamento || 'COLETA'}"`,
-      `"${pkg.tipo || 'Material para VTT'}"`,
-      `"${pkg.titulo.replace(/"/g, '""')}"`,
-      `"${(pkg.sistema || 'Outro').replace(/"/g, '""')}"`,
-      `"${pkg.valorTotalBRL.toFixed(2).replace('.', ',')}"`,
-      `"${(pkg.valorCatalogoBRL || pkg.valorTotalBRL).toFixed(2).replace('.', ',')}"`,
-      `"${pkg.minimoParticipantes || 35}"`,
-      `"${(pkg.valorMaximoPorPessoa || (pkg.valorTotalBRL / (pkg.minimoParticipantes || 1))).toFixed(2).replace('.', ',')}"`,
-      `"${formatDateDisplay(pkg.dataFinalizar)}"`,
-      `"${formatDateDisplay(pkg.dataPagamento)}"`,
-      `"${(pkg.itens || []).length}"`,
-      `"${itensStr.replace(/"/g, '""')}"`,
-      `"${(pkg.linkLoja || '').replace(/"/g, '""')}"`,
-      `"${(pkg.linkDrive || '').replace(/"/g, '""')}"`,
-      `"${(pkg.apoiadores || []).length}"`,
-      `"${partsStr.replace(/"/g, '""')}"`,
+      sanitizeCsvCell(pkg.id),
+      sanitizeCsvCell(pkg.status),
+      sanitizeCsvCell(pkg.etapaFinanciamento || 'COLETA'),
+      sanitizeCsvCell(pkg.tipo || 'Material para VTT'),
+      sanitizeCsvCell(pkg.titulo),
+      sanitizeCsvCell(pkg.sistema || 'Outro'),
+      sanitizeCsvCell(pkg.valorTotalBRL.toFixed(2).replace('.', ',')),
+      sanitizeCsvCell((pkg.valorCatalogoBRL || pkg.valorTotalBRL).toFixed(2).replace('.', ',')),
+      sanitizeCsvCell(pkg.minimoParticipantes || 35),
+      sanitizeCsvCell((pkg.valorMaximoPorPessoa || (pkg.valorTotalBRL / (pkg.minimoParticipantes || 1))).toFixed(2).replace('.', ',')),
+      sanitizeCsvCell(formatDateDisplay(pkg.dataFinalizar)),
+      sanitizeCsvCell(formatDateDisplay(pkg.dataPagamento)),
+      sanitizeCsvCell((pkg.itens || []).length),
+      sanitizeCsvCell(itensStr),
+      sanitizeCsvCell(sanitizeExternalUrl(pkg.linkLoja)),
+      sanitizeCsvCell(sanitizeExternalUrl(pkg.linkDrive)),
+      sanitizeCsvCell((pkg.apoiadores || []).length),
+      sanitizeCsvCell(partsStr),
     ].join(sep));
   });
 
@@ -486,19 +524,19 @@ export function exportToCSV(items: ItemRPG[]): void {
     }
 
     return [
-      `"${dataDisplay}"`,
-      `"${item.nome.replace(/"/g, '""')}"`,
-      `"${item.produto}"`,
-      `"${item.sistema}"`,
-      `"${(item.descricao || '').replace(/"/g, '""')}"`,
-      `"${(item.link || '').replace(/"/g, '""')}"`,
-      `"${autorStr.replace(/"/g, '""')}"`,
-      `"${valorStr.replace(/"/g, '""')}"`,
-      `"${item.status}"`,
+      sanitizeCsvCell(dataDisplay),
+      sanitizeCsvCell(item.nome),
+      sanitizeCsvCell(item.produto),
+      sanitizeCsvCell(item.sistema),
+      sanitizeCsvCell(item.descricao || ''),
+      sanitizeCsvCell(sanitizeExternalUrl(item.link)),
+      sanitizeCsvCell(autorStr),
+      sanitizeCsvCell(valorStr),
+      sanitizeCsvCell(item.status),
     ].join(';');
   });
 
-  const csvContent = BOM + [headers.join(';'), ...rows].join('\r\n');
+  const csvContent = BOM + [headers.map(sanitizeCsvCell).join(';'), ...rows].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -511,7 +549,15 @@ export function exportToCSV(items: ItemRPG[]): void {
 }
 
 export function exportStandaloneHTML(items: ItemRPG[], exchangeRate: number): void {
-  const serializedItems = JSON.stringify(items);
+  const safeItems = items.map(it => ({
+    ...it,
+    nome: escapeHtml(it.nome),
+    sistema: escapeHtml(it.sistema),
+    descricao: escapeHtml(it.descricao),
+    link: sanitizeExternalUrl(it.link),
+    imageUrl: sanitizeExternalUrl(it.imageUrl),
+  }));
+  const serializedItems = JSON.stringify(safeItems);
   const htmlContent = `<!DOCTYPE html>
 <html lang="pt-BR" class="dark">
 <head>
@@ -532,7 +578,7 @@ export function exportStandaloneHTML(items: ItemRPG[], exchangeRate: number): vo
     <header class="flex items-center justify-between pb-6 border-b border-[#203625]">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-[#d49e2a] bg-[#16271a] shrink-0">
-          <img src="/assets/aistudio/image_95654294.png" alt="Troll" class="w-full h-full object-cover">
+          <img src="/bridge-logo.png" alt="A Ponte dos Trolls" class="w-full h-full object-cover">
         </div>
         <div>
           <h1 class="font-rpg text-xl font-bold text-[#f4ecd8]">A Ponte dos Trolls</h1>
@@ -575,7 +621,7 @@ export function exportStandaloneHTML(items: ItemRPG[], exchangeRate: number): vo
               <div class="font-mono font-bold text-base text-[#f4ecd8]">\${isUSD ? formatUSD(item.valorNumerico) + ' (~' + formatBRL(valBRL) + ')' : formatBRL(item.valorNumerico)}</div>
               \${apoios > 0 ? \`<div class="text-xs font-bold text-[#d49e2a] font-mono">\${porPessoa} / pessoa</div>\` : ''}
             </div>
-            \${item.link ? \`<a href="\${item.link}" target="_blank" class="px-3 py-1.5 rounded-xl bg-[#182c1d] border border-[#27442d] text-[#d49e2a] text-xs font-semibold hover:underline">Loja &rarr;</a>\` : ''}
+            \${item.link ? \`<a href="\${item.link}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-[#182c1d] border border-[#27442d] text-[#d49e2a] text-xs font-semibold hover:underline">Loja &rarr;</a>\` : ''}
           </div>
         </div>
       \`;
@@ -658,6 +704,7 @@ export interface EmailExtractionResult {
  * - Sem nomes, marcadores, vírgulas ou texto extra
  * - Sem duplicatas
  * - Valida regex de e-mail e aponta quem precisa corrigir cadastro
+ * - Exclui pendentes e recusados
  */
 export function extractPaidMemberEmails(
   pkg: FundingPackage,
@@ -689,6 +736,12 @@ export function extractPaidMemberEmails(
       const user = userMap.get(ap.id) || allUsers.find(
         (u) => u.nome.trim().toLowerCase() === ap.nome.trim().toLowerCase()
       );
+
+      // Exclude pending and refused users
+      if (user && (user.status === 'pendente' || user.status === 'recusado')) {
+        return;
+      }
+
       const rawEmail = (user?.email || ap.email || '').trim();
 
       if (rawEmail && emailRegex.test(rawEmail)) {
@@ -709,4 +762,5 @@ export function extractPaidMemberEmails(
     totalWithPaymentInformed,
   };
 }
+
 

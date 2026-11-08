@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FundingPackage, ADMIN_PASSWORD } from '../types';
+import { FundingPackage } from '../types';
 import { getTodayISODate, formatDateDisplay } from '../utils/helpers';
 import { X, DollarSign, Calendar, Key, FileText, Lock, AlertCircle, Users, CheckCircle2 } from 'lucide-react';
 
@@ -96,11 +96,6 @@ export const ConfigurePaymentModal: React.FC<ConfigurePaymentModalProps> = ({
     const cleanPix = chavePix.trim();
     if (!cleanPix) {
       setErrorMsg('A chave Pix para pagamento é obrigatória.');
-      return;
-    }
-
-    if (adminPassword !== ADMIN_PASSWORD) {
-      setErrorMsg('Senha de administrador incorreta.');
       return;
     }
 

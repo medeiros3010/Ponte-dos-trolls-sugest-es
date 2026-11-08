@@ -31,10 +31,10 @@ export const CartModal: React.FC<CartModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const totalBRL = cartPackages.reduce((acc, pkg) => {
+  const totalBRL = cartPackages.reduce((accCents, pkg) => {
     const price = typeof pkg.valorCatalogoBRL === 'number' ? pkg.valorCatalogoBRL : pkg.valorTotalBRL;
-    return acc + (price || 0);
-  }, 0);
+    return accCents + Math.round((price || 0) * 100);
+  }, 0) / 100;
 
   return (
     <div className="fixed inset-0 z-[86] flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/75 backdrop-blur-md animate-in fade-in duration-200">
