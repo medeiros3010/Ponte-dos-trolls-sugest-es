@@ -535,9 +535,10 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
               <button
                 type="button"
                 onClick={handleCloseClean}
-                className="px-4 py-2 rounded-xl bg-[#F8EDD5] hover:bg-[#FBF4E4] text-[#302414] border border-[#C6AD78] text-xs font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#F8EDD5] hover:bg-[#FBF4E4] text-[#302414] border border-[#C6AD78] text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
-                Cancelar
+                <ChevronLeft className="w-4 h-4" />
+                <span>Voltar ao login</span>
               </button>
             )}
 

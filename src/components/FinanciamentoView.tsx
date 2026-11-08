@@ -30,6 +30,7 @@ import { formatDateDisplay, extractPaidMemberEmails } from '../utils/helpers';
 import { EditPackageImageModal } from './EditPackageImageModal';
 import { ConfigurePaymentModal } from './ConfigurePaymentModal';
 import { PaymentInstructionsModal } from './PaymentInstructionsModal';
+import { FundingParticipantsModal } from './FundingParticipantsModal';
 import { PageBanner } from './PageBanner';
 
 interface FinanciamentoViewProps {
@@ -89,6 +90,9 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
   const [stageAdminPassword, setStageAdminPassword] = useState('');
   const [stageError, setStageError] = useState('');
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+
+  // Participants Inspection Modal state
+  const [viewingParticipantsPkg, setViewingParticipantsPkg] = useState<FundingPackage | null>(null);
 
   // Card Menu Dropdown State
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -470,12 +474,20 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                       {/* Progresso de Adesão */}
                       <div className="space-y-1.5 pt-1">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-[#302414] flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-[#716016]" />
+                          <button
+                            type="button"
+                            onClick={() => setViewingParticipantsPkg(pkg)}
+                            className="font-semibold text-[#302414] hover:text-[#48551F] flex items-center gap-1.5 cursor-pointer group text-left transition-colors"
+                            title="Clique para ver a lista de participantes com ranks RPG"
+                          >
+                            <Users className="w-3.5 h-3.5 text-[#716016] group-hover:scale-110 transition-transform" />
                             <span>
                               <strong>{totalCotistas}</strong> de {metaMinima} participantes
                             </span>
-                          </span>
+                            <span className="text-[11px] text-[#48551F] font-bold underline underline-offset-2 ml-1">
+                              · Ver lista
+                            </span>
+                          </button>
                           <span className="text-[#71634D]">
                             Total do pacote:{' '}
                             <strong className="text-[#302414] font-mono">
@@ -620,7 +632,21 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                       </div>
 
                       {/* Lista de Apoiadores e Situação de Pagamento (Fiel ao Print 3) */}
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs pb-0.5">
+                          <span className="font-bold text-[#302414] flex items-center gap-1">
+                            <Users className="w-3.5 h-3.5 text-[#716016]" />
+                            <span>Participantes ({apoiadores.length}):</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setViewingParticipantsPkg(pkg)}
+                            className="text-[11px] text-[#48551F] hover:underline font-bold cursor-pointer"
+                          >
+                            Ver lista completa · Ranks
+                          </button>
+                        </div>
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                         {apoiadores.map((ap) => {
                           const paymentInfo = pkg.pagamentos && pkg.pagamentos[ap.id];
                           const hasPaid = Boolean(paymentInfo?.informouPagamento || ap.pagamentoInformado);
@@ -663,6 +689,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                           );
                         })}
                       </div>
+                    </div>
 
                       {/* Rodapé da Etapa: Resumo dos Pagos + Copiar E-mails */}
                       <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#D6C296] text-xs">
@@ -874,6 +901,19 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
           onClose={() => setImageEditPkg(null)}
           onUpdateImage={onUpdatePackageImage}
           onToast={onToast}
+        />
+      )}
+
+      {/* Modal de Consulta de Participantes com Ranks RPG e Privacidade */}
+      {viewingParticipantsPkg && (
+        <FundingParticipantsModal
+          isOpen={Boolean(viewingParticipantsPkg)}
+          onClose={() => setViewingParticipantsPkg(null)}
+          packageItem={viewingParticipantsPkg}
+          allUsers={allUsers}
+          currentUser={currentUser}
+          packages={packages}
+          onTogglePaymentStatus={handleTogglePaymentStatus}
         />
       )}
 

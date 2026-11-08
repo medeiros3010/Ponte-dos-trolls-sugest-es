@@ -621,12 +621,13 @@ export default function App() {
   };
 
   // Funding Packages Handlers
-  const handleSavePackage = (
+  const handleSavePackage = async (
     pkgData: Omit<FundingPackage, 'id' | 'criadoEm'> & { id?: string }
   ) => {
+    let nextPackages: FundingPackage[];
     if (pkgData.id) {
       // Editar
-      const nextPackages = packages.map((p) =>
+      nextPackages = packages.map((p) =>
         p.id === pkgData.id
           ? {
               ...p,
@@ -634,8 +635,6 @@ export default function App() {
             }
           : p
       );
-      setPackages(nextPackages);
-      syncWithCloud(items, users, nextPackages);
     } else {
       // Criar Novo Pacote
       const newPkg: FundingPackage = {
@@ -643,10 +642,12 @@ export default function App() {
         id: `pack-${Date.now()}`,
         criadoEm: new Date().toISOString().split('T')[0],
       };
-      const nextPackages = [newPkg, ...packages];
-      setPackages(nextPackages);
-      syncWithCloud(items, users, nextPackages);
+      nextPackages = [newPkg, ...packages];
     }
+
+    setPackages(nextPackages);
+    localStorage.setItem(STORAGE_KEY_PACKAGES, JSON.stringify(nextPackages));
+    await syncWithCloud(items, users, nextPackages);
     setPackageToEdit(null);
   };
 
@@ -941,9 +942,9 @@ export default function App() {
       <AmbientMusicPlayer audioSrc="/audio/down-by-the-river.mp3" />
 
       {/* Modal de Entrada Obrigatório */}
-      {!currentUser && (
+      {!currentUser && !isNewMemberAppOpen && (
         <UserAuthModal
-          isOpen={!currentUser}
+          isOpen={!currentUser && !isNewMemberAppOpen}
           users={users}
           onSelectExistingUser={handleSelectExistingUser}
           onOpenNewMemberApplication={() => setIsNewMemberAppOpen(true)}

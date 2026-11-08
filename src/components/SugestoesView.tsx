@@ -57,6 +57,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
 
   // Commitment Confirmation Modal state
   const [itemToCommit, setItemToCommit] = useState<ItemRPG | null>(null);
+  const [isSubmittingSupport, setIsSubmittingSupport] = useState<boolean>(false);
 
   // Filtra apenas itens com status 'Sugestão'
   const sugestoesItems = useMemo(() => {
@@ -124,18 +125,23 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
     );
 
     if (isUserSupporting) {
+      // Retirada direta sem exibir modal de confirmação
       onToggleSupportItem(item.id);
-      onToast(`Você retirou o apoio a "${item.nome}".`);
     } else {
+      // Exibe confirmação com aviso sobre interesse real
       setItemToCommit(item);
     }
   };
 
   const handleConfirmCommitment = () => {
-    if (!itemToCommit) return;
-    onToggleSupportItem(itemToCommit.id);
-    onToast(`Você declarou apoio à sugestão "${itemToCommit.nome}"!`);
-    setItemToCommit(null);
+    if (!itemToCommit || isSubmittingSupport) return;
+    try {
+      setIsSubmittingSupport(true);
+      onToggleSupportItem(itemToCommit.id);
+      setItemToCommit(null);
+    } finally {
+      setTimeout(() => setIsSubmittingSupport(false), 500);
+    }
   };
 
   const handleCopySummary = (item: ItemRPG) => {
@@ -549,54 +555,70 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
 
       {/* Modal de Confirmação de Apoio */}
       {itemToCommit && (
-        <div className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50">
+        <div
+          className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmittingSupport) setItemToCommit(null);
+          }}
+        >
+          <div className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50 border-[#C6AD78]">
             <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
               <h3 className="font-rpg text-lg font-bold text-[#302414] flex items-center gap-2">
                 <span>🤝</span>
-                <span>Confirmar Interesse</span>
+                <span>Tem interesse em participar?</span>
               </h3>
               <button
+                type="button"
+                disabled={isSubmittingSupport}
                 onClick={() => setItemToCommit(null)}
-                className="p-1 text-[#71634D] hover:text-[#302414]"
+                className="p-1 text-[#71634D] hover:text-[#302414] rounded-lg transition-colors cursor-pointer"
+                aria-label="Fechar"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-[#71634D]">
-              Ao apoiar <strong className="text-[#302414]">"{itemToCommit.nome}"</strong>, você sinaliza para o Mestre e o grupo que gostaria de participar da vaquinha caso este material entre em financiamento oficial.
+            <p className="text-xs text-[#55482e] leading-relaxed">
+              Apoiar significa que você tem interesse real em participar da compra quando ela for organizada. Apoie apenas os materiais que pretende adquirir. A participação no financiamento será confirmada em uma etapa posterior.
             </p>
 
-            <div className="p-3.5 rounded-xl bg-[#FBF4E4] border border-[#D6C296] text-xs space-y-1">
-              <p className="text-[#71634D]">
-                Preço estimado:{' '}
-                <strong className="text-[#302414]">
+            {/* Detalhes do item apoiado */}
+            <div className="p-3.5 rounded-xl bg-[#FBF4E4] border border-[#D6C296] text-xs space-y-1.5">
+              <div className="font-bold text-[#302414] line-clamp-1">
+                📦 {itemToCommit.nome}
+              </div>
+              <div className="flex items-center justify-between text-[#71634D]">
+                <span>Preço estimado:</span>
+                <span className="font-mono font-bold text-[#302414]">
                   {itemToCommit.moeda === 'USD'
                     ? `US$ ${itemToCommit.valorNumerico.toFixed(2)} (~ R$ ${(itemToCommit.valorNumerico * exchangeRate).toFixed(2)})`
-                    : `R$ ${itemToCommit.valorNumerico.toFixed(2)}`}
-                </strong>
-              </p>
-              <p className="text-[#71634D]">
-                Interessados atuais:{' '}
-                <strong className="text-[#302414]">{itemToCommit.apoiadores.length} aventureiros</strong>
-              </p>
+                    : `R$ ${itemToCommit.valorNumerico.toFixed(2).replace('.', ',')}`}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[#71634D]">
+                <span>Interessados atuais:</span>
+                <span className="font-semibold text-[#48551F]">
+                  {(itemToCommit.apoiadores || []).length} pessoas
+                </span>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2.5 pt-2">
               <button
                 type="button"
+                disabled={isSubmittingSupport}
                 onClick={() => setItemToCommit(null)}
-                className="px-4 py-2 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] rounded-xl text-xs font-semibold cursor-pointer"
+                className="px-4 py-2 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] rounded-xl text-xs font-semibold cursor-pointer transition-colors disabled:opacity-50"
               >
-                Voltar
+                Cancelar
               </button>
               <button
                 type="button"
+                disabled={isSubmittingSupport}
                 onClick={handleConfirmCommitment}
-                className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer"
+                className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer active:scale-95 disabled:opacity-50"
               >
-                Confirmar Apoio
+                {isSubmittingSupport ? 'Salvando...' : 'Sim, tenho interesse'}
               </button>
             </div>
           </div>
