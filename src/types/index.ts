@@ -6,7 +6,7 @@ export type PackageStatus = 'Financiamento' | 'Catálogo';
 
 export type FundingStage = 'COLETA' | 'PAGAMENTO';
 
-export type AppView = 'home' | 'sugestoes' | 'financiamento' | 'catalogo' | 'membros';
+export type AppView = 'home' | 'sugestoes' | 'financiamento' | 'catalogo' | 'membros' | 'meus-itens';
 
 export type ProductType = 
   | 'Livros'
@@ -25,6 +25,26 @@ export type CurrencyType = 'USD' | 'BRL';
 
 export type UserStatus = 'aprovado' | 'pendente' | 'recusado';
 
+export interface MembershipApplication {
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string;
+  comoConheceu: string;
+  indicadoPor?: string;
+  respostas: Record<number, string>;
+  regrasTextoAceito: string;
+  regrasVersao: string;
+  aceitouTermos: boolean;
+  aceitouEm: string;
+  criadoEm: string;
+  status: 'pendente' | 'aprovado' | 'recusado';
+  observacoesMestre?: string;
+  avaliadoEm?: string;
+  avaliadoPor?: string;
+  userId?: string;
+}
+
 export interface UserProfile {
   id: string;
   nome: string;
@@ -35,6 +55,7 @@ export interface UserProfile {
   strikes?: number | any[];
   isMaster?: boolean;
   status?: UserStatus;
+  solicitacaoId?: string;
 }
 
 export interface Apoiador {

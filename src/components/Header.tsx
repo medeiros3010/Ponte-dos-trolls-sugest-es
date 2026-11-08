@@ -17,6 +17,8 @@ import {
   Wrench,
   Menu,
   X,
+  ShoppingCart,
+  Package,
 } from 'lucide-react';
 import { UserProfile, AppView } from '../types';
 import { getShareableGroupLink } from '../utils/cloudStorage';
@@ -26,9 +28,12 @@ interface HeaderProps {
   currentUser: UserProfile | null;
   currentView: AppView;
   pendingUsersCount?: number;
+  cartCount?: number;
+  myAcervoCount?: number;
   onNavigate: (view: AppView) => void;
   onChangeUser: () => void;
   onGoHome: () => void;
+  onOpenCart?: () => void;
   exchangeRate: number;
   onExchangeRateChange: (rate: number) => void;
   onOpenNewItemModal: () => void;
@@ -46,9 +51,12 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   currentView,
   pendingUsersCount = 0,
+  cartCount = 0,
+  myAcervoCount = 0,
   onNavigate,
   onChangeUser,
   onGoHome,
+  onOpenCart,
   exchangeRate,
   onExchangeRateChange,
   onOpenNewItemModal,
@@ -107,11 +115,12 @@ export const Header: React.FC<HeaderProps> = ({
     setIsToolsMenuOpen(false);
   };
 
-  const navItems: { id: AppView; label: string }[] = [
+  const navItems: { id: AppView; label: string; badge?: number }[] = [
     { id: 'home', label: 'Início' },
     { id: 'sugestoes', label: 'Sugestões' },
     { id: 'financiamento', label: 'Financiamentos' },
     { id: 'catalogo', label: 'Catálogo' },
+    { id: 'meus-itens', label: 'Meus Itens', badge: myAcervoCount },
     { id: 'membros', label: 'Membros' },
   ];
 
@@ -141,24 +150,29 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden md:inline-block h-6 w-px bg-[#434b21]" />
           </div>
 
-          {/* Center Navigation Links (matching the 4 references) */}
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
+          {/* Center Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 sm:gap-1.5 lg:gap-2">
             {navItems.map((item) => {
               const isActive = currentView === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer select-none ${
+                  className={`px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer select-none flex items-center gap-1.5 ${
                     isActive
                       ? 'bg-[#525c28] text-[#F8EDD5] shadow-sm border border-[#6b7a35]'
                       : 'text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a]'
                   }`}
                 >
-                  {item.label}
+                  <span>{item.label}</span>
                   {item.id === 'membros' && pendingUsersCount > 0 && (
-                    <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-600 text-white">
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-600 text-white">
                       {pendingUsersCount}
+                    </span>
+                  )}
+                  {item.id === 'meus-itens' && typeof item.badge === 'number' && item.badge > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#384318] text-[#a8d363] border border-[#5d7328]">
+                      {item.badge}
                     </span>
                   )}
                 </button>
@@ -166,8 +180,24 @@ export const Header: React.FC<HeaderProps> = ({
             })}
           </nav>
 
-          {/* Right Area: Tools Menu + User Account */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Area: Cart + Tools Menu + User Account */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Carrinho do Catálogo */}
+            {onOpenCart && (
+              <button
+                onClick={onOpenCart}
+                className="relative p-2 rounded-xl bg-[#20240f] hover:bg-[#323917] border border-[#3f471e] text-[#F8EDD5] transition-colors cursor-pointer flex items-center justify-center"
+                title="Abrir Carrinho de Aquisições"
+                aria-label="Abrir carrinho de compras"
+              >
+                <ShoppingCart className="w-4 h-4 text-[#d6be8c]" />
+                {typeof cartCount === 'number' && cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-[#875508] border border-[#e3c578] text-[10px] font-bold text-[#F8EDD5] flex items-center justify-center font-mono">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Ferramentas do Mestre (Dropdown compacto e organizado) */}
             {isMaster && (

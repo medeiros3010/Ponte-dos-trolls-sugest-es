@@ -1,17 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { UserProfile, ADMIN_PASSWORD, MASTER_ADMIN_NAME } from '../types';
-import { Users, Shield, Phone, CheckCircle2, Search, KeyRound, AlertTriangle } from 'lucide-react';
+import { Users, Shield, Phone, CheckCircle2, Search, KeyRound, AlertTriangle, Scroll } from 'lucide-react';
 
 interface UserAuthModalProps {
   isOpen: boolean;
   users: UserProfile[];
   onSelectExistingUser: (user: UserProfile, updatedEmail?: string, updatedPhone?: string) => void;
+  onOpenNewMemberApplication?: () => void;
 }
 
 export const UserAuthModal: React.FC<UserAuthModalProps> = ({
   isOpen,
   users,
   onSelectExistingUser,
+  onOpenNewMemberApplication,
 }) => {
   const [activeTab, setActiveTab] = useState<'existing' | 'master'>('existing');
 
@@ -214,8 +216,17 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
                 {/* Lista em Ordem Alfabética */}
                 <div className="border border-[#C6AD78] rounded-xl bg-[#FAF4E6] max-h-52 overflow-y-auto divide-y divide-[#E3D1AC]">
                   {sortedUniqueMemberNames.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-[#71634D]">
-                      Nenhum membro encontrado com este nome.
+                    <div className="p-4 text-center text-xs text-[#71634D] space-y-1.5">
+                      <p>Nenhum membro encontrado com este nome.</p>
+                      {onOpenNewMemberApplication && (
+                        <button
+                          type="button"
+                          onClick={onOpenNewMemberApplication}
+                          className="text-xs text-[#48551F] font-bold hover:underline cursor-pointer"
+                        >
+                          É novo por aqui? Solicitar entrada →
+                        </button>
+                      )}
                     </div>
                   ) : (
                     sortedUniqueMemberNames.map((name) => {
@@ -298,6 +309,23 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
                 <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
                 <span>Entrar na Central</span>
               </button>
+
+              {/* Botão de Solicitação para Novo Membro */}
+              {onOpenNewMemberApplication && (
+                <div className="pt-2 border-t border-[#D6C296] text-center space-y-1.5">
+                  <button
+                    type="button"
+                    onClick={onOpenNewMemberApplication}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] border border-[#C6AD78] hover:border-[#48551F] text-xs font-bold text-[#48551F] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
+                  >
+                    <Scroll className="w-4 h-4 text-[#716016]" />
+                    <span>Sou novo — solicitar entrada</span>
+                  </button>
+                  <p className="text-[11px] text-[#71634D]">
+                    Ainda não possui cadastro na mesa? Leia as regras e solicite sua entrada.
+                  </p>
+                </div>
+              )}
             </form>
           )}
 

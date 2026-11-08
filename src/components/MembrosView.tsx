@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UserProfile, FundingPackage, ItemRPG, ADMIN_PASSWORD } from '../types';
+import { UserProfile, FundingPackage, ItemRPG, ADMIN_PASSWORD, MembershipApplication } from '../types';
 import {
   Users,
   UserPlus,
@@ -18,18 +18,36 @@ import {
   Check,
   X,
   ChevronDown,
+  BookOpen,
+  Compass,
+  Crown,
+  Sparkles,
+  Sun,
+  FileText,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  HelpCircle,
+  Eye,
 } from 'lucide-react';
 import { PageBanner } from './PageBanner';
+import { getUserRank, getUserAcquiredPackages } from '../utils/ranksAndAcquisitions';
+import { CandidateReviewModal } from './CandidateReviewModal';
+import { RulesConfig } from '../data/rulesAndQuestions';
 
 interface MembrosViewProps {
   users: UserProfile[];
   currentUser: UserProfile;
   packages: FundingPackage[];
   items: ItemRPG[];
+  applications?: MembershipApplication[];
+  rulesConfig?: RulesConfig;
   onGoHome: () => void;
   onAddUser: (newUser: Omit<UserProfile, 'id'>) => void;
   onUpdateUser: (user: UserProfile) => void;
   onDeleteUser: (userId: string) => void;
+  onApproveApplication?: (applicationId: string, adminPassword: string) => Promise<boolean>;
+  onRejectApplication?: (applicationId: string, observacoes: string, adminPassword: string) => Promise<boolean>;
   onToast: (msg: string) => void;
 }
 
@@ -38,15 +56,27 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   currentUser,
   packages,
   items,
+  applications = [],
+  rulesConfig,
   onGoHome,
   onAddUser,
   onUpdateUser,
   onDeleteUser,
+  onApproveApplication,
+  onRejectApplication,
   onToast,
 }) => {
+  const [activeTab, setActiveTab] = useState<'membros' | 'solicitacoes'>('membros');
+  const [selectedApplication, setSelectedApplication] = useState<MembershipApplication | null>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('todos');
   const [sortBy, setSortBy] = useState<string>('nome-az');
+
+  // Filtros da aba de solicitações
+  const [appSearchTerm, setAppSearchTerm] = useState('');
+  const [appFilterStatus, setAppFilterStatus] = useState<'todos' | 'pendente' | 'aprovado' | 'recusado'>('todos');
+
   const isMaster = Boolean(currentUser.isMaster);
 
   // Modais de Cadastro e Edição de Membro
@@ -223,6 +253,34 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     return list;
   }, [users, searchTerm, filterType, sortBy, isMaster, packages, items]);
 
+  // Contadores e filtro de solicitações de novos membros
+  const pendingApplicationsCount = useMemo(() => {
+    return applications.filter((app) => app.status === 'pendente').length;
+  }, [applications]);
+
+  const filteredApplications = useMemo(() => {
+    let list = [...applications];
+
+    if (appFilterStatus !== 'todos') {
+      list = list.filter((app) => app.status === appFilterStatus);
+    }
+
+    if (appSearchTerm.trim()) {
+      const q = appSearchTerm.toLowerCase().trim();
+      list = list.filter(
+        (app) =>
+          app.nome.toLowerCase().includes(q) ||
+          app.email.toLowerCase().includes(q) ||
+          app.telefone.toLowerCase().includes(q) ||
+          (app.indicadoPor && app.indicadoPor.toLowerCase().includes(q))
+      );
+    }
+
+    // Mais recentes primeiro
+    list.sort((a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime());
+    return list;
+  }, [applications, appFilterStatus, appSearchTerm]);
+
   // Submissão de novo membro
   const handleCreateMember = (e: React.FormEvent) => {
     e.preventDefault();
@@ -344,30 +402,78 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
         subtitle="Nossa comunidade de aventureiros."
       />
 
-      {/* Cabeçalho da Seção: Título + Total Cadastrado + Botão Cadastrar Membro */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Users className="w-6 h-6 text-[#716016] shrink-0" />
-            <h2 className="font-rpg text-xl sm:text-2xl font-bold text-[#302414]">
-              Membros da Ponte
-            </h2>
-          </div>
-          <span className="text-xs text-[#71634D] font-medium border-l border-[#C6AD78] pl-3">
-            <strong className="text-[#302414] font-mono">{groupStats.totalMembers}</strong> membros cadastrados
-          </span>
-        </div>
-
-        {isMaster && (
+      {/* Sub-navegação do Mestre: Membros da Mesa vs. Solicitações de Entrada com badge */}
+      {isMaster && (
+        <div className="flex items-center gap-2 mb-6 border-b border-[#D6C296] pb-3 overflow-x-auto">
           <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2.5 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+            onClick={() => setActiveTab('membros')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+              activeTab === 'membros'
+                ? 'bg-[#48551F] text-[#F8EDD5] shadow-sm'
+                : 'bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78]'
+            }`}
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Cadastrar membro</span>
+            <Users className="w-4 h-4" />
+            <span>Membros da Mesa</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+              activeTab === 'membros' ? 'bg-[#374217] text-[#F8EDD5]' : 'bg-[#D6C296] text-[#302414]'
+            }`}>
+              {users.length}
+            </span>
           </button>
-        )}
-      </div>
+
+          <button
+            onClick={() => setActiveTab('solicitacoes')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 relative ${
+              activeTab === 'solicitacoes'
+                ? 'bg-[#48551F] text-[#F8EDD5] shadow-sm'
+                : 'bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78]'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Solicitações de Entrada</span>
+            {pendingApplicationsCount > 0 ? (
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#c74d3c] text-white animate-pulse">
+                {pendingApplicationsCount} pendente{pendingApplicationsCount > 1 ? 's' : ''}
+              </span>
+            ) : (
+              <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+                activeTab === 'solicitacoes' ? 'bg-[#374217] text-[#F8EDD5]' : 'bg-[#D6C296] text-[#302414]'
+              }`}>
+                {applications.length}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* ==================== ABA 1: MEMBROS DA MESA ==================== */}
+      {activeTab === 'membros' && (
+        <>
+          {/* Cabeçalho da Seção: Título + Total Cadastrado + Botão Cadastrar Membro */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-6 h-6 text-[#716016] shrink-0" />
+                <h2 className="font-rpg text-xl sm:text-2xl font-bold text-[#302414]">
+                  Membros da Ponte
+                </h2>
+              </div>
+              <span className="text-xs text-[#71634D] font-medium border-l border-[#C6AD78] pl-3">
+                <strong className="text-[#302414] font-mono">{groupStats.totalMembers}</strong> membros cadastrados
+              </span>
+            </div>
+
+            {isMaster && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-4 py-2.5 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Cadastrar membro</span>
+              </button>
+            )}
+          </div>
 
       {/* 3 CARDS DE ESTATÍSTICA (Fiel ao Print 2) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -509,19 +615,31 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                           {member.nome}
                         </h3>
 
-                        {/* Rank Badge */}
+                        {/* Rank Badge com os 6 Níveis RPG Oficiais */}
                         <div className="mt-1">
-                          {stats.isVeteran ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] inline-flex items-center gap-1">
-                              <Check className="w-3 h-3" />
-                              <span>{stats.rank}</span>
+                          {member.isMaster || member.nome.trim().toLowerCase() === 'ponte dos trolls' ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAF4E6] text-[#716016] border border-[#C6AD78] inline-flex items-center gap-1">
+                              <Shield className="w-3 h-3 text-[#48551F]" />
+                              <span>Mestre Guardião</span>
                             </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#fae8b4] text-[#875508] border border-[#e3c578] inline-flex items-center gap-1">
-                              <span>🌱</span>
-                              <span>{stats.rank}</span>
-                            </span>
-                          )}
+                          ) : (() => {
+                            const acquiredList = getUserAcquiredPackages(member, packages);
+                            const r = getUserRank(acquiredList.length);
+                            const IconC = r.iconName === 'BookOpen' ? BookOpen :
+                                          r.iconName === 'Compass' ? Compass :
+                                          r.iconName === 'Shield' ? Shield :
+                                          r.iconName === 'Crown' ? Crown :
+                                          r.iconName === 'Sparkles' ? Sparkles : Sun;
+                            return (
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${r.bgClass} ${r.colorClass} border ${r.borderClass} inline-flex items-center gap-1 shadow-xs`}
+                                title={`${r.name} - ${r.currentCount} pacotes adquiridos no Catálogo`}
+                              >
+                                <IconC className="w-3 h-3 shrink-0" />
+                                <span>{r.name} ({r.currentCount})</span>
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -643,8 +761,249 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           })}
         </div>
       )}
+        </>
+      )}
+
+      {/* ==================== ABA 2: SOLICITAÇÕES DE ENTRADA (MESTRE) ==================== */}
+      {activeTab === 'solicitacoes' && isMaster && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          
+          {/* Cabeçalho da Seção */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <FileText className="w-6 h-6 text-[#716016]" />
+                <h2 className="font-rpg text-xl sm:text-2xl font-bold text-[#302414]">
+                  Solicitações de Entrada na Ponte
+                </h2>
+              </div>
+              <p className="text-xs text-[#71634D] mt-0.5">
+                Avalie as respostas dos candidatos ao questionário da comunidade antes de liberar o acesso.
+              </p>
+            </div>
+
+            {/* Badges de Resumo */}
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-[#fae8b4] text-[#875508] border border-[#e3c578] inline-flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{pendingApplicationsCount} pendentes</span>
+              </span>
+              <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] inline-flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>{applications.filter((a) => a.status === 'aprovado').length} aprovados</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Barra de Filtros de Solicitações */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-[#71634D] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={appSearchTerm}
+                onChange={(e) => setAppSearchTerm(e.target.value)}
+                placeholder="Buscar candidato por nome, contato ou indicação..."
+                className="w-full bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-9 pr-8 py-2.5 text-xs sm:text-sm text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F] shadow-sm"
+              />
+              {appSearchTerm && (
+                <button
+                  onClick={() => setAppSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71634D] hover:text-[#302414] p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="relative shrink-0">
+              <select
+                value={appFilterStatus}
+                onChange={(e) => setAppFilterStatus(e.target.value as any)}
+                className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
+              >
+                <option value="todos">Todas as solicitações</option>
+                <option value="pendente">Apenas Pendentes</option>
+                <option value="aprovado">Aprovadas</option>
+                <option value="recusado">Recusadas</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Lista de Solicitações */}
+          {filteredApplications.length === 0 ? (
+            <div className="parchment-card p-12 text-center my-4">
+              <FileText className="w-12 h-12 text-[#716016] mx-auto mb-3 opacity-60" />
+              <h3 className="font-rpg text-lg font-bold text-[#302414]">
+                Nenhuma solicitação encontrada
+              </h3>
+              <p className="text-xs text-[#71634D] max-w-sm mx-auto mt-1">
+                {applications.length === 0
+                  ? 'Ainda não há candidatos cadastrados pelo fluxo "Sou novo — solicitar entrada".'
+                  : 'Nenhum resultado corresponde aos filtros selecionados.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredApplications.map((app) => {
+                const initials = app.nome
+                  ? app.nome
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((p) => p[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()
+                  : '??';
+
+                const formattedDate = new Date(app.criadoEm).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+
+                return (
+                  <div
+                    key={app.id}
+                    className={`parchment-card p-4 flex flex-col justify-between space-y-4 transition-shadow hover:shadow-md ${
+                      app.status === 'pendente' ? 'border-[#C6AD78] ring-1 ring-[#D9A74A]/40' : ''
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      {/* Topo: Avatar + Nome + Badge Status */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-full bg-[#455222] border border-[#C6AD78] text-[#F8EDD5] font-rpg font-bold text-sm flex items-center justify-center shrink-0 shadow-sm">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="font-rpg text-base font-bold text-[#302414] leading-tight truncate">
+                              {app.nome}
+                            </h3>
+                            <span className="text-[11px] text-[#71634D] block truncate">
+                              {app.comoConheceu}
+                              {app.indicadoPor ? ` (por ${app.indicadoPor})` : ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="shrink-0">
+                          {app.status === 'pendente' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#fae8b4] text-[#875508] border border-[#e3c578] inline-flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>Pendente</span>
+                            </span>
+                          )}
+                          {app.status === 'aprovado' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Aprovado</span>
+                            </span>
+                          )}
+                          {app.status === 'recusado' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#fadcd7] text-[#932318] border border-[#eab4ab] inline-flex items-center gap-1">
+                              <XCircle className="w-3 h-3" />
+                              <span>Recusado</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Contatos & Dados */}
+                      <div className="space-y-1.5 pt-2 border-t border-[#D6C296] text-xs text-[#71634D]">
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                          <span className="font-mono text-[#302414]">{app.telefone}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Mail className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                          <span className="truncate text-[#302414]">{app.email}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <Calendar className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                          <span>Solicitado em: {formattedDate}</span>
+                        </div>
+                      </div>
+
+                      {/* Informações da Avaliação se já avaliado */}
+                      {app.avaliadoEm && (
+                        <div className="pt-2 border-t border-[#D6C296] text-[11px] text-[#71634D] space-y-0.5 bg-[#FAF4E6]/60 p-2 rounded-lg">
+                          <p>
+                            <strong>Avaliado em:</strong> {new Date(app.avaliadoEm).toLocaleDateString('pt-BR')}
+                          </p>
+                          {app.observacoesMestre && (
+                            <p className="italic text-[#302414]">
+                              "{app.observacoesMestre}"
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botão de Ação */}
+                    <div className="pt-2">
+                      <button
+                        onClick={() => setSelectedApplication(app)}
+                        className={`w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer ${
+                          app.status === 'pendente'
+                            ? 'bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5]'
+                            : 'bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78]'
+                        }`}
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>
+                          {app.status === 'pendente'
+                            ? 'Avaliar Candidato (8 Respostas)'
+                            : 'Ver Respostas do Candidato'}
+                        </span>
+                      </button>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        </div>
+      )}
 
       {/* ==================== MODAIS ==================== */}
+
+      {/* Modal de Avaliação de Candidato pelo Mestre */}
+      {selectedApplication && (
+        <CandidateReviewModal
+          isOpen={Boolean(selectedApplication)}
+          application={selectedApplication}
+          rulesConfig={rulesConfig}
+          onApprove={async (appId, adminPassword) => {
+            if (onApproveApplication) {
+              const ok = await onApproveApplication(appId, adminPassword);
+              if (ok) {
+                setSelectedApplication(null);
+              }
+              return ok;
+            }
+            return false;
+          }}
+          onReject={async (appId, obs, adminPassword) => {
+            if (onRejectApplication) {
+              const ok = await onRejectApplication(appId, obs, adminPassword);
+              if (ok) {
+                setSelectedApplication(null);
+              }
+              return ok;
+            }
+            return false;
+          }}
+          onClose={() => setSelectedApplication(null)}
+          onToast={onToast}
+        />
+      )}
 
       {/* Modal 1: Cadastrar Novo Membro (Mestre) */}
       {isAddModalOpen && (

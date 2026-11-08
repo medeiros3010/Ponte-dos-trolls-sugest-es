@@ -1,7 +1,7 @@
 {
   "id": "trolls-rpg-oficial",
   "name": "A Ponte dos Trolls - Rateios RPG",
-  "updatedAt": "2026-11-07T20:54:16.639Z",
+  "updatedAt": "2026-11-08T14:59:27.754Z",
   "items": [
     {
       "id": "seed-1",
@@ -639,7 +639,8 @@
           "nome": "Nelson Neto",
           "telefone": "(11) 95557-2486"
         }
-      ]
+      ],
+      "pagamentos": {}
     },
     {
       "id": "pack-4",
@@ -776,5 +777,6 @@
         }
       ]
     }
-  ]
+  ],
+  "solicitacoes": []
 }

@@ -5,8 +5,30 @@ import path from 'path';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './src/data/seedData';
 import { ADMIN_PASSWORD, normalizeProductType } from './src/types';
 
+function getPort(): number {
+  const portArgIndex = process.argv.indexOf('--port');
+  if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+    const parsed = parseInt(process.argv[portArgIndex + 1], 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  if (process.env.PORT) {
+    const parsed = parseInt(process.env.PORT, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return 3000;
+}
+
+function getHost(): string {
+  const hostArgIndex = process.argv.indexOf('--host');
+  if (hostArgIndex !== -1 && process.argv[hostArgIndex + 1]) {
+    return process.argv[hostArgIndex + 1];
+  }
+  return process.env.HOST || '0.0.0.0';
+}
+
+const PORT = getPort();
+const HOST = getHost();
 const app = express();
-const PORT = 3000;
 const BINS_DIR = path.resolve(process.cwd(), 'data', 'bins');
 const UPLOADS_DIR = path.resolve(process.cwd(), 'data', 'uploads');
 
@@ -42,6 +64,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static route to serve uploaded images directly
 app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Static route to serve public assets (audio, banners, images) directly
+app.use(express.static(path.resolve(process.cwd(), 'public')));
 
 // Permissive CORS for cross-origin access and standalone HTML
 app.use((req, res, next) => {
@@ -187,6 +212,9 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
       if (!Array.isArray(data.items)) {
         data.items = SEED_ITEMS;
       }
+      if (!Array.isArray(data.solicitacoes)) {
+        data.solicitacoes = [];
+      }
 
       // Ensure packages are properly sanitized with all new fields
       data.packages = data.packages.map(sanitizePackage);
@@ -203,6 +231,7 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
       items: SEED_ITEMS,
       users: SEED_USERS,
       packages: SEED_PACKAGES.map(sanitizePackage),
+      solicitacoes: [],
     };
 
     fs.writeFileSync(filePath, JSON.stringify(initialData, null, 2), 'utf-8');
@@ -231,6 +260,8 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
     let itemsToSave: any[] = existingData.items ?? SEED_ITEMS;
     let usersToSave: any[] = existingData.users ?? SEED_USERS;
     let packagesToSave: any[] = existingData.packages ?? SEED_PACKAGES;
+    let solicitacoesToSave: any[] = existingData.solicitacoes ?? [];
+    let regrasConfigToSave: any = existingData.regrasConfig ?? undefined;
 
     if (Array.isArray(body)) {
       itemsToSave = body;
@@ -252,6 +283,14 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       } else if (body.data && Array.isArray(body.data.packages)) {
         packagesToSave = body.data.packages;
       }
+
+      if (Array.isArray(body.solicitacoes)) {
+        solicitacoesToSave = body.solicitacoes;
+      }
+
+      if (body.regrasConfig) {
+        regrasConfigToSave = body.regrasConfig;
+      }
     }
 
     // Sanitize packages to ensure images, stages, payments, etc. are preserved
@@ -265,6 +304,8 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       items: itemsToSave,
       users: usersToSave,
       packages: packagesToSave,
+      solicitacoes: solicitacoesToSave,
+      ...(regrasConfigToSave ? { regrasConfig: regrasConfigToSave } : {}),
     };
 
     fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf-8');
@@ -274,6 +315,7 @@ app.put('/api/bin/:binId', (req: Request, res: Response) => {
       count: itemsToSave.length,
       usersCount: usersToSave.length,
       packagesCount: packagesToSave.length,
+      solicitacoesCount: solicitacoesToSave.length,
       updatedAt: payload.updatedAt,
     });
   } catch (err: any) {
@@ -695,14 +737,386 @@ app.post('/api/bin/:binId/user/update-profile', (req: Request, res: Response) =>
   }
 });
 
+// ==================== CANDIDATURA & NOVO MEMBRO ENDPOINTS ====================
+
+// GET /api/solicitacoes - Lista todas as solicitações de novos membros
+app.get('/api/solicitacoes', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId((req.query.binId as string) || 'trolls-rpg-oficial');
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.json({ success: true, solicitacoes: [] });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const solicitacoes = Array.isArray(data.solicitacoes) ? data.solicitacoes : [];
+    return res.json({ success: true, solicitacoes });
+  } catch (err: any) {
+    console.error('Erro ao listar solicitações:', err);
+    return res.status(500).json({ error: 'Erro ao listar solicitações', details: err.message });
+  }
+});
+
+// POST /api/solicitacoes - Candidato envia cadastro (anti-duplicação e sem auto-autenticação)
+app.post('/api/solicitacoes', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId((req.body.binId as string) || 'trolls-rpg-oficial');
+    const {
+      nome,
+      email,
+      telefone,
+      comoConheceu,
+      indicadoPor,
+      respostas,
+      regrasTextoAceito,
+      regrasVersao,
+      aceitouTermos,
+      aceitouEm,
+    } = req.body;
+
+    const trimmedNome = String(nome || '').trim();
+    const trimmedEmail = String(email || '').trim().toLowerCase();
+    const rawTelefone = String(telefone || '').trim();
+    const digitsTelefone = rawTelefone.replace(/\D/g, '');
+
+    if (!trimmedNome) {
+      return res.status(400).json({ error: 'Nome completo é obrigatório.' });
+    }
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      return res.status(400).json({ error: 'E-mail válido para o Google Drive é obrigatório.' });
+    }
+    if (digitsTelefone.length < 10) {
+      return res.status(400).json({ error: 'Telefone com DDD é obrigatório.' });
+    }
+    if (!aceitouTermos) {
+      return res.status(400).json({ error: 'É obrigatório declarar leitura e aceite das regras da comunidade.' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    let data: any = {};
+    if (fs.existsSync(filePath)) {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } else {
+      data = {
+        id: binId,
+        items: SEED_ITEMS,
+        users: SEED_USERS,
+        packages: SEED_PACKAGES.map(sanitizePackage),
+        solicitacoes: [],
+      };
+    }
+
+    data.solicitacoes = Array.isArray(data.solicitacoes) ? data.solicitacoes : [];
+    data.users = Array.isArray(data.users) ? data.users : [];
+
+    // Checagem anti-duplicidade com usuários já aprovados
+    const existingApprovedUser = data.users.find(
+      (u: any) =>
+        (u.email && u.email.trim().toLowerCase() === trimmedEmail) ||
+        (u.telefone && u.telefone.replace(/\D/g, '') === digitsTelefone)
+    );
+    if (existingApprovedUser) {
+      return res.status(400).json({
+        error: `Já existe um membro cadastrado e aprovado com este e-mail ou telefone (${existingApprovedUser.nome}). Por favor, acesse a tela de login.`,
+      });
+    }
+
+    // Checagem anti-duplicidade com solicitações pendentes recentes
+    const existingPending = data.solicitacoes.find(
+      (s: any) =>
+        s.status === 'pendente' &&
+        ((s.email && s.email.trim().toLowerCase() === trimmedEmail) ||
+          (s.telefone && s.telefone.replace(/\D/g, '') === digitsTelefone))
+    );
+    if (existingPending) {
+      return res.status(400).json({
+        error: 'Já existe uma solicitação de entrada em análise com este mesmo e-mail ou telefone. Aguarde a avaliação pelo Mestre no WhatsApp.',
+      });
+    }
+
+    const newApplication = {
+      id: `sol-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      nome: trimmedNome,
+      email: trimmedEmail,
+      telefone: rawTelefone,
+      comoConheceu: comoConheceu || 'Outro',
+      indicadoPor: indicadoPor ? String(indicadoPor).trim() : undefined,
+      respostas: respostas && typeof respostas === 'object' ? respostas : {},
+      regrasTextoAceito: String(regrasTextoAceito || ''),
+      regrasVersao: String(regrasVersao || '1.0.0'),
+      aceitouTermos: true,
+      aceitouEm: aceitouEm || new Date().toISOString(),
+      criadoEm: new Date().toISOString(),
+      status: 'pendente',
+    };
+
+    data.solicitacoes.unshift(newApplication);
+    data.updatedAt = new Date().toISOString();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      application: newApplication,
+      message: 'Solicitação enviada com sucesso! Aguarde a aprovação do Mestre.',
+    });
+  } catch (err: any) {
+    console.error('Erro ao registrar candidatura:', err);
+    return res.status(500).json({ error: 'Erro ao registrar candidatura', details: err.message });
+  }
+});
+
+// POST /api/solicitacoes/:id/aprovar - Mestre aprova candidato e cria usuário oficial
+app.post('/api/solicitacoes/:id/aprovar', (req: Request, res: Response) => {
+  try {
+    const applicationId = req.params.id;
+    const { adminPassword, observacoesMestre } = req.body;
+    const binId = sanitizeBinId((req.body.binId as string) || 'trolls-rpg-oficial');
+
+    if (adminPassword !== ADMIN_PASSWORD) {
+      return res.status(403).json({ error: 'Senha de Mestre incorreta! Acesso negado.' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado.' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    data.solicitacoes = Array.isArray(data.solicitacoes) ? data.solicitacoes : [];
+    data.users = Array.isArray(data.users) ? data.users : [];
+
+    const appIndex = data.solicitacoes.findIndex((s: any) => s.id === applicationId);
+    if (appIndex === -1) {
+      return res.status(404).json({ error: 'Solicitação não encontrada.' });
+    }
+
+    const app = data.solicitacoes[appIndex];
+    const timestamp = new Date().toISOString();
+
+    // Atualiza status da solicitação
+    app.status = 'aprovado';
+    app.avaliadoEm = timestamp;
+    app.avaliadoPor = 'Ponte dos Trolls';
+    if (observacoesMestre) {
+      app.observacoesMestre = String(observacoesMestre).trim();
+    }
+
+    // Cria ou atualiza usuário oficial na lista de membros
+    const existingUserIndex = data.users.findIndex(
+      (u: any) =>
+        (u.email && u.email.trim().toLowerCase() === app.email.trim().toLowerCase()) ||
+        (u.telefone && u.telefone.replace(/\D/g, '') === app.telefone.replace(/\D/g, ''))
+    );
+
+    let createdOrUpdatedUser: any;
+    if (existingUserIndex >= 0) {
+      data.users[existingUserIndex].status = 'aprovado';
+      data.users[existingUserIndex].solicitacaoId = app.id;
+      createdOrUpdatedUser = data.users[existingUserIndex];
+    } else {
+      createdOrUpdatedUser = {
+        id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        nome: app.nome,
+        telefone: app.telefone,
+        email: app.email,
+        dataEntrada: timestamp.split('T')[0],
+        status: 'aprovado',
+        strikes: [],
+        solicitacaoId: app.id,
+      };
+      data.users.push(createdOrUpdatedUser);
+    }
+
+    app.userId = createdOrUpdatedUser.id;
+    data.updatedAt = timestamp;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      application: app,
+      user: createdOrUpdatedUser,
+      users: data.users,
+    });
+  } catch (err: any) {
+    console.error('Erro ao aprovar solicitação:', err);
+    return res.status(500).json({ error: 'Erro ao aprovar solicitação', details: err.message });
+  }
+});
+
+// POST /api/solicitacoes/:id/recusar - Mestre recusa candidato
+app.post('/api/solicitacoes/:id/recusar', (req: Request, res: Response) => {
+  try {
+    const applicationId = req.params.id;
+    const { adminPassword, observacoesMestre } = req.body;
+    const binId = sanitizeBinId((req.body.binId as string) || 'trolls-rpg-oficial');
+
+    if (adminPassword !== ADMIN_PASSWORD) {
+      return res.status(403).json({ error: 'Senha de Mestre incorreta! Acesso negado.' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado.' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    data.solicitacoes = Array.isArray(data.solicitacoes) ? data.solicitacoes : [];
+
+    const appIndex = data.solicitacoes.findIndex((s: any) => s.id === applicationId);
+    if (appIndex === -1) {
+      return res.status(404).json({ error: 'Solicitação não encontrada.' });
+    }
+
+    const app = data.solicitacoes[appIndex];
+    const timestamp = new Date().toISOString();
+
+    app.status = 'recusado';
+    app.avaliadoEm = timestamp;
+    app.avaliadoPor = 'Ponte dos Trolls';
+    if (observacoesMestre) {
+      app.observacoesMestre = String(observacoesMestre).trim();
+    }
+
+    data.updatedAt = timestamp;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      application: app,
+    });
+  } catch (err: any) {
+    console.error('Erro ao recusar solicitação:', err);
+    return res.status(500).json({ error: 'Erro ao recusar solicitação', details: err.message });
+  }
+});
+
+// ==================== COMPRADOR POSTERIOR DE CATÁLOGO ====================
+
+// POST /api/bin/:binId/package/:packageId/posterior-buyer - Mestre libera acesso posterior a pacote do Catálogo
+app.post('/api/bin/:binId/package/:packageId/posterior-buyer', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId(req.params.binId);
+    const packageId = req.params.packageId;
+    const { memberId, nome, telefone, email, adminPassword } = req.body;
+
+    if (adminPassword !== ADMIN_PASSWORD) {
+      return res.status(403).json({ error: 'Senha de Mestre incorreta! Acesso negado.' });
+    }
+
+    if (!memberId || !nome) {
+      return res.status(400).json({ error: 'Dados do membro são obrigatórios.' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado.' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const packages: any[] = Array.isArray(data.packages) ? data.packages : [];
+    const pkg = packages.find((p: any) => p.id === packageId);
+
+    if (!pkg) {
+      return res.status(404).json({ error: 'Pacote não encontrado.' });
+    }
+
+    pkg.apoiadores = Array.isArray(pkg.apoiadores) ? pkg.apoiadores : [];
+    if (!pkg.pagamentos || typeof pkg.pagamentos !== 'object') {
+      pkg.pagamentos = {};
+    }
+
+    const exists = pkg.apoiadores.some((a: any) => a.id === memberId || a.nome.toLowerCase() === nome.toLowerCase());
+    const timestamp = new Date().toISOString();
+
+    if (!exists) {
+      pkg.apoiadores.push({
+        id: memberId,
+        nome: nome.trim(),
+        telefone: telefone || '',
+        email: email || '',
+        data: timestamp,
+        pagamentoInformado: true,
+        dataPagamentoInformado: timestamp,
+      });
+    }
+
+    pkg.pagamentos[memberId] = {
+      memberId,
+      nome: nome.trim(),
+      informouPagamento: true,
+      dataPagamentoInformado: timestamp,
+    };
+
+    data.updatedAt = timestamp;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      packageId,
+      package: sanitizePackage(pkg),
+    });
+  } catch (err: any) {
+    console.error('Erro ao adicionar comprador posterior:', err);
+    return res.status(500).json({ error: 'Erro ao adicionar comprador posterior', details: err.message });
+  }
+});
+
+// DELETE /api/bin/:binId/package/:packageId/posterior-buyer/:memberId - Mestre remove comprador posterior
+app.delete('/api/bin/:binId/package/:packageId/posterior-buyer/:memberId', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId(req.params.binId);
+    const packageId = req.params.packageId;
+    const memberId = req.params.memberId;
+    const adminPassword = (req.body && req.body.adminPassword) || (req.query && req.query.adminPassword);
+
+    if (adminPassword !== ADMIN_PASSWORD) {
+      return res.status(403).json({ error: 'Senha de Mestre incorreta! Acesso negado.' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado.' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const packages: any[] = Array.isArray(data.packages) ? data.packages : [];
+    const pkg = packages.find((p: any) => p.id === packageId);
+
+    if (!pkg) {
+      return res.status(404).json({ error: 'Pacote não encontrado.' });
+    }
+
+    pkg.apoiadores = Array.isArray(pkg.apoiadores) ? pkg.apoiadores.filter((a: any) => a.id !== memberId) : [];
+    if (pkg.pagamentos && pkg.pagamentos[memberId]) {
+      delete pkg.pagamentos[memberId];
+    }
+
+    data.updatedAt = new Date().toISOString();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      packageId,
+      package: sanitizePackage(pkg),
+    });
+  } catch (err: any) {
+    console.error('Erro ao remover comprador posterior:', err);
+    return res.status(500).json({ error: 'Erro ao remover comprador posterior', details: err.message });
+  }
+});
+
 // ==================== VITE SPA INTEGRATION ====================
 async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
+  let vite: any = null;
 
   if (!isProd) {
     // Dev mode: Vite middleware
-    const vite = await createViteServer({
-      server: { middlewareMode: true, hmr: false },
+    vite = await createViteServer({
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -715,9 +1129,34 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
   });
+
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[Server] Port ${PORT} is already in use by another process.`);
+      process.exit(0);
+    } else {
+      console.error('[Server] Fatal server error:', err);
+      process.exit(1);
+    }
+  });
+
+  const handleShutdown = async () => {
+    console.log('[Server] Gracefully shutting down...');
+    if (vite) {
+      try {
+        await vite.close();
+      } catch (e) {}
+    }
+    server.close(() => {
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', handleShutdown);
+  process.on('SIGINT', handleShutdown);
 }
 
 startServer().catch((err) => {

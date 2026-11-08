@@ -15,8 +15,15 @@ import {
   Save,
   ArrowRight,
   Package,
+  BookOpen,
+  Compass,
+  Crown,
+  Sparkles,
+  Sun,
+  Shield as ShieldIcon,
 } from 'lucide-react';
 import { formatDateDisplay } from '../utils/helpers';
+import { getUserAcquiredPackages, getUserRank } from '../utils/ranksAndAcquisitions';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -64,7 +71,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   );
 
   const myActivePackages = myPackages.filter((p) => p.status === 'Financiamento');
-  const myCatalogPackages = myPackages.filter((p) => p.status === 'Catálogo');
+  const myCatalogPackages = getUserAcquiredPackages(currentUser, packages);
+  const rankInfo = getUserRank(myCatalogPackages.length);
 
   const mySupportedItems = items.filter((it) =>
     (it.apoiadores || []).some(
@@ -239,6 +247,55 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Card: Classificação e Rank na Ponte (6 Níveis) */}
+          <div className="p-4 rounded-2xl bg-[#FBF4E4] border border-[#D6C296] space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-xs uppercase tracking-wider text-[#716016] flex items-center gap-1.5">
+                <Crown className="w-4 h-4 text-[#48551F]" />
+                <span>Classificação na Ponte dos Trolls</span>
+              </span>
+              <div className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${rankInfo.bgClass} ${rankInfo.colorClass} ${rankInfo.borderClass}`}>
+                {rankInfo.iconName === 'BookOpen' && <BookOpen className="w-3.5 h-3.5" />}
+                {rankInfo.iconName === 'Compass' && <Compass className="w-3.5 h-3.5" />}
+                {rankInfo.iconName === 'Shield' && <ShieldIcon className="w-3.5 h-3.5" />}
+                {rankInfo.iconName === 'Crown' && <Crown className="w-3.5 h-3.5" />}
+                {rankInfo.iconName === 'Sparkles' && <Sparkles className="w-3.5 h-3.5" />}
+                {rankInfo.iconName === 'Sun' && <Sun className="w-3.5 h-3.5" />}
+                <span>{rankInfo.name}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#71634D]">
+                  Aquisições únicas no acervo: <strong className="text-[#302414]">{myCatalogPackages.length} {myCatalogPackages.length === 1 ? 'pacote' : 'pacotes'}</strong>
+                </span>
+                <span className="font-bold text-[#302414]">
+                  {rankInfo.isMaxRank
+                    ? 'Nível máximo alcançado'
+                    : `${myCatalogPackages.length} / ${rankInfo.max! + 1} pacotes`}
+                </span>
+              </div>
+
+              {/* Barra de Progresso */}
+              <div className="w-full bg-[#EADBBE] h-2.5 rounded-full overflow-hidden border border-[#C6AD78]">
+                <div
+                  className="bg-[#48551F] h-full rounded-full transition-all duration-500"
+                  style={{ width: `${rankInfo.progressPercent}%` }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-[#71634D]">
+                <span>Nível {rankInfo.level}: {rankInfo.name}</span>
+                {!rankInfo.isMaxRank ? (
+                  <span>Faltam {rankInfo.neededForNext} {rankInfo.neededForNext === 1 ? 'pacote' : 'pacotes'} para {rankInfo.nextRankName}</span>
+                ) : (
+                  <span className="text-[#875508] font-bold">Nível Máximo Alcançado</span>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Painel de Estatísticas Pessoais */}

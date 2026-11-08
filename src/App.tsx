@@ -8,6 +8,7 @@ import {
   ItemStatus,
   ProductType,
   ADMIN_PASSWORD,
+  MembershipApplication,
 } from './types';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './data/seedData';
 import { DEFAULT_EXCHANGE_RATE } from './utils/helpers';
@@ -25,9 +26,17 @@ import {
   apiUpdatePackageImage,
   apiConfigurePayment,
   apiUpdateUserProfile,
+  apiSubmitApplication,
+  apiFetchApplications,
+  apiApproveApplication,
+  apiRejectApplication,
+  apiAddPosteriorBuyer,
+  apiRemovePosteriorBuyer,
   DEFAULT_BIN_ID,
   USERS_VERSION,
 } from './utils/cloudStorage';
+import { RulesConfig, INITIAL_RULES_CONFIG } from './data/rulesAndQuestions';
+import { isPackageAcquired, getUserAcquiredPackages } from './utils/ranksAndAcquisitions';
 
 import { Header } from './components/Header';
 import { HomeHub } from './components/HomeHub';
@@ -35,6 +44,7 @@ import { SugestoesView } from './components/SugestoesView';
 import { FinanciamentoView } from './components/FinanciamentoView';
 import { CatalogoView } from './components/CatalogoView';
 import { MembrosView } from './components/MembrosView';
+import { MeusItensView } from './components/MeusItensView';
 
 import { ItemFormModal } from './components/ItemFormModal';
 import { PackageModal } from './components/PackageModal';
@@ -46,6 +56,10 @@ import { SettingsModal } from './components/SettingsModal';
 import { WeeklyBulletinModal } from './components/WeeklyBulletinModal';
 import { UserAuthModal } from './components/UserAuthModal';
 import { UserProfileModal } from './components/UserProfileModal';
+import { CartModal } from './components/CartModal';
+import { WhatsAppCheckoutModal } from './components/WhatsAppCheckoutModal';
+import { NewMemberApplicationModal } from './components/NewMemberApplicationModal';
+import { AmbientMusicPlayer } from './components/AmbientMusicPlayer';
 import { Toast } from './components/Toast';
 
 const STORAGE_KEY_ITEMS = 'ponte_trolls_clean_v5';
@@ -120,6 +134,34 @@ export default function App() {
     return DEFAULT_EXCHANGE_RATE;
   });
 
+  // Cart State (stored per user ID or anonymous)
+  const [cart, setCart] = useState<string[]>(() => {
+    try {
+      const key = `ponte_trolls_cart_${currentUser?.id || 'anon'}`;
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  // Candidaturas / Solicitações de Novos Membros
+  const [applications, setApplications] = useState<MembershipApplication[]>(() => {
+    try {
+      const stored = localStorage.getItem('ponte_trolls_solicitacoes_v2');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  // Regras e Questionário da Comunidade
+  const [rulesConfig, setRulesConfig] = useState<RulesConfig>(INITIAL_RULES_CONFIG);
+
   // Modals
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [itemToEdit, setItemToEdit] = useState<ItemRPG | null>(null);
@@ -136,6 +178,12 @@ export default function App() {
   const [isBulletinOpen, setIsBulletinOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [catalogMyAcervoFilter, setCatalogMyAcervoFilter] = useState(false);
+
+  // Novos modais: Carrinho, Checkout WhatsApp e Cadastro de Novo Membro
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+  const [isWhatsAppCheckoutOpen, setIsWhatsAppCheckoutOpen] = useState(false);
+  const [isNewMemberAppOpen, setIsNewMemberAppOpen] = useState(false);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = useCallback((msg: string) => {
@@ -159,6 +207,36 @@ export default function App() {
     localStorage.setItem(STORAGE_KEY_RATE, exchangeRate.toString());
   }, [exchangeRate]);
 
+  // Sincroniza carrinho no localStorage por usuário
+  useEffect(() => {
+    try {
+      const key = `ponte_trolls_cart_${currentUser?.id || 'anon'}`;
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setCart(parsed);
+          return;
+        }
+      }
+      setCart([]);
+    } catch (e) {
+      setCart([]);
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    try {
+      const key = `ponte_trolls_cart_${currentUser?.id || 'anon'}`;
+      localStorage.setItem(key, JSON.stringify(cart));
+    } catch (e) {}
+  }, [cart, currentUser?.id]);
+
+  // Sincroniza solicitações no localStorage
+  useEffect(() => {
+    localStorage.setItem('ponte_trolls_solicitacoes_v2', JSON.stringify(applications));
+  }, [applications]);
+
   // Initial cloud synchronization with USERS_VERSION enforcement
   useEffect(() => {
     let isMounted = true;
@@ -178,6 +256,12 @@ export default function App() {
             setUsers(cloudData.users);
             localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cloudData.users));
           }
+          if (Array.isArray(cloudData.solicitacoes)) {
+            setApplications(cloudData.solicitacoes);
+          }
+          if (cloudData.regrasConfig) {
+            setRulesConfig(cloudData.regrasConfig);
+          }
         }
       } catch (err) {
         console.warn('Initial cloud sync error:', err);
@@ -196,12 +280,14 @@ export default function App() {
     async (
       newItems: ItemRPG[] = items,
       newUsers: UserProfile[] = users,
-      newPackages: FundingPackage[] = packages
+      newPackages: FundingPackage[] = packages,
+      newApplications: MembershipApplication[] = applications,
+      newRulesConfig: RulesConfig = rulesConfig
     ) => {
       if (!binId) return;
       try {
         setIsSyncing(true);
-        await pushCloudData(binId, newItems, newUsers, newPackages, USERS_VERSION);
+        await pushCloudData(binId, newItems, newUsers, newPackages, newApplications, newRulesConfig, USERS_VERSION);
       } catch (err) {
         console.error('Error syncing with cloud:', err);
         showToast('Aviso: Não foi possível salvar na nuvem.');
@@ -209,7 +295,7 @@ export default function App() {
         setIsSyncing(false);
       }
     },
-    [binId, items, users, packages, showToast]
+    [binId, items, users, packages, applications, rulesConfig, showToast]
   );
 
   // User Identification Handlers
@@ -356,11 +442,99 @@ export default function App() {
     setPackageToDelete(null);
     setItemToDelete(null);
     setIsMembersModalOpen(false);
-    setIsExportOpen(false);
-    setIsSettingsOpen(false);
-    setIsBulletinOpen(false);
+    setIsCartModalOpen(false);
+    setIsWhatsAppCheckoutOpen(false);
+    setIsNewMemberAppOpen(false);
     setCurrentUser(null);
     saveStoredCurrentUser(null);
+  };
+
+  // Cart Handlers
+  const handleAddToCart = (packageId: string) => {
+    if (!cart.includes(packageId)) {
+      const nextCart = [...cart, packageId];
+      setCart(nextCart);
+      const pkg = packages.find((p) => p.id === packageId);
+      showToast(`🛒 "${pkg?.titulo || 'Pacote'}" adicionado ao carrinho!`);
+    } else {
+      showToast('Este pacote já está no seu carrinho.');
+    }
+  };
+
+  const handleRemoveFromCart = (packageId: string) => {
+    const nextCart = cart.filter((id) => id !== packageId);
+    setCart(nextCart);
+    const pkg = packages.find((p) => p.id === packageId);
+    showToast(`"${pkg?.titulo || 'Pacote'}" removido do carrinho.`);
+  };
+
+  const handleClearCart = () => {
+    setCart([]);
+    showToast('Carrinho esvaziado.');
+  };
+
+  // Membership Application Handlers
+  const handleSubmitApplication = async (
+    newAppData: Omit<MembershipApplication, 'id' | 'criadoEm'>
+  ): Promise<boolean> => {
+    try {
+      const res = await apiSubmitApplication(newAppData, binId);
+      if (res && res.success && res.application) {
+        setApplications((prev) => [res.application!, ...prev]);
+        showToast('✅ Solicitação de entrada enviada com sucesso! O Mestre avaliará seu cadastro.');
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao enviar solicitação.');
+      return false;
+    }
+  };
+
+  const handleApproveApplication = async (
+    appId: string,
+    adminPassword: string
+  ): Promise<boolean> => {
+    try {
+      const res = await apiApproveApplication(appId, adminPassword, undefined, binId);
+      if (res && res.success) {
+        if (res.application) {
+          setApplications((prev) => prev.map((a) => (a.id === appId ? res.application! : a)));
+        }
+        if (res.users) {
+          setUsers(res.users);
+        } else if (res.user) {
+          setUsers((prev) => [...prev, res.user!]);
+        }
+        showToast(`✅ Candidato aprovado! O novo membro já pode acessar o sistema.`);
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao aprovar solicitação.');
+      return false;
+    }
+  };
+
+  const handleRejectApplication = async (
+    appId: string,
+    observacoes: string,
+    adminPassword: string
+  ): Promise<boolean> => {
+    try {
+      const res = await apiRejectApplication(appId, adminPassword, observacoes, binId);
+      if (res && res.success) {
+        if (res.application) {
+          setApplications((prev) => prev.map((a) => (a.id === appId ? res.application! : a)));
+        }
+        showToast('Solicitação recusada.');
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao recusar solicitação.');
+      return false;
+    }
   };
 
   // Sugestões Handlers
@@ -763,12 +937,16 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F3E5C5] text-[#302414] flex flex-col font-sans selection:bg-[#48551F]/20 selection:text-[#302414]">
       
+      {/* Global Ambient Music Player (down-by-the-river) */}
+      <AmbientMusicPlayer audioSrc="/audio/down-by-the-river.mp3" />
+
       {/* Modal de Entrada Obrigatório */}
       {!currentUser && (
         <UserAuthModal
           isOpen={!currentUser}
           users={users}
           onSelectExistingUser={handleSelectExistingUser}
+          onOpenNewMemberApplication={() => setIsNewMemberAppOpen(true)}
         />
       )}
 
@@ -792,6 +970,9 @@ export default function App() {
         onOpenMembersModal={() => setView('membros')}
         onOpenExportModal={() => setIsExportOpen(true)}
         onOpenProfileModal={() => setIsProfileOpen(true)}
+        cartCount={cart.length}
+        onOpenCart={() => setIsCartModalOpen(true)}
+        myAcervoCount={currentUser ? getUserAcquiredPackages(currentUser, packages).length : 0}
         isSyncing={isSyncing}
         onToast={showToast}
       />
@@ -808,6 +989,7 @@ export default function App() {
                 countFinanciamento={countFinanciamento}
                 countCatalogo={countCatalogo}
                 countMembros={countMembros}
+                countMeusItens={currentUser ? getUserAcquiredPackages(currentUser, packages).length : 0}
                 onNavigate={(v) => setView(v)}
                 onOpenNewItem={() => {
                   setItemToEdit(null);
@@ -876,6 +1058,49 @@ export default function App() {
                 onDeletePackage={handleDeletePackage}
                 onUpdateDriveLink={handleUpdateDriveLink}
                 onUpdatePackageImage={handleUpdatePackageImage}
+                cartPackageIds={cart}
+                onAddToCart={(pkg) => handleAddToCart(pkg.id)}
+                onRemoveFromCart={handleRemoveFromCart}
+                onOpenCart={() => setIsCartModalOpen(true)}
+                onGoToMyItems={() => setView('meus-itens')}
+                onAddPosteriorBuyer={async (packageId, memberId, adminPassword) => {
+                  const member = users.find((u) => u.id === memberId);
+                  if (!member) return false;
+                  try {
+                    const res = await apiAddPosteriorBuyer(binId, packageId, member, adminPassword || ADMIN_PASSWORD);
+                    if (res && res.package) {
+                      setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
+                      showToast(`Acesso liberado para ${member.nome}!`);
+                      return true;
+                    }
+                  } catch (e: any) {
+                    showToast(e?.message || 'Erro ao liberar acesso');
+                  }
+                  return false;
+                }}
+                onRemovePosteriorBuyer={async (packageId, memberId, adminPassword) => {
+                  try {
+                    const res = await apiRemovePosteriorBuyer(binId, packageId, memberId, adminPassword || ADMIN_PASSWORD);
+                    if (res && res.package) {
+                      setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
+                      showToast('Acesso removido.');
+                      return true;
+                    }
+                  } catch (e: any) {
+                    showToast(e?.message || 'Erro ao remover acesso');
+                  }
+                  return false;
+                }}
+                onToast={showToast}
+              />
+            )}
+
+            {view === 'meus-itens' && (
+              <MeusItensView
+                packages={packages}
+                currentUser={currentUser}
+                onGoHome={() => setView('home')}
+                onGoToCatalog={() => setView('catalogo')}
                 onToast={showToast}
               />
             )}
@@ -886,10 +1111,14 @@ export default function App() {
                 currentUser={currentUser}
                 packages={packages}
                 items={items}
+                applications={applications}
+                rulesConfig={rulesConfig}
                 onGoHome={() => setView('home')}
                 onAddUser={handleAddUserFromManagement}
                 onUpdateUser={handleUpdateUserFromManagement}
                 onDeleteUser={handleDeleteUser}
+                onApproveApplication={handleApproveApplication}
+                onRejectApplication={handleRejectApplication}
                 onToast={showToast}
               />
             )}
@@ -1044,6 +1273,41 @@ export default function App() {
           onToast={showToast}
         />
       )}
+
+      {/* Modal de Carrinho de Compras */}
+      <CartModal
+        isOpen={isCartModalOpen}
+        onClose={() => setIsCartModalOpen(false)}
+        cartPackages={packages.filter((p) => cart.includes(p.id))}
+        onRemoveFromCart={handleRemoveFromCart}
+        onClearCart={handleClearCart}
+        onProceedToWhatsApp={() => {
+          setIsCartModalOpen(false);
+          setIsWhatsAppCheckoutOpen(true);
+        }}
+        onGoToCatalog={() => {
+          setIsCartModalOpen(false);
+          setView('catalogo');
+        }}
+      />
+
+      {/* Modal de Checkout / WhatsApp Direto para o Mestre */}
+      <WhatsAppCheckoutModal
+        isOpen={isWhatsAppCheckoutOpen}
+        onClose={() => setIsWhatsAppCheckoutOpen(false)}
+        items={packages.filter((p) => cart.includes(p.id))}
+        currentUser={currentUser}
+        onToast={showToast}
+      />
+
+      {/* Modal de Cadastro de Novo Membro / Candidatura */}
+      <NewMemberApplicationModal
+        isOpen={isNewMemberAppOpen}
+        onClose={() => setIsNewMemberAppOpen(false)}
+        onSubmitApplication={handleSubmitApplication}
+        rulesConfig={rulesConfig}
+        onToast={showToast}
+      />
 
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
     </div>

@@ -1,4 +1,5 @@
-import { ItemRPG, UserProfile, ItemStatus, FundingPackage, PackageSubItem, FundingStage, ParticipantPaymentInfo, normalizeProductType } from '../types';
+import { ItemRPG, UserProfile, ItemStatus, FundingPackage, PackageSubItem, FundingStage, ParticipantPaymentInfo, normalizeProductType, MembershipApplication } from '../types';
+import { RulesConfig } from '../data/rulesAndQuestions';
 import { SEED_USERS, SEED_PACKAGES, SEED_ITEMS } from '../data/seedData';
 
 export const CLOUD_BIN_KEY = 'ponte_trolls_bin_id_v4';
@@ -90,6 +91,8 @@ export interface CloudPayloadData {
   items: ItemRPG[];
   users: UserProfile[];
   packages: FundingPackage[];
+  solicitacoes?: MembershipApplication[];
+  regrasConfig?: RulesConfig;
   usersVersion?: string;
 }
 
@@ -135,6 +138,7 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
         isMaster: Boolean(u.isMaster),
         status: (u.status as any) || 'aprovado',
         strikes: u.strikes !== undefined ? u.strikes : [],
+        solicitacaoId: u.solicitacaoId || undefined,
       }));
     }
 
@@ -143,7 +147,18 @@ export async function fetchCloudData(binOrUrl: string): Promise<CloudPayloadData
       packages = normalizeCloudPackages(data.packages);
     }
 
-    return { items, users, packages, usersVersion: data.usersVersion };
+    const solicitacoes: MembershipApplication[] = Array.isArray(data.solicitacoes)
+      ? data.solicitacoes
+      : [];
+
+    return {
+      items,
+      users,
+      packages,
+      solicitacoes,
+      regrasConfig: data.regrasConfig,
+      usersVersion: data.usersVersion,
+    };
   } catch (err) {
     console.error('fetchCloudData error:', err);
     throw err;
@@ -155,12 +170,14 @@ export async function pushCloudData(
   items: ItemRPG[],
   users: UserProfile[],
   packages: FundingPackage[],
+  solicitacoes?: MembershipApplication[],
+  regrasConfig?: RulesConfig,
   usersVersion: string = USERS_VERSION
 ): Promise<boolean> {
   const { url } = resolveEndpoint(binOrUrl);
 
   try {
-    const payload = {
+    const payload: any = {
       id: binOrUrl,
       name: 'A Ponte dos Trolls - Rateios RPG',
       updatedAt: new Date().toISOString(),
@@ -169,6 +186,13 @@ export async function pushCloudData(
       users,
       packages,
     };
+
+    if (Array.isArray(solicitacoes)) {
+      payload.solicitacoes = solicitacoes;
+    }
+    if (regrasConfig) {
+      payload.regrasConfig = regrasConfig;
+    }
 
     const res = await fetch(url, {
       method: 'PUT',
@@ -464,6 +488,168 @@ export async function apiUpdateUserProfile(
   }
 
   return await res.json();
+}
+
+/**
+ * Envia uma solicitação de entrada de novo membro
+ */
+export async function apiSubmitApplication(
+  app: Omit<MembershipApplication, 'id' | 'criadoEm'>,
+  binId: string = DEFAULT_BIN_ID
+): Promise<{ success: boolean; application?: MembershipApplication; message?: string }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/solicitacoes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...app, binId }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao enviar solicitação.');
+  }
+
+  return data;
+}
+
+/**
+ * Busca todas as solicitações de membros cadastradas
+ */
+export async function apiFetchApplications(
+  binId: string = DEFAULT_BIN_ID
+): Promise<MembershipApplication[]> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/solicitacoes?binId=${encodeURIComponent(binId)}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!res.ok) {
+    return [];
+  }
+
+  const data = await res.json().catch(() => ({}));
+  return Array.isArray(data.solicitacoes) ? data.solicitacoes : [];
+}
+
+/**
+ * Mestre aprova uma solicitação de entrada
+ */
+export async function apiApproveApplication(
+  applicationId: string,
+  adminPassword: string,
+  observacoesMestre?: string,
+  binId: string = DEFAULT_BIN_ID
+): Promise<{ success: boolean; application?: MembershipApplication; user?: UserProfile; users?: UserProfile[] }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/solicitacoes/${encodeURIComponent(applicationId)}/aprovar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminPassword, observacoesMestre, binId }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao aprovar solicitação.');
+  }
+
+  return data;
+}
+
+/**
+ * Mestre recusa uma solicitação de entrada
+ */
+export async function apiRejectApplication(
+  applicationId: string,
+  adminPassword: string,
+  observacoesMestre?: string,
+  binId: string = DEFAULT_BIN_ID
+): Promise<{ success: boolean; application?: MembershipApplication }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/solicitacoes/${encodeURIComponent(applicationId)}/recusar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminPassword, observacoesMestre, binId }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao recusar solicitação.');
+  }
+
+  return data;
+}
+
+/**
+ * Adiciona comprador posterior a um pacote do Catálogo (Mestre)
+ */
+export async function apiAddPosteriorBuyer(
+  binId: string,
+  packageId: string,
+  member: { id: string; nome: string; telefone?: string; email?: string },
+  adminPassword: string
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/posterior-buyer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      memberId: member.id,
+      nome: member.nome,
+      telefone: member.telefone,
+      email: member.email,
+      adminPassword,
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao adicionar comprador posterior');
+  }
+
+  return data;
+}
+
+/**
+ * Remove comprador posterior de um pacote do Catálogo (Mestre)
+ */
+export async function apiRemovePosteriorBuyer(
+  binId: string,
+  packageId: string,
+  memberId: string,
+  adminPassword: string
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/posterior-buyer/${encodeURIComponent(memberId)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminPassword }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao remover comprador posterior');
+  }
+
+  return data;
 }
 
 function normalizeCloudItems(rawList: any[]): ItemRPG[] {

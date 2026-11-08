@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
+  FolderCheck,
 } from 'lucide-react';
 import { formatDateDisplay } from '../utils/helpers';
 import { PageBanner } from './PageBanner';
@@ -22,6 +23,7 @@ interface HomeHubProps {
   countFinanciamento: number;
   countCatalogo: number;
   countMembros: number;
+  countMeusItens?: number;
   onNavigate: (view: AppView) => void;
   onOpenNewItem: () => void;
 }
@@ -33,6 +35,7 @@ export const HomeHub: React.FC<HomeHubProps> = ({
   countFinanciamento,
   countCatalogo,
   countMembros,
+  countMeusItens = 0,
   onNavigate,
 }) => {
   const openPackages = activePackages.filter((p) => p.status === 'Financiamento');
@@ -215,7 +218,38 @@ export const HomeHub: React.FC<HomeHubProps> = ({
           </div>
         </button>
 
-        {/* Card 4: Membros */}
+        {/* Card 4: Meus Itens */}
+        <button
+          onClick={() => onNavigate('meus-itens')}
+          className="parchment-card p-5 text-left flex flex-col justify-between hover:shadow-md transition-all group cursor-pointer border-[#C6AD78]"
+        >
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-[#E3E8D0] border border-[#8F9F5B] flex items-center justify-center text-[#48551F] group-hover:scale-105 transition-transform">
+                <FolderCheck className="w-5 h-5" />
+              </div>
+              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#E3E8D0] text-[#282D13] border border-[#8F9F5B]">
+                {countMeusItens} {countMeusItens === 1 ? 'adquirido' : 'adquiridos'}
+              </span>
+            </div>
+
+            <div>
+              <h3 className="font-rpg text-lg font-bold text-[#302414] group-hover:text-[#48551F] transition-colors">
+                Meus Itens
+              </h3>
+              <p className="text-xs text-[#71634D] mt-1 leading-relaxed">
+                Acesse diretamente as pastas do Google Drive com todos os materiais do seu acervo pessoal.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-4 mt-3 border-t border-[#D6C296] flex items-center justify-between text-xs font-bold text-[#48551F]">
+            <span>Acessar Meus Itens</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </button>
+
+        {/* Card 5: Membros */}
         <button
           onClick={() => onNavigate('membros')}
           className="parchment-card p-5 text-left flex flex-col justify-between hover:shadow-md transition-all group cursor-pointer border-[#C6AD78]"

@@ -29,8 +29,11 @@ import {
   FolderCheck,
   ChevronDown,
   BookOpen,
+  Check,
+  UserPlus,
 } from 'lucide-react';
 import { generateCatalogBuyMessage, extractPaidMemberEmails, formatDateDisplay } from '../utils/helpers';
+import { isPackageAcquired } from '../utils/ranksAndAcquisitions';
 import { EditPackageImageModal } from './EditPackageImageModal';
 import { PageBanner } from './PageBanner';
 
@@ -45,6 +48,13 @@ interface CatalogoViewProps {
   onDeletePackage: (pkg: FundingPackage) => void;
   onUpdateDriveLink?: (packageId: string, linkDrive: string) => Promise<void>;
   onUpdatePackageImage?: (packageId: string, newImageUrl: string, adminPassword?: string) => Promise<void>;
+  cartPackageIds?: string[];
+  onAddToCart?: (pkg: FundingPackage) => void;
+  onRemoveFromCart?: (packageId: string) => void;
+  onOpenCart?: () => void;
+  onGoToMyItems?: () => void;
+  onAddPosteriorBuyer?: (packageId: string, memberId: string, adminPassword?: string) => Promise<boolean>;
+  onRemovePosteriorBuyer?: (packageId: string, memberId: string, adminPassword?: string) => Promise<boolean>;
   onToast: (msg: string) => void;
 }
 
@@ -59,6 +69,13 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   onDeletePackage,
   onUpdateDriveLink,
   onUpdatePackageImage,
+  cartPackageIds = [],
+  onAddToCart,
+  onRemoveFromCart,
+  onOpenCart,
+  onGoToMyItems,
+  onAddPosteriorBuyer,
+  onRemovePosteriorBuyer,
   onToast,
 }) => {
   const isMaster = Boolean(currentUser.isMaster);
@@ -95,6 +112,77 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   const [driveAdminPassword, setDriveAdminPassword] = useState('');
   const [driveEditError, setDriveEditError] = useState('');
   const [isSavingDrive, setIsSavingDrive] = useState(false);
+
+  // Posterior Buyer Management (Mestre)
+  const [newBuyerId, setNewBuyerId] = useState<string>('');
+  const [buyerPassword, setBuyerPassword] = useState<string>('');
+  const [isBuyerSaving, setIsBuyerSaving] = useState<boolean>(false);
+
+  const handleAddBuyer = async (pkgId: string) => {
+    if (!newBuyerId) {
+      onToast('Selecione um membro para liberar acesso.');
+      return;
+    }
+    if (buyerPassword !== ADMIN_PASSWORD) {
+      onToast('Senha do Mestre incorreta.');
+      return;
+    }
+    if (!onAddPosteriorBuyer) return;
+
+    try {
+      setIsBuyerSaving(true);
+      const ok = await onAddPosteriorBuyer(pkgId, newBuyerId, buyerPassword);
+      if (ok) {
+        onToast('Acesso de comprador posterior liberado com sucesso!');
+        setNewBuyerId('');
+        // Update local selectedPackageDetails if open
+        if (selectedPackageDetails && selectedPackageDetails.id === pkgId) {
+          const userObj = allUsers.find((u) => u.id === newBuyerId);
+          if (userObj) {
+            const nextApoiadores = [
+              ...(selectedPackageDetails.apoiadores || []),
+              {
+                id: userObj.id,
+                nome: userObj.nome,
+                telefone: userObj.telefone || '',
+                email: userObj.email || '',
+                data: new Date().toISOString(),
+                pagamentoInformado: true,
+              },
+            ];
+            setSelectedPackageDetails({ ...selectedPackageDetails, apoiadores: nextApoiadores });
+          }
+        }
+      }
+    } catch (e: any) {
+      onToast(e?.message || 'Erro ao registrar comprador posterior');
+    } finally {
+      setIsBuyerSaving(false);
+    }
+  };
+
+  const handleRemoveBuyer = async (pkgId: string, memberId: string) => {
+    const pwd = prompt('Digite a Senha do Mestre para remover o acesso deste membro:');
+    if (!pwd) return;
+    if (pwd !== ADMIN_PASSWORD) {
+      onToast('Senha do Mestre incorreta.');
+      return;
+    }
+    if (!onRemovePosteriorBuyer) return;
+
+    try {
+      const ok = await onRemovePosteriorBuyer(pkgId, memberId, pwd);
+      if (ok) {
+        onToast('Acesso removido com sucesso.');
+        if (selectedPackageDetails && selectedPackageDetails.id === pkgId) {
+          const nextApoiadores = (selectedPackageDetails.apoiadores || []).filter((a) => a.id !== memberId);
+          setSelectedPackageDetails({ ...selectedPackageDetails, apoiadores: nextApoiadores });
+        }
+      }
+    } catch (e: any) {
+      onToast(e?.message || 'Erro ao remover comprador');
+    }
+  };
 
   // Edit Cover Image Modal
   const [imageEditPkg, setImageEditPkg] = useState<FundingPackage | null>(null);
@@ -530,9 +618,8 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredAndSortedPackages.map((pkg) => {
-                const isUserParticipant = (pkg.apoiadores || []).some(
-                  (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
-                );
+                const isUserParticipant = isPackageAcquired(pkg, currentUser);
+                const isInCart = cartPackageIds.includes(pkg.id);
 
                 const catalogPrice =
                   typeof pkg.valorCatalogoBRL === 'number'
@@ -548,8 +635,12 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                     key={pkg.id}
                     className="parchment-card overflow-hidden flex flex-col group hover:shadow-md transition-all duration-200 border-[#C6AD78]"
                   >
-                    {/* Capa do Produto */}
-                    <div className="relative aspect-[16/10] bg-[#282D13] overflow-hidden">
+                    {/* Capa do Produto (Clicável para ver detalhes) */}
+                    <div
+                      onClick={() => setSelectedPackageDetails(pkg)}
+                      className="relative aspect-[16/10] bg-[#282D13] overflow-hidden cursor-pointer"
+                      title="Clique para ver detalhes do pacote"
+                    >
                       {pkg.imageUrl ? (
                         <img
                           src={pkg.imageUrl}
@@ -686,18 +777,58 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                       {/* Rodapé: Preço & Botão de Ação */}
                       <div className="pt-3 border-t border-[#D6C296] flex items-center justify-between gap-2">
                         <div>
-                          <span className="font-mono text-lg font-bold text-[#302414]">
+                          <span className="font-mono text-base sm:text-lg font-bold text-[#302414] block">
                             R$ {catalogPrice.toFixed(2).replace('.', ',')}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPackageDetails(pkg)}
+                            className="text-[11px] text-[#71634D] hover:text-[#48551F] hover:underline font-semibold cursor-pointer block"
+                          >
+                            Ver detalhes →
+                          </button>
                         </div>
 
-                        <button
-                          onClick={() => setSelectedPackageDetails(pkg)}
-                          className="px-3.5 py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
-                        >
-                          <ShoppingCart className="w-3.5 h-3.5" />
-                          <span>Ver pacote</span>
-                        </button>
+                        {/* Ação Principal: Adicionar ao Carrinho / No seu acervo / No carrinho */}
+                        <div>
+                          {isUserParticipant ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (onGoToMyItems) onGoToMyItems();
+                                else setSelectedPackageDetails(pkg);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-[#E3E8D0] hover:bg-[#d5dcc0] text-[#282D13] border border-[#8F9F5B] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              title="Material já adquirido. Clique para acessar no seu acervo."
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#48551F]" />
+                              <span>No seu acervo</span>
+                            </button>
+                          ) : isInCart ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (onOpenCart) onOpenCart();
+                                else onRemoveFromCart?.(pkg.id);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] text-[#48551F] border border-[#48551F] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              title="No carrinho! Clique para abrir o carrinho."
+                            >
+                              <Check className="w-3.5 h-3.5 text-[#48551F]" />
+                              <span>No carrinho</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onAddToCart?.(pkg)}
+                              className="px-3.5 py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                              title="Adicionar pacote ao carrinho"
+                            >
+                              <ShoppingCart className="w-3.5 h-3.5" />
+                              <span>Adicionar ao carrinho</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                     </div>
@@ -826,16 +957,42 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           </div>
                         )
                       ) : (
-                        <button
-                          onClick={() => {
-                            setPackageToBuy(selectedPackageDetails);
-                            setSelectedPackageDetails(null);
-                          }}
-                          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <ShoppingCart className="w-4 h-4" />
-                          <span>Adquirir Acesso</span>
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {cartPackageIds.includes(selectedPackageDetails.id) ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPackageDetails(null);
+                                onOpenCart?.();
+                              }}
+                              className="px-4 py-2.5 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] text-[#48551F] border border-[#48551F] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                            >
+                              <Check className="w-4 h-4 text-[#48551F]" />
+                              <span>No carrinho (Ver)</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onAddToCart?.(selectedPackageDetails)}
+                              className="px-4 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            >
+                              <ShoppingCart className="w-4 h-4" />
+                              <span>Adicionar ao carrinho</span>
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPackageToBuy(selectedPackageDetails);
+                              setSelectedPackageDetails(null);
+                            }}
+                            className="px-4 py-2.5 rounded-xl bg-[#EADBBE] hover:bg-[#e0cfab] text-[#302414] border border-[#C6AD78] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <MessageSquare className="w-4 h-4 text-[#716016]" />
+                            <span>Comprar pelo WhatsApp</span>
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -847,7 +1004,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-[#71634D] flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-[#716016]" />
-                    <span>Cotistas que financiaram ({selectedPackageDetails.apoiadores?.length || 0})</span>
+                    <span>Cotistas e compradores ({selectedPackageDetails.apoiadores?.length || 0})</span>
                   </h4>
                   {isMaster && (
                     <button
@@ -866,9 +1023,19 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                       {selectedPackageDetails.apoiadores.map((ap) => (
                         <span
                           key={ap.id}
-                          className="px-2 py-1 rounded bg-[#F8EDD5] text-[#302414] border border-[#C6AD78] text-[11px] font-medium"
+                          className="px-2 py-1 rounded bg-[#F8EDD5] text-[#302414] border border-[#C6AD78] text-[11px] font-medium flex items-center gap-1"
                         >
-                          {ap.nome}
+                          <span>{ap.nome}</span>
+                          {isMaster && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveBuyer(selectedPackageDetails.id, ap.id)}
+                              className="text-[#8b261b] hover:bg-[#fae5e5] rounded p-0.5 ml-0.5 cursor-pointer"
+                              title="Remover acesso deste membro"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
                         </span>
                       ))}
                     </div>
@@ -876,6 +1043,55 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                     <span className="text-[#71634D]">Nenhum participante registrado.</span>
                   )}
                 </div>
+
+                {/* Painel do Mestre: Liberação de Comprador Posterior */}
+                {isMaster && (
+                  <div className="p-3 rounded-xl bg-[#EDE2CA] border border-[#C6AD78] space-y-2 mt-2">
+                    <span className="text-xs font-bold text-[#302414] flex items-center gap-1.5">
+                      <UserPlus className="w-4 h-4 text-[#48551F]" />
+                      <span>Liberar Acesso Manual (Comprador Posterior)</span>
+                    </span>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <select
+                        value={newBuyerId}
+                        onChange={(e) => setNewBuyerId(e.target.value)}
+                        className="flex-1 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-2.5 py-1.5 text-xs text-[#302414] focus:outline-none focus:ring-1 focus:ring-[#48551F]"
+                      >
+                        <option value="">Selecione o membro para liberar acesso...</option>
+                        {allUsers
+                          .filter(
+                            (u) =>
+                              u.status === 'aprovado' &&
+                              !(selectedPackageDetails.apoiadores || []).some(
+                                (ap) => ap.id === u.id || ap.nome.toLowerCase() === u.nome.toLowerCase()
+                              )
+                          )
+                          .map((u) => (
+                            <option key={u.id} value={u.id}>
+                              {u.nome} ({u.telefone || 'Sem tel'})
+                            </option>
+                          ))}
+                      </select>
+
+                      <input
+                        type="password"
+                        value={buyerPassword}
+                        onChange={(e) => setBuyerPassword(e.target.value)}
+                        placeholder="Senha Mestre"
+                        className="w-full sm:w-28 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-2.5 py-1.5 text-xs text-[#302414] focus:outline-none focus:ring-1 focus:ring-[#48551F]"
+                      />
+
+                      <button
+                        type="button"
+                        disabled={isBuyerSaving || !newBuyerId}
+                        onClick={() => handleAddBuyer(selectedPackageDetails.id)}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer whitespace-nowrap"
+                      >
+                        {isBuyerSaving ? 'Salvando...' : '+ Confirmar Acesso'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
             </div>
