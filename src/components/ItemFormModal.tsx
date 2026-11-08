@@ -195,7 +195,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               </label>
               <select
                 value={produto}
-                onChange={(e) => setProduto(e.target.value)}
+                onChange={(e) => setProduto(e.target.value as ProductType)}
                 className="w-full bg-[#0d160f] border border-[#1e3422] rounded-xl px-3 py-2 text-xs text-[#f3efe6] focus:outline-none focus:border-[#d49e2a]"
               >
                 {OFFICIAL_PRODUCT_TYPES.map((t) => (

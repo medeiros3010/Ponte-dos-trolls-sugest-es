@@ -1,9 +1,11 @@
 import React from 'react';
-import { AppView, UserProfile } from '../types';
-import { ShoppingBag, Flame, BookOpen, Users, ArrowRight, Sparkles } from 'lucide-react';
+import { AppView, UserProfile, FundingPackage } from '../types';
+import { ShoppingBag, Flame, BookOpen, Users, ArrowRight, Sparkles, Lock, CreditCard, ChevronRight } from 'lucide-react';
+import { formatDateDisplay } from '../utils/helpers';
 
 interface HomeHubProps {
   currentUser: UserProfile;
+  activePackages: FundingPackage[];
   countSugestoes: number;
   countFinanciamento: number;
   countCatalogo: number;
@@ -14,17 +16,20 @@ interface HomeHubProps {
 
 export const HomeHub: React.FC<HomeHubProps> = ({
   currentUser,
+  activePackages = [],
   countSugestoes,
   countFinanciamento,
   countCatalogo,
   countMembros,
   onNavigate,
 }) => {
+  const openPackages = activePackages.filter((p) => p.status === 'Financiamento');
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex-1 flex flex-col justify-center animate-in fade-in duration-200">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col justify-center animate-in fade-in duration-200 space-y-8">
       
       {/* Banner de Boas-vindas com Mascote do Troll */}
-      <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 space-y-3">
+      <div className="text-center max-w-2xl mx-auto space-y-3">
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-[#d49e2a] shadow-xl shadow-black/60 mx-auto mb-2 bg-[#16271a] hover:scale-105 transition-transform">
           <img
             src="/troll-mascot.png"
@@ -172,6 +177,106 @@ export const HomeHub: React.FC<HomeHubProps> = ({
         </button>
 
       </div>
+
+      {/* ==================== RESUMO DOS FINANCIAMENTOS ATIVOS (Requirement 6) ==================== */}
+      {openPackages.length > 0 && (
+        <div className="bg-[#0e1911] border border-[#1f3524] rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                <Flame className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-rpg text-base sm:text-lg font-bold text-[#f4ecd8]">
+                  Vaquinhas em Andamento
+                </h3>
+                <p className="text-[11px] text-[#8a9d8c]">
+                  Acompanhe as etapas ativas de cada financiamento coletivo
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onNavigate('financiamento')}
+              className="text-xs font-bold text-[#d49e2a] hover:text-[#f4ecd8] flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <span>Ver todas</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {openPackages.map((pkg) => {
+              const isPagamento = pkg.etapaFinanciamento === 'PAGAMENTO';
+              const apoiadores = pkg.apoiadores || [];
+              const count = apoiadores.length;
+              const minimo = pkg.minimoParticipantes || 35;
+              const maxVal = pkg.valorMaximoPorPessoa || (pkg.valorTotalBRL / minimo);
+
+              return (
+                <div
+                  key={pkg.id}
+                  onClick={() => onNavigate('financiamento')}
+                  className="p-4 rounded-2xl bg-[#122015] border border-[#203625] hover:border-[#d49e2a]/60 transition-all hover:bg-[#16271a] cursor-pointer flex flex-col justify-between space-y-3 group"
+                >
+                  {/* Banner de Etapa bem Visível */}
+                  <div
+                    className={`px-3 py-1.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
+                      isPagamento
+                        ? 'bg-[#152a1d] border-emerald-500/60 text-emerald-300'
+                        : 'bg-[#291f0a] border-amber-500/60 text-amber-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      {isPagamento ? <Lock className="w-3.5 h-3.5 text-emerald-400" /> : <Flame className="w-3.5 h-3.5 text-amber-400" />}
+                      <span className="font-mono text-[11px] tracking-wide">
+                        {isPagamento ? 'PROCESSO DE PAGAMENTO' : 'EM PROCESSO DE COLETA DE MEMBROS'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] opacity-80">
+                      {isPagamento ? 'Cobrança Travada' : 'Aberto'}
+                    </span>
+                  </div>
+
+                  {/* Título & Detalhes */}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1a3321] text-[#d49e2a] border border-[#d49e2a]/30">
+                        {pkg.sistema || 'Foundry VTT'}
+                      </span>
+                      {pkg.tipo && (
+                        <span className="px-2 py-0.5 rounded text-[10px] text-[#86efac] bg-[#142618] border border-[#22c55e]/20">
+                          {pkg.tipo}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-rpg text-sm sm:text-base font-bold text-[#f4ecd8] group-hover:text-[#d49e2a] transition-colors leading-snug line-clamp-1">
+                      {pkg.titulo}
+                    </h4>
+                  </div>
+
+                  {/* Rodapé da Card */}
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-[#1a2d1f] text-[#8e9f90]">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-[#34d399]" />
+                      <span>
+                        <strong className="text-[#f4ecd8]">{count}</strong> / {minimo} cotistas
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-[10px] text-[#7a8e7d] mr-1">Máx/pessoa:</span>
+                      <strong className="text-[#fbbf24] font-mono">
+                        R$ {maxVal.toFixed(2).replace('.', ',')}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
     </div>
   );

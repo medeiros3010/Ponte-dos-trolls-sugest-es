@@ -104,6 +104,9 @@ export interface FundingPackage {
   sugestoesIds?: string[];
   status: PackageStatus; // 'Financiamento' | 'Catálogo'
   etapaFinanciamento?: FundingStage; // 'COLETA' | 'PAGAMENTO' (padrão: COLETA)
+  valorFinalPorParticipante?: number; // Valor final por participante fixado pelo Mestre ao iniciar a cobrança
+  chavePix?: string; // Chave Pix para pagamento definida pelo Mestre
+  instrucoesPix?: string; // Instruções adicionais do Mestre para pagamento
   pagamentos?: Record<string, ParticipantPaymentInfo>; // Registro de declaração de pagamento por memberId
   apoiadores: Apoiador[];
   criadoEm: string;

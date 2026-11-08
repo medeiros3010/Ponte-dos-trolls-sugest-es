@@ -6,6 +6,7 @@ import {
   AppView,
   Apoiador,
   ItemStatus,
+  ProductType,
   ADMIN_PASSWORD,
 } from './types';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './data/seedData';
@@ -17,6 +18,13 @@ import {
   pushCloudData,
   getStoredCurrentUser,
   saveStoredCurrentUser,
+  apiUpdatePackagePayment,
+  apiUpdatePackageStage,
+  apiUpdatePackageDriveLink,
+  apiTogglePackageSupport,
+  apiUpdatePackageImage,
+  apiConfigurePayment,
+  apiUpdateUserProfile,
   DEFAULT_BIN_ID,
   USERS_VERSION,
 } from './utils/cloudStorage';
@@ -56,19 +64,13 @@ export default function App() {
   // Mandatory Identified User State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => getStoredCurrentUser());
 
-  // Members list with automatic version check & overwrite for the 125 official members
+  // Members list (no automatic forced reset or <125 check)
   const [users, setUsers] = useState<UserProfile[]>(() => {
     try {
-      const storedVersion = localStorage.getItem('users_version');
-      if (storedVersion !== USERS_VERSION) {
-        localStorage.setItem('users_version', USERS_VERSION);
-        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(SEED_USERS));
-        return SEED_USERS;
-      }
       const stored = localStorage.getItem(STORAGE_KEY_USERS);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length >= 125) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {
       console.warn('Fallback to seed users', e);
@@ -133,6 +135,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBulletinOpen, setIsBulletinOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [catalogMyAcervoFilter, setCatalogMyAcervoFilter] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = useCallback((msg: string) => {
@@ -165,40 +168,15 @@ export default function App() {
         setIsSyncing(true);
         const cloudData = await fetchCloudData(binId);
         if (isMounted && cloudData) {
-          if (cloudData.items && cloudData.items.length > 0) {
+          if (Array.isArray(cloudData.items)) {
             setItems(cloudData.items);
           }
-          if (cloudData.packages && cloudData.packages.length > 0) {
+          if (Array.isArray(cloudData.packages)) {
             setPackages(cloudData.packages);
           }
-
-          const storedVer = localStorage.getItem('users_version');
-          const isCloudOutdated = cloudData.usersVersion !== USERS_VERSION || (!cloudData.users || cloudData.users.length < 125);
-
-          if (storedVer !== USERS_VERSION || isCloudOutdated) {
-            // Overwrite immediately with the 125 official members and push PUT/POST to cloud
-            setUsers(SEED_USERS);
-            localStorage.setItem('users_version', USERS_VERSION);
-            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(SEED_USERS));
-
-            await pushCloudData(
-              binId,
-              cloudData.items && cloudData.items.length > 0 ? cloudData.items : items,
-              SEED_USERS,
-              cloudData.packages && cloudData.packages.length > 0 ? cloudData.packages : packages,
-              USERS_VERSION
-            );
-          } else if (cloudData.users && cloudData.users.length > 0) {
+          if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
             setUsers(cloudData.users);
             localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cloudData.users));
-          }
-        } else if (isMounted) {
-          const storedVer = localStorage.getItem('users_version');
-          if (storedVer !== USERS_VERSION) {
-            setUsers(SEED_USERS);
-            localStorage.setItem('users_version', USERS_VERSION);
-            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(SEED_USERS));
-            await pushCloudData(binId, items, SEED_USERS, packages, USERS_VERSION);
           }
         }
       } catch (err) {
@@ -236,6 +214,21 @@ export default function App() {
 
   // User Identification Handlers
   const handleSelectExistingUser = (user: UserProfile, updatedEmail?: string, updatedPhone?: string) => {
+    // Requirement 7: Reiniciar navegação para 'home' e fechar todos os modais anteriores
+    setView('home');
+    setCatalogMyAcervoFilter(false);
+    setIsFormOpen(false);
+    setItemToEdit(null);
+    setIsPackageModalOpen(false);
+    setPackageToEdit(null);
+    setPackageToMove(null);
+    setPackageToDelete(null);
+    setItemToDelete(null);
+    setIsMembersModalOpen(false);
+    setIsExportOpen(false);
+    setIsSettingsOpen(false);
+    setIsBulletinOpen(false);
+
     const updatedUser: UserProfile = {
       ...user,
       email: updatedEmail || user.email || '',
@@ -254,18 +247,78 @@ export default function App() {
 
     showToast(`Bem-vindo, ${updatedUser.nome}!`);
 
-    // Abre imediatamente o Modal de Boas-Vindas e Conferência para membros comuns
+    // Abre imediatamente o Modal de Boas-Vindas e Conferência para membros comuns com a tela inicial ao fundo
     if (!updatedUser.isMaster) {
       setIsProfileOpen(true);
     }
   };
 
-  const handleUpdateCurrentUser = (updatedUser: UserProfile) => {
+  const handleUpdateCurrentUser = async (updatedUser: UserProfile) => {
     setCurrentUser(updatedUser);
     saveStoredCurrentUser(updatedUser);
+
+    // Atualiza lista de usuários
     const nextUsers = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
     setUsers(nextUsers);
-    syncWithCloud(items, nextUsers, packages);
+
+    // Propaga novo nome em todos os apoiadores de pacotes vinculados ao mesmo ID (Requirement 1)
+    const nextPackages = packages.map((pkg) => {
+      const apoiadores = (pkg.apoiadores || []).map((ap) => {
+        if (ap.id === updatedUser.id) {
+          return {
+            ...ap,
+            nome: updatedUser.nome,
+            telefone: updatedUser.telefone,
+            email: updatedUser.email,
+          };
+        }
+        return ap;
+      });
+      const pagamentos = { ...(pkg.pagamentos || {}) };
+      if (pagamentos[updatedUser.id]) {
+        pagamentos[updatedUser.id] = {
+          ...pagamentos[updatedUser.id],
+          nome: updatedUser.nome,
+        };
+      }
+      return { ...pkg, apoiadores, pagamentos };
+    });
+    setPackages(nextPackages);
+
+    // Propaga em apoiadores de sugestões
+    const nextItems = items.map((it) => {
+      const apoiadores = (it.apoiadores || []).map((ap) => {
+        if (ap.id === updatedUser.id) {
+          return {
+            ...ap,
+            nome: updatedUser.nome,
+            telefone: updatedUser.telefone,
+            email: updatedUser.email,
+          };
+        }
+        return ap;
+      });
+      return { ...it, apoiadores };
+    });
+    setItems(nextItems);
+
+    try {
+      await apiUpdateUserProfile(binId, {
+        userId: updatedUser.id,
+        nome: updatedUser.nome,
+        telefone: updatedUser.telefone,
+        email: updatedUser.email,
+      });
+    } catch (e) {
+      console.warn('Fallback sync for user update:', e);
+      syncWithCloud(nextItems, nextUsers, nextPackages);
+    }
+  };
+
+  const handleOpenMyAcervo = () => {
+    setIsProfileOpen(false);
+    setCatalogMyAcervoFilter(true);
+    setView('catalogo');
   };
 
   const handleUpdateUserFromManagement = (updatedUser: UserProfile) => {
@@ -291,6 +344,21 @@ export default function App() {
   };
 
   const handleChangeUser = () => {
+    // Requirement 7: Limpar sessão, fechar modais e resetar para a tela inicial
+    setView('home');
+    setCatalogMyAcervoFilter(false);
+    setIsProfileOpen(false);
+    setIsFormOpen(false);
+    setItemToEdit(null);
+    setIsPackageModalOpen(false);
+    setPackageToEdit(null);
+    setPackageToMove(null);
+    setPackageToDelete(null);
+    setItemToDelete(null);
+    setIsMembersModalOpen(false);
+    setIsExportOpen(false);
+    setIsSettingsOpen(false);
+    setIsBulletinOpen(false);
     setCurrentUser(null);
     saveStoredCurrentUser(null);
   };
@@ -408,10 +476,27 @@ export default function App() {
     setPackageToEdit(null);
   };
 
-  const handleToggleSupportPackage = (packageId: string) => {
+  const handleToggleSupportPackage = async (packageId: string) => {
     if (!currentUser) return;
     const pkg = packages.find((p) => p.id === packageId);
     if (!pkg) return;
+
+    if (pkg.etapaFinanciamento === 'PAGAMENTO' && !currentUser.isMaster) {
+      showToast('A lista deste financiamento está travada para cobrança (Processo de Pagamento). Apenas o Mestre pode autorizar alterações.');
+      return;
+    }
+
+    try {
+      const res = await apiTogglePackageSupport(binId, packageId, currentUser, ADMIN_PASSWORD);
+      if (res && res.package) {
+        setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
+        const already = (pkg.apoiadores || []).some((a) => a.id === currentUser.id);
+        showToast(already ? `Você saiu do rateio de "${pkg.titulo}".` : `Você entrou na vaquinha de "${pkg.titulo}"!`);
+        return;
+      }
+    } catch (e) {
+      console.warn('Fallback to local support toggle', e);
+    }
 
     const alreadySupporting = (pkg.apoiadores || []).some(
       (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
@@ -438,6 +523,152 @@ export default function App() {
     const nextPackages = packages.map((p) => (p.id === packageId ? { ...p, apoiadores: nextApoiadores } : p));
     setPackages(nextPackages);
     syncWithCloud(items, users, nextPackages);
+  };
+
+  const handleUpdatePackageStage = async (packageId: string, etapa: 'COLETA' | 'PAGAMENTO') => {
+    try {
+      await apiUpdatePackageStage(binId, packageId, etapa, ADMIN_PASSWORD);
+      setPackages((prev) =>
+        prev.map((p) => (p.id === packageId ? { ...p, etapaFinanciamento: etapa } : p))
+      );
+    } catch (err: any) {
+      console.error('Error updating stage:', err);
+      const nextPackages = packages.map((p) =>
+        p.id === packageId ? { ...p, etapaFinanciamento: etapa } : p
+      );
+      setPackages(nextPackages);
+      syncWithCloud(items, users, nextPackages);
+    }
+  };
+
+  const handleUpdatePackagePayment = async (packageId: string, memberId: string, informouPagamento: boolean) => {
+    try {
+      await apiUpdatePackagePayment(binId, packageId, memberId, informouPagamento, ADMIN_PASSWORD);
+      setPackages((prev) =>
+        prev.map((p) => {
+          if (p.id !== packageId) return p;
+          const pagamentos = { ...(p.pagamentos || {}) };
+          pagamentos[memberId] = {
+            memberId,
+            informouPagamento,
+            dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
+          };
+          const apoiadores = (p.apoiadores || []).map((a) => {
+            if (a.id === memberId) {
+              return {
+                ...a,
+                pagamentoInformado: informouPagamento,
+                dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
+              };
+            }
+            return a;
+          });
+          return { ...p, pagamentos, apoiadores };
+        })
+      );
+    } catch (err: any) {
+      console.error('Error updating payment:', err);
+      const nextPackages = packages.map((p) => {
+        if (p.id !== packageId) return p;
+        const pagamentos = { ...(p.pagamentos || {}) };
+        pagamentos[memberId] = {
+          memberId,
+          informouPagamento,
+          dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
+        };
+        const apoiadores = (p.apoiadores || []).map((a) => {
+          if (a.id === memberId) {
+            return {
+              ...a,
+              pagamentoInformado: informouPagamento,
+              dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
+            };
+          }
+          return a;
+        });
+        return { ...p, pagamentos, apoiadores };
+      });
+      setPackages(nextPackages);
+      syncWithCloud(items, users, nextPackages);
+    }
+  };
+
+  const handleUpdateDriveLink = async (packageId: string, linkDrive: string) => {
+    try {
+      await apiUpdatePackageDriveLink(binId, packageId, linkDrive, ADMIN_PASSWORD);
+      setPackages((prev) =>
+        prev.map((p) => (p.id === packageId ? { ...p, linkDrive } : p))
+      );
+    } catch (err: any) {
+      console.error('Error updating drive link:', err);
+      const nextPackages = packages.map((p) =>
+        p.id === packageId ? { ...p, linkDrive } : p
+      );
+      setPackages(nextPackages);
+      syncWithCloud(items, users, nextPackages);
+    }
+  };
+
+  const handleUpdatePackageImage = async (packageId: string, newImageUrl: string, adminPassword?: string) => {
+    try {
+      await apiUpdatePackageImage(binId, packageId, newImageUrl, adminPassword || ADMIN_PASSWORD);
+      setPackages((prev) =>
+        prev.map((p) => (p.id === packageId ? { ...p, imagemUrl: newImageUrl } : p))
+      );
+      showToast('Imagem de capa do pacote atualizada com sucesso!');
+    } catch (err: any) {
+      console.error('Error updating package image:', err);
+      const nextPackages = packages.map((p) =>
+        p.id === packageId ? { ...p, imagemUrl: newImageUrl } : p
+      );
+      setPackages(nextPackages);
+      syncWithCloud(items, users, nextPackages);
+      showToast('Imagem salva e sincronizada!');
+    }
+  };
+
+  const handleConfigurePayment = async (params: {
+    packageId: string;
+    valorFinalPorParticipante: number;
+    dataPagamento: string;
+    chavePix: string;
+    instrucoesPix?: string;
+    iniciarEtapaPagamento: boolean;
+    adminPassword: string;
+  }) => {
+    try {
+      await apiConfigurePayment(binId, params.packageId, params);
+      setPackages((prev) =>
+        prev.map((p) => {
+          if (p.id !== params.packageId) return p;
+          return {
+            ...p,
+            valorFinalPorParticipante: params.valorFinalPorParticipante,
+            dataPagamento: params.dataPagamento,
+            chavePix: params.chavePix,
+            instrucoesPix: params.instrucoesPix,
+            etapaFinanciamento: params.iniciarEtapaPagamento ? 'PAGAMENTO' : p.etapaFinanciamento,
+          };
+        })
+      );
+      showToast(params.iniciarEtapaPagamento ? 'Etapa de Pagamento iniciada com cobrança definida!' : 'Dados de cobrança salvos com sucesso!');
+    } catch (err: any) {
+      console.error('Error configuring payment:', err);
+      const nextPackages = packages.map((p) => {
+        if (p.id !== params.packageId) return p;
+        return {
+          ...p,
+          valorFinalPorParticipante: params.valorFinalPorParticipante,
+          dataPagamento: params.dataPagamento,
+          chavePix: params.chavePix,
+          instrucoesPix: params.instrucoesPix,
+          etapaFinanciamento: params.iniciarEtapaPagamento ? 'PAGAMENTO' : p.etapaFinanciamento,
+        };
+      });
+      setPackages(nextPackages);
+      syncWithCloud(items, users, nextPackages);
+      showToast(params.iniciarEtapaPagamento ? 'Etapa de Pagamento iniciada!' : 'Dados de cobrança salvos!');
+    }
   };
 
   const handleConfirmMoveToCatalog = (packageId: string, linkDrive: string, valorCatalogoBRL: number) => {
@@ -571,6 +802,7 @@ export default function App() {
             {view === 'home' && (
               <HomeHub
                 currentUser={currentUser}
+                activePackages={packages}
                 countSugestoes={countSugestoes}
                 countFinanciamento={countFinanciamento}
                 countCatalogo={countCatalogo}
@@ -606,6 +838,7 @@ export default function App() {
             {view === 'financiamento' && (
               <FinanciamentoView
                 packages={packages}
+                allUsers={users}
                 currentUser={currentUser}
                 onGoHome={() => setView('home')}
                 onOpenCreatePackage={() => {
@@ -619,6 +852,10 @@ export default function App() {
                 onDeletePackage={handleDeletePackage}
                 onMoveToCatalog={(pkg) => setPackageToMove(pkg)}
                 onToggleSupport={handleToggleSupportPackage}
+                onUpdateStage={handleUpdatePackageStage}
+                onConfigurePayment={handleConfigurePayment}
+                onUpdatePackageImage={handleUpdatePackageImage}
+                onUpdatePayment={handleUpdatePackagePayment}
                 onToast={showToast}
               />
             )}
@@ -626,13 +863,18 @@ export default function App() {
             {view === 'catalogo' && (
               <CatalogoView
                 packages={packages}
+                allUsers={users}
                 currentUser={currentUser}
+                filterMyAcervo={catalogMyAcervoFilter}
+                onToggleMyAcervo={(active) => setCatalogMyAcervoFilter(active)}
                 onGoHome={() => setView('home')}
                 onEditPackage={(pkg) => {
                   setPackageToEdit(pkg);
                   setIsPackageModalOpen(true);
                 }}
                 onDeletePackage={handleDeletePackage}
+                onUpdateDriveLink={handleUpdateDriveLink}
+                onUpdatePackageImage={handleUpdatePackageImage}
                 onToast={showToast}
               />
             )}
@@ -707,11 +949,15 @@ export default function App() {
       {isProfileOpen && currentUser && (
         <UserProfileModal
           isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
+          onClose={() => {
+            setIsProfileOpen(false);
+            setView('home');
+          }}
           currentUser={currentUser}
           packages={packages}
           items={items}
           onUpdateCurrentUser={handleUpdateCurrentUser}
+          onOpenMyAcervo={handleOpenMyAcervo}
           onToast={showToast}
         />
       )}
@@ -746,7 +992,7 @@ export default function App() {
             id: packageToDelete.id,
             nome: packageToDelete.titulo,
             data: packageToDelete.criadoEm,
-            produto: 'Bundle / Pacote de Mapas',
+            produto: (packageToDelete.tipo as ProductType) || 'Outros',
             sistema: packageToDelete.sistema || 'Outro',
             descricao: packageToDelete.descricao || '',
             link: packageToDelete.linkLoja || '',

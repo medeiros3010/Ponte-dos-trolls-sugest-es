@@ -71,37 +71,53 @@ export const ItemRow: React.FC<ItemRowProps> = ({
     >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         
-        {/* 1. Esquerda (Foco Principal): Sistema + Produto + Nome Amplo + Expansor */}
-        <div className="flex-1 min-w-0 pr-2">
-          
-          {/* Badges do Sistema, Produto e Promoção */}
-          <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            <span className="px-2.5 py-0.5 rounded-md bg-[#182c1d] border border-[#27442d] text-[#d49e2a] font-mono font-bold text-xs uppercase tracking-wide">
-              {item.sistema}
-            </span>
-            <span className="text-xs text-[#7e9381] font-medium">
-              {item.produto}
-            </span>
-            {item.observacaoValor && (
-              <span className="text-xs text-[#c69a45] italic font-medium">
-                · {item.observacaoValor}
+        {/* 1. Esquerda: Miniatura + Sistema + Produto + Nome + Expansor */}
+        <div className="flex items-start gap-3.5 flex-1 min-w-0 pr-2">
+          {item.imageUrl ? (
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#0a120c] border border-[#203625] shrink-0 flex items-center justify-center">
+              <img
+                src={item.imageUrl}
+                alt={item.nome}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#0e1911] border border-[#1f3524] shrink-0 flex items-center justify-center text-lg text-[#6e8571]">
+              🎲
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            {/* Badges do Sistema, Produto e Promoção */}
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded-md bg-[#182c1d] border border-[#27442d] text-[#d49e2a] font-mono font-bold text-xs uppercase tracking-wide">
+                {item.sistema}
               </span>
-            )}
+              <span className="text-xs text-[#7e9381] font-medium">
+                {item.produto}
+              </span>
+              {item.observacaoValor && (
+                <span className="text-xs text-[#c69a45] italic font-medium">
+                  · {item.observacaoValor}
+                </span>
+              )}
+            </div>
+
+            {/* Nome do Item */}
+            <h3 className="font-bold text-[#f4ecd8] text-sm sm:text-base tracking-tight leading-snug break-words">
+              {item.nome}
+            </h3>
+
+            {/* Botão de Expansão */}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-1 inline-flex items-center gap-1 text-xs text-[#7d9380] hover:text-[#d49e2a] transition-colors cursor-pointer"
+            >
+              <span>{isExpanded ? 'Ocultar detalhes' : 'Ver detalhes ▾'}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </button>
           </div>
-
-          {/* Nome do Item Completo e Legível (Sem truncar prematuramente) */}
-          <h3 className="font-bold text-[#f4ecd8] text-base sm:text-lg tracking-tight leading-snug break-words">
-            {item.nome}
-          </h3>
-
-          {/* Botão Discreto de Expansão */}
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="mt-1.5 inline-flex items-center gap-1 text-xs text-[#7d9380] hover:text-[#d49e2a] transition-colors"
-          >
-            <span>{isExpanded ? 'Ocultar descrição / autor' : 'Ver descrição / autor ▾'}</span>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-          </button>
         </div>
 
         {/* 2. Centro-Direita (Apenas Valor Total e Conversão - SEM divisão por pessoa) */}

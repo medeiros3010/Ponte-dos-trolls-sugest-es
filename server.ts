@@ -6,7 +6,7 @@ import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './src/data/seedData';
 import { ADMIN_PASSWORD, normalizeProductType } from './src/types';
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = 3000;
 const BINS_DIR = path.resolve(process.cwd(), 'data', 'bins');
 const UPLOADS_DIR = path.resolve(process.cwd(), 'data', 'uploads');
 
@@ -97,6 +97,9 @@ function sanitizePackage(pkg: any): any {
     sugestoesIds: Array.isArray(pkg.sugestoesIds) ? pkg.sugestoesIds : [],
     status: pkg.status === 'Catálogo' ? 'Catálogo' : 'Financiamento',
     etapaFinanciamento: pkg.etapaFinanciamento === 'PAGAMENTO' ? 'PAGAMENTO' : 'COLETA',
+    valorFinalPorParticipante: typeof pkg.valorFinalPorParticipante === 'number' ? pkg.valorFinalPorParticipante : undefined,
+    chavePix: typeof pkg.chavePix === 'string' ? pkg.chavePix : undefined,
+    instrucoesPix: typeof pkg.instrucoesPix === 'string' ? pkg.instrucoesPix : undefined,
     pagamentos: pkg.pagamentos && typeof pkg.pagamentos === 'object' ? pkg.pagamentos : {},
     apoiadores: Array.isArray(pkg.apoiadores) ? pkg.apoiadores : [],
     criadoEm: pkg.criadoEm || new Date().toISOString().split('T')[0],
@@ -485,6 +488,210 @@ app.post('/api/bin/:binId/package/:packageId/apoio', (req: Request, res: Respons
   } catch (err: any) {
     console.error('Erro ao atualizar participação:', err);
     return res.status(500).json({ error: 'Erro ao atualizar participação', details: err.message });
+  }
+});
+
+// POST /api/bin/:binId/package/:packageId/image - Edição da capa do pacote (Mestre)
+app.post('/api/bin/:binId/package/:packageId/image', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId(req.params.binId);
+    const packageId = req.params.packageId;
+    const { imageUrl, adminPassword } = req.body;
+
+    if (adminPassword !== ADMIN_PASSWORD) {
+      return res.status(403).json({ error: 'Senha de Mestre incorreta' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const packages: any[] = Array.isArray(data.packages) ? data.packages : [];
+    const pkg = packages.find((p: any) => p.id === packageId);
+
+    if (!pkg) {
+      return res.status(404).json({ error: 'Pacote não encontrado' });
+    }
+
+    pkg.imageUrl = imageUrl && String(imageUrl).trim() ? String(imageUrl).trim() : undefined;
+    data.updatedAt = new Date().toISOString();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      packageId,
+      imageUrl: pkg.imageUrl,
+      package: sanitizePackage(pkg),
+    });
+  } catch (err: any) {
+    console.error('Erro ao atualizar capa do pacote:', err);
+    return res.status(500).json({ error: 'Erro ao atualizar capa do pacote', details: err.message });
+  }
+});
+
+// POST /api/bin/:binId/package/:packageId/configure-payment - Define cobrança e inicia/atualiza pagamento
+app.post('/api/bin/:binId/package/:packageId/configure-payment', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId(req.params.binId);
+    const packageId = req.params.packageId;
+    const {
+      valorFinalPorParticipante,
+      dataPagamento,
+      chavePix,
+      instrucoesPix,
+      iniciarEtapaPagamento,
+      adminPassword,
+    } = req.body;
+
+    if (adminPassword !== ADMIN_PASSWORD) {
+      return res.status(403).json({ error: 'Senha de Mestre incorreta' });
+    }
+
+    const valorFinal = typeof valorFinalPorParticipante === 'number'
+      ? valorFinalPorParticipante
+      : parseFloat(String(valorFinalPorParticipante).replace(',', '.'));
+
+    if (isNaN(valorFinal) || valorFinal <= 0) {
+      return res.status(400).json({ error: 'O valor final por participante deve ser um número maior que zero' });
+    }
+
+    const pixLimpo = String(chavePix || '').trim();
+    if (!pixLimpo) {
+      return res.status(400).json({ error: 'A chave Pix para pagamento é obrigatória' });
+    }
+
+    const dataLimite = String(dataPagamento || '').trim();
+    if (!dataLimite) {
+      return res.status(400).json({ error: 'A data limite para pagamento é obrigatória' });
+    }
+
+    // Se estiver iniciando etapa de pagamento, não permite data anterior a hoje
+    const today = new Date().toISOString().split('T')[0];
+    if (iniciarEtapaPagamento && dataLimite < today) {
+      return res.status(400).json({ error: 'A data limite não pode ser anterior à data de hoje' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const packages: any[] = Array.isArray(data.packages) ? data.packages : [];
+    const pkg = packages.find((p: any) => p.id === packageId);
+
+    if (!pkg) {
+      return res.status(404).json({ error: 'Pacote não encontrado' });
+    }
+
+    pkg.valorFinalPorParticipante = valorFinal;
+    pkg.dataPagamento = dataLimite;
+    pkg.chavePix = pixLimpo;
+    pkg.instrucoesPix = instrucoesPix ? String(instrucoesPix).trim() : undefined;
+
+    if (iniciarEtapaPagamento) {
+      pkg.etapaFinanciamento = 'PAGAMENTO';
+    }
+
+    data.updatedAt = new Date().toISOString();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      packageId,
+      package: sanitizePackage(pkg),
+    });
+  } catch (err: any) {
+    console.error('Erro ao configurar cobrança de pagamento:', err);
+    return res.status(500).json({ error: 'Erro ao configurar cobrança', details: err.message });
+  }
+});
+
+// POST /api/bin/:binId/user/update-profile - Atualização do perfil do próprio usuário (Nome, Telefone, Email)
+app.post('/api/bin/:binId/user/update-profile', (req: Request, res: Response) => {
+  try {
+    const binId = sanitizeBinId(req.params.binId);
+    const { userId, nome, telefone, email } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'ID do usuário é obrigatório' });
+    }
+
+    const trimmedNome = String(nome || '').trim();
+    if (!trimmedNome) {
+      return res.status(400).json({ error: 'O nome do usuário não pode estar em branco' });
+    }
+
+    const filePath = path.join(BINS_DIR, `${binId}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Banco de dados não encontrado' });
+    }
+
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    data.users = Array.isArray(data.users) ? data.users : [];
+    const userIndex = data.users.findIndex((u: any) => u.id === userId);
+
+    const updatedUser = {
+      ...(userIndex >= 0 ? data.users[userIndex] : { id: userId, createdAt: new Date().toISOString() }),
+      id: userId,
+      nome: trimmedNome,
+      telefone: String(telefone || '').trim(),
+      email: String(email || '').trim(),
+    };
+
+    if (userIndex >= 0) {
+      data.users[userIndex] = updatedUser;
+    } else {
+      data.users.push(updatedUser);
+    }
+
+    // Propaga o novo nome/contatos em todos os apoiadores de pacotes vinculados a este userId
+    if (Array.isArray(data.packages)) {
+      data.packages.forEach((pkg: any) => {
+        if (Array.isArray(pkg.apoiadores)) {
+          pkg.apoiadores.forEach((ap: any) => {
+            if (ap.id === userId) {
+              ap.nome = trimmedNome;
+              if (updatedUser.telefone) ap.telefone = updatedUser.telefone;
+              if (updatedUser.email) ap.email = updatedUser.email;
+            }
+          });
+        }
+        if (pkg.pagamentos && pkg.pagamentos[userId]) {
+          pkg.pagamentos[userId].nome = trimmedNome;
+        }
+      });
+    }
+
+    // Propaga em apoiadores de sugestões
+    if (Array.isArray(data.items)) {
+      data.items.forEach((item: any) => {
+        if (Array.isArray(item.apoiadores)) {
+          item.apoiadores.forEach((ap: any) => {
+            if (ap.id === userId) {
+              ap.nome = trimmedNome;
+              if (updatedUser.telefone) ap.telefone = updatedUser.telefone;
+              if (updatedUser.email) ap.email = updatedUser.email;
+            }
+          });
+        }
+      });
+    }
+
+    data.updatedAt = new Date().toISOString();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      user: updatedUser,
+      users: data.users,
+      packages: data.packages ? data.packages.map(sanitizePackage) : [],
+    });
+  } catch (err: any) {
+    console.error('Erro ao atualizar dados do usuário:', err);
+    return res.status(500).json({ error: 'Erro ao atualizar dados do usuário', details: err.message });
   }
 });
 

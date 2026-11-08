@@ -383,6 +383,8 @@ export function exportFullDataToCSV(
   sections.push([
     'ID',
     'Status',
+    'Etapa Financiamento',
+    'Tipo',
     'Título',
     'Sistema Principal',
     'Valor Total (R$)',
@@ -400,12 +402,14 @@ export function exportFullDataToCSV(
   ].join(sep));
 
   packages.forEach(pkg => {
-    const itensStr = (pkg.itens || []).map((it: PackageSubItem) => `${it.nome} [${it.sistema}]: R$${it.precoBRL.toFixed(2)}`).join(' | ');
+    const itensStr = (pkg.itens || []).map((it: PackageSubItem) => `${it.nome} [${it.sistema} - ${it.tipo || 'Outros'}]: R$${it.precoBRL.toFixed(2)}`).join(' | ');
     const partsStr = (pkg.apoiadores || []).map((a: Apoiador) => `${a.nome} (${a.telefone || ''})`).join(' | ');
 
     sections.push([
       `"${pkg.id}"`,
       `"${pkg.status}"`,
+      `"${pkg.etapaFinanciamento || 'COLETA'}"`,
+      `"${pkg.tipo || 'Material para VTT'}"`,
       `"${pkg.titulo.replace(/"/g, '""')}"`,
       `"${(pkg.sistema || 'Outro').replace(/"/g, '""')}"`,
       `"${pkg.valorTotalBRL.toFixed(2).replace('.', ',')}"`,
@@ -640,3 +644,69 @@ function doPost(e) {
   }
 }
 `;
+
+export interface EmailExtractionResult {
+  validEmails: string[];
+  clipboardText: string;
+  missingOrInvalidMembers: string[];
+  totalWithPaymentInformed: number;
+}
+
+/**
+ * Requirement 8: Extrai apenas e-mails de participantes com pagamento informado
+ * - Um e-mail por linha (\n)
+ * - Sem nomes, marcadores, vírgulas ou texto extra
+ * - Sem duplicatas
+ * - Valida regex de e-mail e aponta quem precisa corrigir cadastro
+ */
+export function extractPaidMemberEmails(
+  pkg: FundingPackage,
+  allUsers: UserProfile[]
+): EmailExtractionResult {
+  const userMap = new Map<string, UserProfile>();
+  allUsers.forEach((u) => {
+    if (u.id) userMap.set(u.id, u);
+  });
+
+  // Strict valid email regex
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validEmailsSet = new Set<string>();
+  const missingOrInvalidMembers: string[] = [];
+
+  const pagamentos = pkg.pagamentos || {};
+  const supporters = pkg.apoiadores || [];
+
+  let totalWithPaymentInformed = 0;
+
+  supporters.forEach((ap) => {
+    const isPaid = Boolean(
+      ap.pagamentoInformado ||
+      (pagamentos[ap.id] && pagamentos[ap.id].informouPagamento)
+    );
+
+    if (isPaid) {
+      totalWithPaymentInformed++;
+      const user = userMap.get(ap.id) || allUsers.find(
+        (u) => u.nome.trim().toLowerCase() === ap.nome.trim().toLowerCase()
+      );
+      const rawEmail = (user?.email || ap.email || '').trim();
+
+      if (rawEmail && emailRegex.test(rawEmail)) {
+        validEmailsSet.add(rawEmail.toLowerCase());
+      } else {
+        missingOrInvalidMembers.push(ap.nome);
+      }
+    }
+  });
+
+  const validEmails = Array.from(validEmailsSet);
+  const clipboardText = validEmails.join('\n');
+
+  return {
+    validEmails,
+    clipboardText,
+    missingOrInvalidMembers,
+    totalWithPaymentInformed,
+  };
+}
+

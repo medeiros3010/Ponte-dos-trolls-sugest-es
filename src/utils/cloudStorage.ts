@@ -376,6 +376,96 @@ export async function apiTogglePackageSupport(
   return await res.json();
 }
 
+/**
+ * Atualização atômica da capa do pacote pelo Mestre
+ */
+export async function apiUpdatePackageImage(
+  binId: string,
+  packageId: string,
+  imageUrl: string,
+  adminPassword?: string
+): Promise<{ success: boolean; package?: FundingPackage; imageUrl?: string }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/image`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageUrl, adminPassword }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Erro ao atualizar capa do pacote');
+  }
+
+  return await res.json();
+}
+
+/**
+ * Configuração atômica de dados de cobrança e início de pagamento pelo Mestre
+ */
+export async function apiConfigurePayment(
+  binId: string,
+  packageId: string,
+  params: {
+    valorFinalPorParticipante: number;
+    dataPagamento: string;
+    chavePix: string;
+    instrucoesPix?: string;
+    iniciarEtapaPagamento?: boolean;
+    adminPassword?: string;
+  }
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/configure-payment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Erro ao configurar cobrança de pagamento');
+  }
+
+  return await res.json();
+}
+
+/**
+ * Atualização atômica do perfil do próprio usuário (Nome, Telefone, Email)
+ */
+export async function apiUpdateUserProfile(
+  binId: string,
+  params: {
+    userId: string;
+    nome: string;
+    telefone: string;
+    email: string;
+  }
+): Promise<{ success: boolean; user?: UserProfile; users?: UserProfile[]; packages?: FundingPackage[] }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/user/update-profile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Erro ao atualizar dados do usuário');
+  }
+
+  return await res.json();
+}
+
 function normalizeCloudItems(rawList: any[]): ItemRPG[] {
   return rawList.map((row, idx) => {
     const rawValor = row.valor ? String(row.valor) : '';
@@ -519,6 +609,9 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
       sugestoesIds: Array.isArray(pkg.sugestoesIds) ? pkg.sugestoesIds : [],
       status,
       etapaFinanciamento: pkg.etapaFinanciamento === 'PAGAMENTO' ? 'PAGAMENTO' : 'COLETA',
+      valorFinalPorParticipante: typeof pkg.valorFinalPorParticipante === 'number' ? pkg.valorFinalPorParticipante : undefined,
+      chavePix: typeof pkg.chavePix === 'string' ? pkg.chavePix : undefined,
+      instrucoesPix: typeof pkg.instrucoesPix === 'string' ? pkg.instrucoesPix : undefined,
       pagamentos,
       apoiadores,
       criadoEm: pkg.criadoEm || new Date().toISOString().split('T')[0],

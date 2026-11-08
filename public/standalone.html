@@ -1980,13 +1980,18 @@
           id: `pack-${Date.now()}`,
           titulo,
           sistema,
+          tipo: 'Material para VTT',
           valorTotalBRL: valorParsed,
+          valorCatalogoBRL: valorParsed,
           linkLoja,
           linkDrive: '',
           descricao,
           itensInclusos: pkgItensTags.length > 0 ? pkgItensTags : [titulo],
+          itens: [],
           sugestoesIds: selectedSugestoesIds,
           status: 'Financiamento',
+          etapaFinanciamento: 'COLETA',
+          pagamentos: {},
           criadoEm: new Date().toISOString().split('T')[0],
           apoiadores: []
         };
