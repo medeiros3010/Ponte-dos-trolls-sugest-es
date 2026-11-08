@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FundingPackage } from '../types';
-import { X, CheckCircle2, Folder, KeyRound, DollarSign, AlertCircle } from 'lucide-react';
+import { X, CheckCircle2, Folder, KeyRound, DollarSign, AlertCircle, Calendar } from 'lucide-react';
+import { formatDateDisplay } from '../utils/helpers';
 
 interface MoveToCatalogModalProps {
   isOpen: boolean;
@@ -84,10 +85,15 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
           
           <div className="p-3.5 bg-[#FBF4E4] border border-[#D6C296] rounded-2xl space-y-2">
             <h3 className="font-bold text-[#302414] text-sm font-rpg">{packageItem.titulo}</h3>
-            <div className="flex items-center gap-3 text-[11px] text-[#71634D]">
+            <div className="flex flex-wrap items-center gap-3 text-[11px] text-[#71634D]">
               <span>Valor Original: <strong className="text-[#302414] font-mono">R$ {packageItem.valorTotalBRL.toFixed(2)}</strong></span>
               <span>·</span>
               <span>Cotistas: <strong className="text-[#48551F]">{packageItem.apoiadores.length} membros</strong></span>
+              <span>·</span>
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-[#716016]" />
+                <span>Aquisição preservada: <strong className="text-[#302414]">{packageItem.dataPagamento ? formatDateDisplay(packageItem.dataPagamento) : 'Não informada'}</strong></span>
+              </span>
             </div>
           </div>
 

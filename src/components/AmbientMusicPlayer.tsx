@@ -67,8 +67,13 @@ function selectInitialTrack(): Track {
   return chosen;
 }
 
-export const AmbientMusicPlayer: React.FC = () => {
+export interface AmbientMusicPlayerProps {
+  isAuthenticated?: boolean;
+}
+
+export const AmbientMusicPlayer: React.FC<AmbientMusicPlayerProps> = ({ isAuthenticated = false }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playCancelledRef = useRef<boolean>(!isAuthenticated);
 
   // Faixa selecionada inicialmente (não troca ao navegar entre páginas)
   const [currentTrack, setCurrentTrack] = useState<Track>(() => selectInitialTrack());
@@ -96,6 +101,11 @@ export const AmbientMusicPlayer: React.FC = () => {
   const [autoplayBlocked, setAutoplayBlocked] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
+  // Mantém token de cancelamento sincronizado
+  useEffect(() => {
+    playCancelledRef.current = !isAuthenticated;
+  }, [isAuthenticated]);
+
   // Sincroniza volume & mute com a tag de áudio e persiste no navegador
   useEffect(() => {
     if (audioRef.current) {
@@ -108,11 +118,23 @@ export const AmbientMusicPlayer: React.FC = () => {
     } catch (e) {}
   }, [volume, isMuted]);
 
-  // Tentativa inicial de autoplay no carregamento
+  // Início ou parada da reprodução atrelado estritamente à autenticação confirmada
   useEffect(() => {
     const audio = audioRef.current;
+    if (!isAuthenticated) {
+      playCancelledRef.current = true;
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      setIsPlaying(false);
+      setAutoplayBlocked(false);
+      return;
+    }
+
     if (!audio) return;
 
+    playCancelledRef.current = false;
     audio.volume = volume;
     audio.muted = isMuted;
 
@@ -120,34 +142,47 @@ export const AmbientMusicPlayer: React.FC = () => {
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
+          if (playCancelledRef.current) {
+            audio.pause();
+            audio.currentTime = 0;
+            setIsPlaying(false);
+            return;
+          }
           setIsPlaying(true);
           setAutoplayBlocked(false);
         })
         .catch((err) => {
-          // Autoplay bloqueado pelas políticas do navegador
+          if (playCancelledRef.current) return;
           console.log('[AmbientMusic] Autoplay bloqueado pelo navegador, aguardando clique', err?.name);
           setIsPlaying(false);
           setAutoplayBlocked(true);
         });
     }
-  }, []);
+  }, [isAuthenticated, currentTrack.src]);
 
   const handleStartMusic = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !isAuthenticated) return;
 
+    playCancelledRef.current = false;
     audio.muted = isMuted;
     audio.volume = volume;
     audio
       .play()
       .then(() => {
+        if (playCancelledRef.current) {
+          audio.pause();
+          audio.currentTime = 0;
+          setIsPlaying(false);
+          return;
+        }
         setIsPlaying(true);
         setAutoplayBlocked(false);
       })
       .catch((err) => {
         console.warn('[AmbientMusic] Play failed', err);
       });
-  }, [volume, isMuted]);
+  }, [volume, isMuted, isAuthenticated]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -240,6 +275,11 @@ export const AmbientMusicPlayer: React.FC = () => {
     const nextIndex = (currentIndex + 1) % PLAYLIST.length;
     changeTrack(PLAYLIST[nextIndex], isPlaying || !autoplayBlocked);
   };
+
+  // Enquanto não houver autenticação confirmada, o áudio permanece parado e o player oculto
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <>

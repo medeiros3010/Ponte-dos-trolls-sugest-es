@@ -862,6 +862,17 @@ app.post('/api/bin/:binId/package/:packageId/pagamento', async (req: Request, re
         return res.status(404).json({ error: 'Pacote não encontrado' });
       }
 
+      // Requirement 1: Conta Mestre é administrativa e não realiza pagamentos como cotista
+      const users: any[] = Array.isArray(data.users) ? data.users : [];
+      const targetMember = users.find((u: any) => u.id === memberId);
+      const isTargetMaster = Boolean(targetMember?.isMaster) || Boolean(session?.isMaster && memberId === session.userId);
+
+      if (isTargetMaster) {
+        return res.status(403).json({
+          error: 'A conta com cargo Mestre é administrativa e não participa nem realiza pagamentos de financiamentos.',
+        });
+      }
+
       const isParticipant = Array.isArray(pkg.apoiadores) && pkg.apoiadores.some((a: any) => a.id === memberId);
       if (!isMaster && !isParticipant) {
         return res.status(403).json({ error: 'Inscrições encerradas para este pacote.' });
@@ -1002,6 +1013,17 @@ app.post('/api/bin/:binId/package/:packageId/apoio', async (req: Request, res: R
       if (pkg.etapaFinanciamento === 'PAGAMENTO' && !isMaster) {
         return res.status(403).json({
           error: 'Este financiamento está em PROCESSO DE PAGAMENTO. A lista de participantes foi travada para cobrança. Apenas o Mestre pode autorizar alterações.',
+        });
+      }
+
+      // Requirement 1: A conta com cargo Mestre é administrativa e não pode participar dos financiamentos como cotista
+      const users: any[] = Array.isArray(data.users) ? data.users : [];
+      const dbUser = users.find((u: any) => u.id === targetUser.id);
+      const isTargetMaster = Boolean(dbUser?.isMaster) || Boolean(session?.isMaster && (!user || user.id === session.userId));
+
+      if (isTargetMaster) {
+        return res.status(403).json({
+          error: 'A conta com cargo Mestre é administrativa e não pode participar dos financiamentos como cotista.',
         });
       }
 

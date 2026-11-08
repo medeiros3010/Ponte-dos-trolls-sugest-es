@@ -30,8 +30,9 @@ import {
   BookOpen,
   Check,
   UserPlus,
+  Calendar,
 } from 'lucide-react';
-import { generateCatalogBuyMessage, extractPaidMemberEmails, formatDateDisplay } from '../utils/helpers';
+import { generateCatalogBuyMessage, extractPaidMemberEmails, formatDateDisplay, formatAcquisitionDate } from '../utils/helpers';
 import { isPackageAcquired } from '../utils/ranksAndAcquisitions';
 import { EditPackageImageModal } from './EditPackageImageModal';
 import { PageBanner } from './PageBanner';
@@ -758,6 +759,12 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           <Package className="w-3.5 h-3.5 text-[#716016] shrink-0" />
                           <span>{itemCount} itens inclusos</span>
                         </div>
+
+                        {/* Data de Aquisição (Requirement 4) */}
+                        <div className="flex items-center gap-1.5 text-xs text-[#71634D] mt-1 font-medium">
+                          <Calendar className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                          <span>{formatAcquisitionDate(pkg.dataPagamento)}</span>
+                        </div>
                       </div>
 
                       {/* Rodapé: Preço & Botão de Ação */}
@@ -871,6 +878,12 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                 <h2 className="font-rpg text-2xl font-bold text-[#302414]">
                   {selectedPackageDetails.titulo}
                 </h2>
+                {/* Data de Aquisição Oficial (Requirement 4) */}
+                <div className="flex items-center gap-1.5 text-xs text-[#55482e] font-semibold bg-[#FAF4E6] border border-[#D6C296] rounded-xl px-3 py-1.5 w-fit mt-2 shadow-2xs">
+                  <Calendar className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                  <span>{formatAcquisitionDate(selectedPackageDetails.dataPagamento)}</span>
+                </div>
+
                 {selectedPackageDetails.descricao && (
                   <p className="text-xs sm:text-sm text-[#71634D] mt-2 whitespace-pre-wrap leading-relaxed">
                     {selectedPackageDetails.descricao}

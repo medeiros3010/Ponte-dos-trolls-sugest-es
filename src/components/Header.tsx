@@ -184,12 +184,12 @@ export const Header: React.FC<HeaderProps> = ({
                   <span>{item.label}</span>
                   {showPendingDot && (
                     <span
-                      className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center"
+                      className="absolute top-1 right-1 flex h-2 w-2 pointer-events-none"
                       title="Há solicitações de entrada pendentes"
                       aria-label="Há solicitações de entrada pendentes"
                     >
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4A538] opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#C2410C] ring-2 ring-[#282D13]" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 ring-2 ring-[#282D13]" />
                       <span className="sr-only">Há solicitações de entrada pendentes</span>
                     </span>
                   )}

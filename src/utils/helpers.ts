@@ -26,13 +26,30 @@ export function convertToBRL(value: number, currency: CurrencyType, rate: number
 }
 
 export function formatDateDisplay(dateStr?: string): string {
-  if (!dateStr) return '-';
-  const parts = dateStr.trim().split('-');
-  if (parts.length === 3) {
+  if (!dateStr || !dateStr.trim()) return '-';
+  const clean = dateStr.trim().split('T')[0];
+  const parts = clean.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
     const [year, month, day] = parts;
     return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
   }
-  return dateStr;
+  const slashParts = clean.split('/');
+  if (slashParts.length === 3 && slashParts[2].length === 4) {
+    const [day, month, year] = slashParts;
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  }
+  return clean;
+}
+
+export function formatAcquisitionDate(dataPagamento?: string): string {
+  if (!dataPagamento || !dataPagamento.trim()) {
+    return 'Data de aquisição não informada';
+  }
+  const formatted = formatDateDisplay(dataPagamento);
+  if (!formatted || formatted === '-') {
+    return 'Data de aquisição não informada';
+  }
+  return `Adquirido em: ${formatted}`;
 }
 
 export function parseDisplayDateToISO(dateStr: string): string {

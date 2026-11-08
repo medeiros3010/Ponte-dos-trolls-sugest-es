@@ -609,7 +609,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 <span>3. Metas, Cotas e Prazos</span>
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#71634D] mb-1">
                     Mínimo de Cotistas (Meta) <span className="text-[#8b261b] font-bold">*</span>:
@@ -637,6 +637,19 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                     type="date"
                     value={dataFinalizar}
                     onChange={(e) => setDataFinalizar(e.target.value)}
+                    className="w-full px-3 py-1.5 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#71634D] mb-1">
+                    Data de Aquisição (Pagamento):
+                  </label>
+                  <input
+                    type="date"
+                    value={dataPagamento}
+                    onChange={(e) => setDataPagamento(e.target.value)}
+                    title="Prazo final de pagamento confirmado que define a Data de Aquisição no Catálogo"
                     className="w-full px-3 py-1.5 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
                   />
                 </div>

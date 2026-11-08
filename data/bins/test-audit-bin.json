@@ -1,7 +1,7 @@
 {
   "id": "test-audit-bin",
   "name": "Base de Teste Isolada - Auditoria",
-  "updatedAt": "2026-11-08T17:40:42.570Z",
+  "updatedAt": "2026-11-08T18:13:49.575Z",
   "usersVersion": "v2_125_oficial",
   "items": [
     {
@@ -102,11 +102,9 @@
       "pagamentos": {},
       "apoiadores": [
         {
-          "id": "usr-teste-a",
-          "nome": "Aventureiro Alpha",
-          "telefone": "(11) 98888-1111",
-          "email": "alpha@teste.com",
-          "data": "2026-03-01T10:00:00Z"
+          "id": "usr-master",
+          "nome": "Ponte dos Trolls",
+          "data": "2026-11-08T18:13:37.350Z"
         }
       ],
       "criadoEm": "2026-03-01"
@@ -152,7 +150,7 @@
         "usr-teste-a": {
           "memberId": "usr-teste-a",
           "informouPagamento": true,
-          "dataPagamentoInformado": "2026-11-08T17:15:04.525Z"
+          "dataPagamentoInformado": "2026-11-08T18:13:49.575Z"
         }
       },
       "apoiadores": [
@@ -163,7 +161,7 @@
           "email": "alpha@teste.com",
           "data": "2026-03-01T10:00:00Z",
           "pagamentoInformado": true,
-          "dataPagamentoInformado": "2026-11-08T17:15:04.525Z"
+          "dataPagamentoInformado": "2026-11-08T18:13:49.575Z"
         },
         {
           "id": "usr-teste-b",

@@ -200,6 +200,49 @@ export default function App() {
     return getStoredCurrentUser() ? 'closed' : 'login';
   });
 
+  // Validação inicial assíncrona de sessão salva (áudio não toca durante esta etapa)
+  const [isValidatingSession, setIsValidatingSession] = useState<boolean>(() => {
+    return Boolean(getStoredCurrentUser());
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    async function checkSavedSession() {
+      const stored = getStoredCurrentUser();
+      if (!stored) {
+        if (isMounted) setIsValidatingSession(false);
+        return;
+      }
+      try {
+        const verified = await apiVerifySession();
+        if (isMounted) {
+          if (verified && verified.success && verified.user) {
+            setCurrentUser(verified.user);
+            saveStoredCurrentUser(verified.user);
+          } else if (verified === null) {
+            // Rede temporariamente indisponível: mantém usuário salvo
+          } else {
+            // Sessão expirada ou revogada
+            setCurrentUser(null);
+            saveStoredCurrentUser(null);
+            setEntryModalState('login');
+          }
+        }
+      } catch (e) {
+        // Fallback local
+      } finally {
+        if (isMounted) setIsValidatingSession(false);
+      }
+    }
+    checkSavedSession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Autenticação estrita confirmada (sessão válida, sem modais de entrada e validação finalizada)
+  const isAuthenticated = Boolean(currentUser) && entryModalState === 'closed' && !isValidatingSession;
+
   // Preservação contínua do rascunho de candidatura entre etapas e navegação
   const [applicationDraft, setApplicationDraft] = useState<ApplicationDraft>({
     step: 1,
@@ -851,10 +894,12 @@ export default function App() {
     syncWithCloud(nextItems, nextUsers, nextPackages);
   };
 
-  // Pending users count for Master badge
-  const pendingUsersCount = useMemo(() => {
-    return users.filter((u) => u.status === 'pendente').length;
-  }, [users]);
+  // Pending applications & users count for Master badge on "Membros" button (Requirement 3)
+  const pendingApplicationsCount = useMemo(() => {
+    const pendingApps = applications.filter((a) => a.status === 'pendente').length;
+    const pendingUsers = users.filter((u) => u.status === 'pendente').length;
+    return pendingApps + pendingUsers;
+  }, [applications, users]);
 
   // Counters for Home Hub
   const countSugestoes = useMemo(() => {
@@ -876,8 +921,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F3E5C5] text-[#302414] flex flex-col font-sans selection:bg-[#48551F]/20 selection:text-[#302414]">
       
-      {/* Global Ambient Music Player (Playlist 3 faixas) */}
-      <AmbientMusicPlayer />
+      {/* Global Ambient Music Player (Playlist 3 faixas - toca somente após login confirmado) */}
+      <AmbientMusicPlayer isAuthenticated={isAuthenticated} />
 
       {/* Fluxo de Entrada Obrigatório: Apenas 1 janela ativa por vez (Login | Solicitação | Confirmação de Envio) */}
       {!currentUser && entryModalState === 'login' && (
@@ -943,7 +988,7 @@ export default function App() {
         binId={binId}
         currentUser={currentUser}
         currentView={view}
-        pendingUsersCount={pendingUsersCount}
+        pendingUsersCount={pendingApplicationsCount}
         onNavigate={(v) => setView(v)}
         onChangeUser={handleChangeUser}
         onGoHome={() => setView('home')}

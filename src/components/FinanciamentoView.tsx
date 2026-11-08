@@ -582,42 +582,81 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                           </div>
                         </div>
 
+                        {/* Inconsistência histórica se Mestre constar em apoiadores de registros anteriores */}
+                        {isMaster && isUserParticipant && (
+                          <div className="p-3 rounded-xl bg-[#FFFBEB] border border-[#F59E0B]/60 text-[#92400E] text-xs flex items-start gap-2 shadow-xs">
+                            <AlertTriangle className="w-4 h-4 shrink-0 text-[#D97706] mt-0.5" />
+                            <div className="space-y-0.5">
+                              <p className="font-bold">Registro histórico da conta administrativa identificado:</p>
+                              <p className="text-[11px] leading-relaxed">
+                                A conta do Mestre consta na lista de participantes em registros históricos deste pacote. Como o cargo Mestre é administrativo e não participa nem realiza pagamentos, o registro foi preservado para revisão de cotas.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Botões de Ação na Coleta */}
-                        <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2 border-t border-[#D6C296]">
-                          {isUserParticipant ? (
+                        {isMaster ? (
+                          <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2 border-t border-[#D6C296] w-full">
                             <button
-                              onClick={() => handleParticipateClick(pkg)}
-                              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                            >
-                              <Check className="w-4 h-4" />
-                              <span>Você está na lista (Sair)</span>
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleParticipateClick(pkg)}
+                              type="button"
+                              onClick={() => setConfigPaymentState({ pkg, isStartingStage: true })}
                               className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95"
                             >
-                              <Users className="w-4 h-4" />
-                              <span>Participar deste rateio</span>
+                              <CreditCard className="w-4 h-4 text-[#a8d363]" />
+                              <span>Iniciar processo de pagamento</span>
                             </button>
-                          )}
-
-                          {isMaster && (
                             <button
-                              onClick={() => setConfigPaymentState({ pkg, isStartingStage: true })}
+                              type="button"
+                              onClick={() => setViewingParticipantsPkg(pkg)}
                               className="w-full sm:w-auto py-3 px-4 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs sm:text-sm font-bold text-[#302414] flex items-center justify-center gap-1.5 cursor-pointer"
                             >
-                              <CreditCard className="w-4 h-4 text-[#716016]" />
-                              <span>Iniciar pagamento</span>
+                              <Users className="w-4 h-4 text-[#716016]" />
+                              <span>Gerenciar participantes ({totalCotistas})</span>
                             </button>
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2 border-t border-[#D6C296] w-full">
+                            {isUserParticipant ? (
+                              <button
+                                type="button"
+                                onClick={() => handleParticipateClick(pkg)}
+                                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                              >
+                                <Check className="w-4 h-4" />
+                                <span>Você está na lista (Sair)</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleParticipateClick(pkg)}
+                                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95"
+                              >
+                                <Users className="w-4 h-4" />
+                                <span>Participar deste rateio</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
 
                     {/* CASO 2: ETAPA DE PROCESSO DE PAGAMENTO */}
                     {!isColeta && (
                       <div className="space-y-4 pt-1">
+                        {/* Inconsistência histórica se Mestre constar em apoiadores de registros anteriores */}
+                        {isMaster && isUserParticipant && (
+                          <div className="p-3 rounded-xl bg-[#FFFBEB] border border-[#F59E0B]/60 text-[#92400E] text-xs flex items-start gap-2 shadow-xs">
+                            <AlertTriangle className="w-4 h-4 shrink-0 text-[#D97706] mt-0.5" />
+                            <div className="space-y-0.5">
+                              <p className="font-bold">Registro histórico da conta administrativa identificado:</p>
+                              <p className="text-[11px] leading-relaxed">
+                                A conta do Mestre consta na lista de participantes em registros históricos deste pacote. Como o cargo Mestre é administrativo e não participa nem realiza pagamentos, o registro foi preservado para revisão de cotas.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Caixa de Destaque do Pagamento: Valor Final + Prazo */}
                         <div className="p-4 sm:p-5 rounded-xl bg-[#FBF4E4] border border-[#D6C296] flex items-center justify-between gap-4">
                           <div>
@@ -640,8 +679,60 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                           </div>
                         </div>
 
-                        {/* ÁREA DE PAGAMENTO GATILHADA POR PARTICIPAÇÃO */}
-                        {isUserParticipant ? (
+                        {/* ÁREA DE PAGAMENTO: MESTRE (ADMINISTRATIVO) OU MEMBRO (COTISTA) */}
+                        {isMaster ? (
+                          /* MESTRE: Painel administrativo com Chave Pix configurada e atalhos de cobrança */
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#EDE2CA] border border-[#C6AD78]">
+                            {/* Chave Pix e Copiar */}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-sm text-[#716016] font-bold">💠</span>
+                              <div className="truncate">
+                                <span className="text-[10px] uppercase font-bold text-[#71634D] block">
+                                  Chave Pix Configurada (Cobrança):
+                                </span>
+                                <span className="font-mono text-xs sm:text-sm font-semibold text-[#302414] select-all truncate block">
+                                  {pkg.chavePix || 'Chave Pix não informada'}
+                                </span>
+                              </div>
+                              {pkg.chavePix && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyPixKey(pkg)}
+                                  className="p-1.5 text-[#71634D] hover:text-[#302414] cursor-pointer"
+                                  title="Copiar Chave Pix"
+                                >
+                                  {copiedPixId === pkg.id ? (
+                                    <Check className="w-4 h-4 text-[#48551F]" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Ações administrativas do processo de pagamento */}
+                            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setConfigPaymentState({ pkg, isStartingStage: false })}
+                                className="px-3 py-2 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] border border-[#C6AD78] text-xs font-bold text-[#302414] flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                title="Editar valor final por participante, chave Pix e instruções"
+                              >
+                                <CreditCard className="w-3.5 h-3.5 text-[#48551F]" />
+                                <span>Editar Cobrança / Pix</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyPaidEmails(pkg)}
+                                className="px-3 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                title="Copiar e-mails de quem já pagou para liberar acesso no Google Drive"
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                                <span>Copiar E-mails Pagos</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : isUserParticipant ? (
                           /* PARTICIPANTE: Vê a chave Pix e a ação de pagamento */
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#EDE2CA] border border-[#C6AD78]">
                             {/* Chave Pix e Copiar */}
@@ -789,6 +880,11 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                               <span className="font-medium text-[#302414] truncate" title={ap.nome}>
                                 {ap.nome}
                               </span>
+                              {(ap.id === currentUser.id && isMaster) && (
+                                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#EDE2CA] text-[#875508] border border-[#C6AD78] shrink-0" title="Registro histórico de conta administrativa">
+                                  Mestre (Histórico)
+                                </span>
+                              )}
                             </div>
 
                             {!isColeta && (
@@ -805,13 +901,20 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                                 )}
 
                                 {isMaster && (
-                                  <button
-                                    onClick={() => handleTogglePaymentStatus(pkg, ap.id, hasPaid, ap.nome)}
-                                    className="p-1 text-[#71634D] hover:text-[#48551F] cursor-pointer"
-                                    title="Alterar status de pagamento do membro"
-                                  >
-                                    <Edit2 className="w-3 h-3" />
-                                  </button>
+                                  ap.id === currentUser.id ? (
+                                    <span className="text-[10px] text-[#71634D] italic px-1" title="Conta administrativa não realiza pagamentos">
+                                      Admin
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTogglePaymentStatus(pkg, ap.id, hasPaid, ap.nome)}
+                                      className="p-1 text-[#71634D] hover:text-[#48551F] cursor-pointer"
+                                      title="Alterar status de pagamento do membro"
+                                    >
+                                      <Edit2 className="w-3 h-3" />
+                                    </button>
+                                  )
                                 )}
                               </div>
                             )}
