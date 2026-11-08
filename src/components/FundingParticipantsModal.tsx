@@ -54,16 +54,19 @@ export const FundingParticipantsModal: React.FC<FundingParticipantsModalProps> =
   // Mapeia cada apoiador para seu perfil completo mais recente
   const resolvedParticipants = useMemo(() => {
     return apoiadores.map((ap) => {
-      // Tenta achar em allUsers por ID primeiro, depois por nome exato case-insensitive
-      const userMatch = allUsers.find(
-        (u) =>
-          (ap.id && u.id === ap.id) ||
-          u.nome.trim().toLowerCase() === ap.nome.trim().toLowerCase()
-      );
+      // Relaciona estritamente pelo ID do membro para evitar confundir homônimos
+      const userMatch = ap.id
+        ? allUsers.find((u) => u.id === ap.id)
+        : allUsers.find((u) => u.nome.trim().toLowerCase() === ap.nome.trim().toLowerCase());
 
       const resolvedName = userMatch?.nome || ap.nome;
-      const isThisMaster = Boolean(userMatch?.isMaster || (ap as any).isMaster || resolvedName.toLowerCase().includes('mestre'));
-      const isCurrent = ap.id === currentUser.id || userMatch?.id === currentUser.id;
+      const isThisMaster = Boolean(
+        userMatch?.isMaster ||
+        (currentUser.id === ap.id && currentUser.isMaster) ||
+        userMatch?.nome === 'Ponte dos Trolls' ||
+        (ap as any).isMaster
+      );
+      const isCurrent = ap.id === currentUser.id || (userMatch && userMatch.id === currentUser.id);
 
       // Calcula aquisições no acervo do Catálogo para determinar o Rank RPG
       const acquiredCount = userMatch

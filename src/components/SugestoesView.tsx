@@ -579,7 +579,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
             </div>
 
             <p className="text-xs text-[#55482e] leading-relaxed">
-              Apoiar significa que você tem interesse real em participar da compra quando ela for organizada. Apoie apenas os materiais que pretende adquirir. A participação no financiamento será confirmada em uma etapa posterior.
+              Apoiar significa que você tem interesse real em participar da compra quando ela for organizada. Apoie apenas os materiais que pretende adquirir. A inscrição no financiamento será feita depois.
             </p>
 
             {/* Detalhes do item apoiado */}

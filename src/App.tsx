@@ -58,14 +58,18 @@ import { UserAuthModal } from './components/UserAuthModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { CartModal } from './components/CartModal';
 import { WhatsAppCheckoutModal } from './components/WhatsAppCheckoutModal';
-import { NewMemberApplicationModal } from './components/NewMemberApplicationModal';
+import { NewMemberApplicationModal, ApplicationDraft } from './components/NewMemberApplicationModal';
 import { AmbientMusicPlayer } from './components/AmbientMusicPlayer';
-import { Toast } from './components/Toast';
+import { Toast, ToastMessageItem } from './components/Toast';
+import { InviteFriendModal } from './components/InviteFriendModal';
+import { CheckCircle2 } from 'lucide-react';
 
 const STORAGE_KEY_ITEMS = 'ponte_trolls_clean_v5';
 const STORAGE_KEY_USERS = 'ponte_trolls_users_v5';
 const STORAGE_KEY_PACKAGES = 'ponte_trolls_packages_v5';
 const STORAGE_KEY_RATE = 'ponte_trolls_dollar_rate_v5';
+
+export type EntryModalState = 'login' | 'solicitacao' | 'confirmacao_envio' | 'closed';
 
 export default function App() {
   // Cloud JSON Database Bin ID
@@ -179,15 +183,38 @@ export default function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [catalogMyAcervoFilter, setCatalogMyAcervoFilter] = useState(false);
 
-  // Novos modais: Carrinho, Checkout WhatsApp e Cadastro de Novo Membro
+  // Novos modais: Carrinho, Checkout WhatsApp, Cadastro de Novo Membro e Convidar Amigo
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isWhatsAppCheckoutOpen, setIsWhatsAppCheckoutOpen] = useState(false);
-  const [isNewMemberAppOpen, setIsNewMemberAppOpen] = useState(false);
+  const [isInviteFriendOpen, setIsInviteFriendOpen] = useState(false);
+  
+  // Controle de estado único para o fluxo de entrada (Login -> Solicitação -> Confirmação)
+  const [entryModalState, setEntryModalState] = useState<EntryModalState>(() => {
+    return getStoredCurrentUser() ? 'closed' : 'login';
+  });
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // Preservação contínua do rascunho de candidatura entre etapas e navegação
+  const [applicationDraft, setApplicationDraft] = useState<ApplicationDraft>({
+    step: 1,
+    agreedToRules: false,
+    agreedTimestamp: '',
+    answers: {},
+    nome: '',
+    email: '',
+    telefone: '',
+    comoConheceu: 'Indicação de um membro',
+    indicadoPor: '',
+  });
+
+  // Fila de notificações toast empilháveis no topo direito
+  const [toastQueue, setToastQueue] = useState<ToastMessageItem[]>([]);
 
   const showToast = useCallback((msg: string) => {
-    setToastMessage(msg);
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    setToastQueue((prev) => [...prev, { id, message: msg }]);
+    setTimeout(() => {
+      setToastQueue((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
   }, []);
 
   // Save to LocalStorage
@@ -283,14 +310,16 @@ export default function App() {
       newPackages: FundingPackage[] = packages,
       newApplications: MembershipApplication[] = applications,
       newRulesConfig: RulesConfig = rulesConfig
-    ) => {
-      if (!binId) return;
+    ): Promise<boolean> => {
+      if (!binId) return true;
       try {
         setIsSyncing(true);
         await pushCloudData(binId, newItems, newUsers, newPackages, newApplications, newRulesConfig, USERS_VERSION);
-      } catch (err) {
+        return true;
+      } catch (err: any) {
         console.error('Error syncing with cloud:', err);
         showToast('Aviso: Não foi possível salvar na nuvem.');
+        return false;
       } finally {
         setIsSyncing(false);
       }
@@ -300,7 +329,7 @@ export default function App() {
 
   // User Identification Handlers
   const handleSelectExistingUser = (user: UserProfile, updatedEmail?: string, updatedPhone?: string) => {
-    // Requirement 7: Reiniciar navegação para 'home' e fechar todos os modais anteriores
+    // Reiniciar navegação para 'home' e fechar todos os modais anteriores
     setView('home');
     setCatalogMyAcervoFilter(false);
     setIsFormOpen(false);
@@ -314,6 +343,7 @@ export default function App() {
     setIsExportOpen(false);
     setIsSettingsOpen(false);
     setIsBulletinOpen(false);
+    setEntryModalState('closed');
 
     const updatedUser: UserProfile = {
       ...user,
@@ -444,7 +474,7 @@ export default function App() {
     setIsMembersModalOpen(false);
     setIsCartModalOpen(false);
     setIsWhatsAppCheckoutOpen(false);
-    setIsNewMemberAppOpen(false);
+    setEntryModalState('login');
     setCurrentUser(null);
     saveStoredCurrentUser(null);
   };
@@ -602,7 +632,11 @@ export default function App() {
         email: currentUser.email,
         data: new Date().toISOString(),
       };
-      nextApoiadores = [...(targetItem.apoiadores || []), novoApoiador];
+      // Garante ausência total de duplicatas por ID ou nome
+      const filtered = (targetItem.apoiadores || []).filter(
+        (ap) => ap.id !== currentUser.id && ap.nome.toLowerCase() !== currentUser.nome.toLowerCase()
+      );
+      nextApoiadores = [...filtered, novoApoiador];
       showToast(`Você apoiou "${targetItem.nome}"!`);
     }
 
@@ -647,7 +681,10 @@ export default function App() {
 
     setPackages(nextPackages);
     localStorage.setItem(STORAGE_KEY_PACKAGES, JSON.stringify(nextPackages));
-    await syncWithCloud(items, users, nextPackages);
+    const ok = await syncWithCloud(items, users, nextPackages);
+    if (!ok) {
+      throw new Error('Falha ao sincronizar o pacote com o servidor. Verifique sua conexão.');
+    }
     setPackageToEdit(null);
   };
 
@@ -938,17 +975,65 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F3E5C5] text-[#302414] flex flex-col font-sans selection:bg-[#48551F]/20 selection:text-[#302414]">
       
-      {/* Global Ambient Music Player (down-by-the-river) */}
-      <AmbientMusicPlayer audioSrc="/audio/down-by-the-river.mp3" />
+      {/* Global Ambient Music Player (Playlist 3 faixas) */}
+      <AmbientMusicPlayer />
 
-      {/* Modal de Entrada Obrigatório */}
-      {!currentUser && !isNewMemberAppOpen && (
+      {/* Fluxo de Entrada Obrigatório: Apenas 1 janela ativa por vez (Login | Solicitação | Confirmação de Envio) */}
+      {!currentUser && entryModalState === 'login' && (
         <UserAuthModal
-          isOpen={!currentUser && !isNewMemberAppOpen}
+          isOpen={true}
           users={users}
           onSelectExistingUser={handleSelectExistingUser}
-          onOpenNewMemberApplication={() => setIsNewMemberAppOpen(true)}
+          onOpenNewMemberApplication={() => setEntryModalState('solicitacao')}
         />
+      )}
+
+      {!currentUser && entryModalState === 'solicitacao' && (
+        <NewMemberApplicationModal
+          isOpen={true}
+          onClose={() => setEntryModalState('login')}
+          onSubmitApplication={handleSubmitApplication}
+          onSubmitSuccess={() => setEntryModalState('confirmacao_envio')}
+          draft={applicationDraft}
+          onUpdateDraft={setApplicationDraft}
+          rulesConfig={rulesConfig}
+          onToast={showToast}
+        />
+      )}
+
+      {!currentUser && entryModalState === 'confirmacao_envio' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md bg-[#FBF7EE] text-[#302414] rounded-2xl shadow-2xl border-4 border-[#8B5A2B] p-6 sm:p-8 text-center flex flex-col items-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-600 flex items-center justify-center text-emerald-700 mb-4 shadow-inner">
+              <CheckCircle2 size={36} />
+            </div>
+            <h2 className="font-serif text-2xl font-bold text-[#302414] mb-2">
+              Solicitação Enviada!
+            </h2>
+            <div className="w-16 h-1 bg-[#8B5A2B] rounded-full mx-auto mb-4" />
+            <p className="text-sm text-[#5C4033] leading-relaxed mb-6">
+              Sua solicitação de entrada na <strong>Ponte dos Trolls</strong> foi recebida com sucesso.
+              O Mestre avaliará suas respostas e dados cadastrais. Assim que sua entrada for aprovada, você poderá selecionar seu nome na tela de entrada para explorar todo o acervo.
+            </p>
+            {applicationDraft.nome && (
+              <div className="w-full bg-[#EFE3C3] border border-[#8B5A2B]/30 rounded-xl p-3 mb-6 text-xs text-[#422006] text-left space-y-1">
+                <div><strong>Aventureiro(a):</strong> {applicationDraft.nome}</div>
+                {applicationDraft.email && <div><strong>E-mail:</strong> {applicationDraft.email}</div>}
+                {applicationDraft.telefone && <div><strong>WhatsApp:</strong> {applicationDraft.telefone}</div>}
+                <div className="text-amber-800 font-semibold pt-1">Status: Aguardando aprovação do Mestre</div>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setEntryModalState('login');
+              }}
+              className="w-full py-3 px-6 rounded-xl font-serif font-bold text-white bg-[#48551F] hover:bg-[#384318] active:scale-[0.98] transition-all shadow-md cursor-pointer"
+            >
+              Voltar ao Login
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Cabeçalho */}
@@ -996,6 +1081,7 @@ export default function App() {
                   setItemToEdit(null);
                   setIsFormOpen(true);
                 }}
+                onOpenInviteFriend={() => setIsInviteFriendOpen(true)}
               />
             )}
 
@@ -1301,16 +1387,21 @@ export default function App() {
         onToast={showToast}
       />
 
-      {/* Modal de Cadastro de Novo Membro / Candidatura */}
-      <NewMemberApplicationModal
-        isOpen={isNewMemberAppOpen}
-        onClose={() => setIsNewMemberAppOpen(false)}
-        onSubmitApplication={handleSubmitApplication}
-        rulesConfig={rulesConfig}
-        onToast={showToast}
-      />
+      {/* Modal de Convidar um Amigo */}
+      {currentUser && (
+        <InviteFriendModal
+          isOpen={isInviteFriendOpen}
+          onClose={() => setIsInviteFriendOpen(false)}
+          currentUser={currentUser}
+          onToast={showToast}
+        />
+      )}
 
-      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      {/* Notificações Toast empilhadas no topo direito */}
+      <Toast
+        toasts={toastQueue}
+        onRemoveToast={(id) => setToastQueue((prev) => prev.filter((t) => t.id !== id))}
+      />
     </div>
   );
 }

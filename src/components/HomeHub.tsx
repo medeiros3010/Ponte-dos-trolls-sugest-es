@@ -12,6 +12,7 @@ import {
   Calendar,
   CheckCircle2,
   FolderCheck,
+  UserPlus,
 } from 'lucide-react';
 import { formatDateDisplay } from '../utils/helpers';
 import { PageBanner } from './PageBanner';
@@ -26,6 +27,7 @@ interface HomeHubProps {
   countMeusItens?: number;
   onNavigate: (view: AppView) => void;
   onOpenNewItem: () => void;
+  onOpenInviteFriend?: () => void;
 }
 
 export const HomeHub: React.FC<HomeHubProps> = ({
@@ -37,6 +39,7 @@ export const HomeHub: React.FC<HomeHubProps> = ({
   countMembros,
   countMeusItens = 0,
   onNavigate,
+  onOpenInviteFriend,
 }) => {
   const openPackages = activePackages.filter((p) => p.status === 'Financiamento');
 
@@ -276,6 +279,37 @@ export const HomeHub: React.FC<HomeHubProps> = ({
 
           <div className="pt-4 mt-3 border-t border-[#D6C296] flex items-center justify-between text-xs font-bold text-[#48551F]">
             <span>Ver Membros</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </button>
+
+        {/* Card 6: Convidar um amigo */}
+        <button
+          onClick={onOpenInviteFriend}
+          className="parchment-card p-5 text-left flex flex-col justify-between hover:shadow-md transition-all group cursor-pointer border-[#C6AD78]"
+        >
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] group-hover:scale-105 transition-transform">
+                <UserPlus className="w-5 h-5 text-[#48551F]" />
+              </div>
+              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#EADBBE] text-[#302414] border border-[#C6AD78]">
+                Indicação
+              </span>
+            </div>
+
+            <div>
+              <h3 className="font-rpg text-lg font-bold text-[#302414] group-hover:text-[#48551F] transition-colors">
+                Convidar um amigo
+              </h3>
+              <p className="text-xs text-[#71634D] mt-1 leading-relaxed">
+                Indique pessoas de sua confiança com mensagens personalizadas e link direto ao WhatsApp.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-4 mt-3 border-t border-[#D6C296] flex items-center justify-between text-xs font-bold text-[#48551F]">
+            <span>Gerar Convite</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </button>

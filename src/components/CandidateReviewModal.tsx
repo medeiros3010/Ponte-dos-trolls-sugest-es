@@ -15,7 +15,7 @@ import {
   Info,
 } from 'lucide-react';
 import { MembershipApplication, ADMIN_PASSWORD } from '../types';
-import { DEFAULT_QUESTIONS, RulesConfig } from '../data/rulesAndQuestions';
+import { DEFAULT_QUESTIONS, LEGACY_QUESTIONS_V1, RulesConfig } from '../data/rulesAndQuestions';
 
 interface CandidateReviewModalProps {
   isOpen: boolean;
@@ -44,7 +44,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
   if (!isOpen || !application) return null;
 
-  const questionsList = rulesConfig?.perguntas || DEFAULT_QUESTIONS;
+  // Versionamento: Solicitações antigas conservam seus 8 enunciados e respostas originais
+  const isV1 = application.regrasVersao === '1.0.0' || (application.respostas && Object.keys(application.respostas).some((k) => Number(k) > 4));
+  const questionsList = isV1 ? LEGACY_QUESTIONS_V1 : (rulesConfig?.perguntas || DEFAULT_QUESTIONS);
   const isPending = application.status === 'pendente';
 
   const handleApprove = async () => {

@@ -203,7 +203,12 @@ export async function pushCloudData(
       body: JSON.stringify(payload),
     });
 
-    return res.ok;
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.error || errJson.details || `Erro ${res.status} ao salvar no servidor`);
+    }
+
+    return true;
   } catch (err) {
     console.error('pushCloudData error:', err);
     throw err;

@@ -21,48 +21,83 @@ import {
   MembershipQuestion,
 } from '../data/rulesAndQuestions';
 
+export interface ApplicationDraft {
+  step: 1 | 2 | 3 | 4;
+  agreedToRules: boolean;
+  agreedTimestamp: string;
+  answers: Record<number, string>;
+  nome: string;
+  email: string;
+  telefone: string;
+  comoConheceu: string;
+  indicadoPor: string;
+}
+
 interface NewMemberApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitApplication: (app: Omit<MembershipApplication, 'id' | 'criadoEm'>) => Promise<boolean>;
+  onSubmitSuccess?: () => void;
   onToast: (msg: string) => void;
   rulesConfig?: RulesConfig;
+  draft?: ApplicationDraft;
+  onUpdateDraft?: (draft: ApplicationDraft) => void;
 }
 
 export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps> = ({
   isOpen,
   onClose,
   onSubmitApplication,
+  onSubmitSuccess,
   onToast,
   rulesConfig,
+  draft,
+  onUpdateDraft,
 }) => {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(draft?.step || 1);
 
   // Etapa 1: Regras
-  const [agreedToRules, setAgreedToRules] = useState<boolean>(false);
-  const [agreedTimestamp, setAgreedTimestamp] = useState<string>('');
+  const [agreedToRules, setAgreedToRules] = useState<boolean>(draft?.agreedToRules || false);
+  const [agreedTimestamp, setAgreedTimestamp] = useState<string>(draft?.agreedTimestamp || '');
 
   // Etapa 2: Perguntas
   const questionsList: MembershipQuestion[] = rulesConfig?.perguntas || DEFAULT_QUESTIONS;
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<number, string>>(draft?.answers || {});
   const [questionsError, setQuestionsError] = useState<string>('');
 
   // Etapa 3: Dados Pessoais
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [comoConheceu, setComoConheceu] = useState('Indicação de um membro');
-  const [indicadoPor, setIndicadoPor] = useState('');
+  const [nome, setNome] = useState(draft?.nome || '');
+  const [email, setEmail] = useState(draft?.email || '');
+  const [telefone, setTelefone] = useState(draft?.telefone || '');
+  const [comoConheceu, setComoConheceu] = useState(draft?.comoConheceu || 'Indicação de um membro');
+  const [indicadoPor, setIndicadoPor] = useState(draft?.indicadoPor || '');
   const [dataError, setDataError] = useState('');
 
   // Etapa 4: Envio & Sucesso
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmittedSuccess, setIsSubmittedSuccess] = useState(false);
 
+  // Sincroniza rascunho com o componente pai para garantir preservação total
+  const syncDraft = (partial: Partial<ApplicationDraft>) => {
+    if (onUpdateDraft) {
+      onUpdateDraft({
+        step: partial.step ?? step,
+        agreedToRules: partial.agreedToRules ?? agreedToRules,
+        agreedTimestamp: partial.agreedTimestamp ?? agreedTimestamp,
+        answers: partial.answers ?? answers,
+        nome: partial.nome ?? nome,
+        email: partial.email ?? email,
+        telefone: partial.telefone ?? telefone,
+        comoConheceu: partial.comoConheceu ?? comoConheceu,
+        indicadoPor: partial.indicadoPor ?? indicadoPor,
+      });
+    }
+  };
+
   if (!isOpen) return null;
 
   const currentRulesText = rulesConfig?.textoRegras || DEFAULT_RULES_TEXT;
-  const currentRulesVersion = rulesConfig?.version || '1.0.0';
+  const currentRulesVersion = rulesConfig?.version || '2.0.0';
   const currentTermoAceite = rulesConfig?.termoAceite || DEFAULT_TERMO_ACEITE;
 
   // Mask helper para telefone
@@ -89,20 +124,23 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
       onToast('Você precisa ler e concordar com as regras da Ponte dos Trolls para prosseguir.');
       return;
     }
+    const ts = agreedTimestamp || new Date().toISOString();
     if (!agreedTimestamp) {
-      setAgreedTimestamp(new Date().toISOString());
+      setAgreedTimestamp(ts);
     }
+    syncDraft({ step: 2, agreedToRules: true, agreedTimestamp: ts });
     setStep(2);
   };
 
   const handleStep2Next = () => {
     setQuestionsError('');
-    // Checa se todas as 8 perguntas foram respondidas
+    // Checa se todas as perguntas obrigatórias foram respondidas
     const unanswered = questionsList.filter((q) => !answers[q.id] || !answers[q.id].trim());
     if (unanswered.length > 0) {
-      setQuestionsError(`Por favor, responda a todas as 8 perguntas antes de avançar. Restam ${unanswered.length} perguntas pendentes.`);
+      setQuestionsError(`Por favor, responda a todas as ${questionsList.length} perguntas obrigatórias antes de avançar. Restam ${unanswered.length} pendentes.`);
       return;
     }
+    syncDraft({ step: 3, answers });
     setStep(3);
   };
 
@@ -130,6 +168,14 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
       return;
     }
 
+    syncDraft({
+      step: 4,
+      nome: cleanNome,
+      email: cleanEmail,
+      telefone: cleanTelefone,
+      comoConheceu,
+      indicadoPor: comoConheceu === 'Indicação de um membro' ? indicadoPor.trim() : undefined,
+    });
     setStep(4);
   };
 
@@ -155,6 +201,9 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
       const success = await onSubmitApplication(appPayload);
       if (success) {
         setIsSubmittedSuccess(true);
+        if (onSubmitSuccess) {
+          onSubmitSuccess();
+        }
       } else {
         onToast('Não foi possível enviar a solicitação no momento. Tente novamente.');
       }
@@ -172,7 +221,7 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/75 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/75 backdrop-blur-md animate-in fade-in duration-200">
       <div className="parchment-card w-full max-w-3xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden border-[#C6AD78]">
         
         {/* Header */}
@@ -318,7 +367,7 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
                   <div className="p-3 rounded-xl bg-[#FBF4E4] border border-[#D6C296] flex items-start gap-2 text-xs text-[#55482e]">
                     <HelpCircle className="w-4 h-4 text-[#716016] shrink-0 mt-0.5" />
                     <p>
-                      Responda às 8 perguntas obrigatórias com suas próprias palavras com base no texto das regras. O Mestre avaliará manualmente suas respostas.
+                      Responda às 4 perguntas obrigatórias com suas próprias palavras com base no texto das regras. O Mestre avaliará manualmente suas respostas.
                     </p>
                   </div>
 

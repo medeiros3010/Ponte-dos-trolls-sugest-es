@@ -51,6 +51,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   const titleInputRef = useRef<HTMLInputElement>(null);
   const subNomeInputRef = useRef<HTMLInputElement>(null);
   const subPrecoInputRef = useRef<HTMLInputElement>(null);
+  const minimoParticipantesInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const itemsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -198,15 +199,40 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       errors.titulo = 'O nome do pacote é obrigatório.';
     }
 
-    // 2. Validação dos Itens inclusos (mínimo 1 item)
-    if (itens.length === 0) {
-      errors.itens = 'Adicione pelo menos 1 item na lista do pacote antes de criar o rateio.';
+    // 2. Incorporação automática de item em digitação e validação da lista de itens
+    let finalItens = [...itens];
+    if (subNome.trim()) {
+      const cleanSubPreco = subPreco.replace(',', '.').trim();
+      const parsedSubPreco = parseFloat(cleanSubPreco);
+      if (!isNaN(parsedSubPreco) && parsedSubPreco >= 0) {
+        const autoItem: PackageSubItem = {
+          id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+          nome: subNome.trim(),
+          sistema: subSistema,
+          tipo: subTipo,
+          link: subLink.trim(),
+          precoBRL: parsedSubPreco,
+          imageUrl: subImageUrl.trim() || undefined,
+        };
+        finalItens = [...finalItens, autoItem];
+        setItens(finalItens);
+        setSubNome('');
+        setSubPreco('');
+        setSubLink('');
+        setSubImageUrl('');
+      } else {
+        errors.subItem = `O item "${subNome.trim()}" precisa de um preço numérico válido em R$ (ex: 29.90).`;
+      }
+    }
+
+    if (finalItens.length === 0 && !errors.subItem) {
+      errors.itens = 'O pacote precisa ter pelo menos 1 item incluso. Preencha o nome e preço do item no bloco acima e adicione-o.';
     }
 
     // 3. Validação do Mínimo de cotistas
     const minPart = Number(minimoParticipantes);
     if (isNaN(minPart) || minPart < 1) {
-      errors.minimoParticipantes = 'O mínimo de cotistas deve ser pelo menos 1.';
+      errors.minimoParticipantes = 'O mínimo de cotistas deve ser pelo menos 1 participante.';
     }
 
     // 4. Validação da Senha do Mestre
@@ -216,17 +242,24 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       errors.adminPassword = 'Senha do Mestre incorreta! Acesso negado.';
     }
 
-    // Se houver algum erro, foca o primeiro campo inválido
+    // Se houver algum erro, foca o primeiro campo inválido com scroll suave
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setErrorMsg('Por favor, corrija os campos indicados abaixo.');
+      setErrorMsg('Por favor, corrija os campos indicados antes de continuar.');
 
       if (errors.titulo) {
         titleInputRef.current?.focus();
         titleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else if (errors.itens) {
+      } else if (errors.itens || errors.subItem) {
         itemsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        subNomeInputRef.current?.focus();
+        if (errors.subItem) {
+          subPrecoInputRef.current?.focus();
+        } else {
+          subNomeInputRef.current?.focus();
+        }
+      } else if (errors.minimoParticipantes) {
+        minimoParticipantesInputRef.current?.focus();
+        minimoParticipantesInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else if (errors.adminPassword) {
         passwordInputRef.current?.focus();
         passwordInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -242,7 +275,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         ? parseFloat(valorCatalogoBRL.replace(',', '.'))
         : valorTotalBRL;
 
-      const principalSistema = itens[0]?.sistema || 'Foundry VTT Geral';
+      const principalSistema = finalItens[0]?.sistema || 'Foundry VTT Geral';
 
       await onSave({
         id: existingPackage?.id,
@@ -251,7 +284,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         tipo,
         descricao: descricao.trim(),
         imageUrl: imageUrl.trim() || undefined,
-        itens,
+        itens: finalItens,
         valorTotalBRL,
         minimoParticipantes: minPart > 0 ? minPart : 35,
         valorMaximoPorPessoa,
@@ -272,7 +305,8 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error('Erro ao salvar pacote:', err);
-      setErrorMsg(err.message || 'Falha ao salvar no servidor. Verifique os dados e tente novamente.');
+      setErrorMsg(err.message || 'Falha ao salvar no servidor. Verifique sua conexão e tente novamente.');
+      onToast(err.message || 'Falha ao salvar o pacote.');
     } finally {
       setIsSubmitting(false);
     }
@@ -311,7 +345,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         </div>
 
         {/* Formulário com Área com Rolagem Interna e Rodapé Fixo */}
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <form id="package-funding-form" onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
           
           {/* Conteúdo com rolagem garantida */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 text-xs text-[#302414]">
@@ -582,6 +616,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                     Mínimo de Cotistas (Meta) <span className="text-[#8b261b] font-bold">*</span>:
                   </label>
                   <input
+                    ref={minimoParticipantesInputRef}
                     type="number"
                     min="1"
                     value={minimoParticipantes}
@@ -668,12 +703,20 @@ export const PackageModal: React.FC<PackageModalProps> = ({
           </div>
 
           {/* Rodapé Fixo (Sticky Footer) - Sempre visível e acessível */}
-          <div className="px-6 py-3.5 bg-[#EDE2CA] border-t border-[#D6C296] flex items-center justify-between gap-3 shrink-0">
-            <span className="text-[11px] text-[#71634D] hidden sm:inline">
-              <span className="text-[#8b261b] font-bold">*</span> Campos obrigatórios
-            </span>
+          <div className="px-6 py-3.5 bg-[#EDE2CA] border-t border-[#D6C296] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-[11px] text-[#71634D] hidden sm:inline">
+                <span className="text-[#8b261b] font-bold">*</span> Campos obrigatórios
+              </span>
+              {errorMsg && (
+                <span className="text-[11px] text-[#8b261b] font-bold flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errorMsg}</span>
+                </span>
+              )}
+            </div>
 
-            <div className="flex items-center gap-2.5 ml-auto">
+            <div className="flex items-center gap-2.5 ml-auto w-full sm:w-auto justify-end">
               <button
                 type="button"
                 disabled={isSubmitting}
@@ -684,11 +727,15 @@ export const PackageModal: React.FC<PackageModalProps> = ({
               </button>
               <button
                 type="submit"
+                form="package-funding-form"
                 disabled={isSubmitting}
                 className="px-5 py-2 text-xs font-bold text-[#F8EDD5] bg-[#48551F] hover:bg-[#59672A] rounded-xl shadow-sm transition-all cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (
-                  <span>Salvando...</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Salvando...</span>
+                  </span>
                 ) : (
                   <span>{existingPackage ? 'Salvar Alterações' : 'Criar Pacote de Financiamento'}</span>
                 )}

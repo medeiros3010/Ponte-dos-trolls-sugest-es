@@ -97,7 +97,7 @@ O Mestre analisará suas respostas e seu cadastro. O envio não libera acesso au
 
 export const DEFAULT_TERMO_ACEITE = 'Li, compreendi e concordo com as regras da Ponte dos Trolls.';
 
-export const DEFAULT_QUESTIONS: MembershipQuestion[] = [
+export const LEGACY_QUESTIONS_V1: MembershipQuestion[] = [
   {
     id: 1,
     pergunta: 'Qual é o prazo padrão para colocar seu nome em um financiamento e onde você confere a data válida daquela compra?',
@@ -140,9 +140,32 @@ export const DEFAULT_QUESTIONS: MembershipQuestion[] = [
   },
 ];
 
+export const DEFAULT_QUESTIONS: MembershipQuestion[] = [
+  {
+    id: 1,
+    pergunta: 'Qual é o prazo padrão para colocar seu nome em um financiamento?',
+    guiaAvaliacao: 'Cinco dias.',
+  },
+  {
+    id: 2,
+    pergunta: 'O que acontece se você entrar em um financiamento e não pagar no prazo?',
+    guiaAvaliacao: 'Recebe um strike.',
+  },
+  {
+    id: 3,
+    pergunta: 'Você pode compartilhar os materiais ou os links de acesso com amigos de fora do grupo ou com membros que não participaram da compra?',
+    guiaAvaliacao: 'Não, nos dois casos.',
+  },
+  {
+    id: 4,
+    pergunta: 'É permitido compartilhar materiais brasileiros no grupo ou no acervo?',
+    guiaAvaliacao: 'Não.',
+  },
+];
+
 export const INITIAL_RULES_CONFIG: RulesConfig = {
-  version: '1.0.0',
-  updatedAt: '2026-11-08T00:00:00.000Z',
+  version: '2.0.0',
+  updatedAt: '2026-11-08T16:00:00.000Z',
   textoRegras: DEFAULT_RULES_TEXT,
   termoAceite: DEFAULT_TERMO_ACEITE,
   perguntas: DEFAULT_QUESTIONS,

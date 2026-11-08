@@ -25,6 +25,9 @@ import {
   ArrowRight,
   ShieldCheck,
   FolderUp,
+  Loader2,
+  MessageCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { formatDateDisplay, extractPaidMemberEmails } from '../utils/helpers';
 import { EditPackageImageModal } from './EditPackageImageModal';
@@ -108,6 +111,38 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
 
   // Copied Pix Feedback per package card
   const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
+
+  // Undo Payment State (Informei por engano — desfazer)
+  const [undoPaymentPkg, setUndoPaymentPkg] = useState<FundingPackage | null>(null);
+  const [isUndoingPayment, setIsUndoingPayment] = useState(false);
+  const [undoLockedInfo, setUndoLockedInfo] = useState<{ pkg: FundingPackage; reason: string } | null>(null);
+
+  const handleRequestUndoPayment = (pkg: FundingPackage) => {
+    // Se o acesso já foi liberado no drive ou se o pacote foi para o Catálogo, orienta a falar com o Mestre
+    const isAccessReleased = pkg.status === 'Catálogo' || Boolean(pkg.linkDrive && pkg.linkDrive.trim());
+    if (isAccessReleased) {
+      setUndoLockedInfo({
+        pkg,
+        reason: 'O acesso aos materiais deste financiamento já foi disponibilizado pelo Mestre ou o pacote foi finalizado. Para manter a segurança e o controle administrativo, qualquer alteração posterior deve ser solicitada diretamente ao Mestre da Ponte.',
+      });
+      return;
+    }
+    setUndoPaymentPkg(pkg);
+  };
+
+  const handleConfirmUndoPayment = async () => {
+    if (!undoPaymentPkg) return;
+    try {
+      setIsUndoingPayment(true);
+      await onUpdatePayment(undoPaymentPkg.id, currentUser.id, false);
+      onToast('Declaração de pagamento desfeita com sucesso. Situação alterada para Pendente.');
+      setUndoPaymentPkg(null);
+    } catch (err: any) {
+      onToast(err?.message || 'Erro ao desfazer pagamento.');
+    } finally {
+      setIsUndoingPayment(false);
+    }
+  };
 
   const handleCopyPixKey = (pkg: FundingPackage) => {
     if (!pkg.chavePix) return;
@@ -616,19 +651,48 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                           )}
                         </div>
 
-                        {/* Botão PAGAR */}
-                        <div className="flex flex-col items-end">
-                          <button
-                            onClick={() => setPaymentInstructionsPkg(pkg)}
-                            className="w-full sm:w-auto px-5 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
-                          >
-                            <CreditCard className="w-3.5 h-3.5" />
-                            <span>PAGAR</span>
-                          </button>
-                          <span className="text-[10px] text-[#71634D] italic mt-1 text-center sm:text-right">
-                            Confirme no site após fazer o Pix.
-                          </span>
-                        </div>
+                        {/* Botão PAGAR / Pagamento informado & Desfazer */}
+                        {(() => {
+                          const paymentInfo = pkg.pagamentos && pkg.pagamentos[currentUser.id];
+                          const participantRecord = (pkg.apoiadores || []).find(
+                            (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
+                          );
+                          const userHasPaid = Boolean(paymentInfo?.informouPagamento || participantRecord?.pagamentoInformado);
+
+                          if (userHasPaid) {
+                            return (
+                              <div className="flex flex-col items-end gap-1">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#dbe9c8] text-[#2f5c1a] border border-[#a4cb88] text-xs font-bold shadow-sm">
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Pagamento informado</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRequestUndoPayment(pkg)}
+                                  className="text-[11px] text-[#875508] hover:text-[#5a3805] underline underline-offset-2 cursor-pointer font-medium"
+                                  title="Clique caso tenha informado o pagamento por engano"
+                                >
+                                  Informei por engano — desfazer
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="flex flex-col items-end">
+                              <button
+                                onClick={() => setPaymentInstructionsPkg(pkg)}
+                                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                              >
+                                <CreditCard className="w-3.5 h-3.5" />
+                                <span>PAGAR</span>
+                              </button>
+                              <span className="text-[10px] text-[#71634D] italic mt-1 text-center sm:text-right">
+                                Confirme no site após fazer o Pix.
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Lista de Apoiadores e Situação de Pagamento (Fiel ao Print 3) */}
@@ -915,6 +979,112 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
           packages={packages}
           onTogglePaymentStatus={handleTogglePaymentStatus}
         />
+      )}
+
+      {/* Modal de Confirmação para Desfazer Pagamento Informado por Engano */}
+      {undoPaymentPkg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#282D13]/70 backdrop-blur-md animate-in fade-in">
+          <div className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl border-[#C6AD78]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
+              <h3 className="font-rpg text-base sm:text-lg font-bold text-[#302414] flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-[#875508]" />
+                <span>Desfazer Confirmação</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setUndoPaymentPkg(null)}
+                className="p-1 text-[#71634D] hover:text-[#302414] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#55482e] leading-relaxed">
+              Você confirma que deseja desfazer a declaração de pagamento de <strong>"{undoPaymentPkg.titulo}"</strong>?
+            </p>
+
+            <div className="p-3 rounded-xl bg-[#FBF4E4] border border-[#D6C296] text-xs text-[#71634D] space-y-1">
+              <div>Sua situação voltará a constar como <strong>Pendente</strong> na lista deste rateio.</div>
+              <div className="text-[11px] text-[#716016] font-medium pt-1">
+                Você poderá realizar e confirmar o Pix novamente a qualquer momento antes do prazo.
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                disabled={isUndoingPayment}
+                onClick={() => setUndoPaymentPkg(null)}
+                className="px-4 py-2 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] rounded-xl text-xs font-semibold cursor-pointer disabled:opacity-50"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                disabled={isUndoingPayment}
+                onClick={handleConfirmUndoPayment}
+                className="px-4 py-2 bg-[#875508] hover:bg-[#6c4305] text-[#F8EDD5] rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
+              >
+                {isUndoingPayment ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Desfazendo...</span>
+                  </>
+                ) : (
+                  <span>Sim, desfazer pagamento</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal quando o estorno requer intervenção direta do Mestre */}
+      {undoLockedInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#282D13]/70 backdrop-blur-md animate-in fade-in">
+          <div className="parchment-card w-full max-w-md p-6 space-y-4 shadow-2xl border-[#C6AD78]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D6C296]">
+              <h3 className="font-rpg text-base sm:text-lg font-bold text-[#302414] flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-[#875508]" />
+                <span>Solicitar Ajuste ao Mestre</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setUndoLockedInfo(null)}
+                className="p-1 text-[#71634D] hover:text-[#302414] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#55482e] leading-relaxed">
+              {undoLockedInfo.reason}
+            </p>
+
+            <div className="p-3 rounded-xl bg-[#FBF4E4] border border-[#D6C296] text-xs font-semibold text-[#302414]">
+              📦 {undoLockedInfo.pkg.titulo}
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setUndoLockedInfo(null)}
+                className="px-4 py-2 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] rounded-xl text-xs font-semibold cursor-pointer"
+              >
+                Fechar
+              </button>
+              <a
+                href={`https://wa.me/5519981512030?text=${encodeURIComponent(`Olá, Mestre! Preciso de um ajuste no meu pagamento do pacote "${undoLockedInfo.pkg.titulo}". Meu nome é ${currentUser.nome}.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs font-bold shadow-sm cursor-pointer flex items-center gap-1.5"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Falar com o Mestre</span>
+              </a>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

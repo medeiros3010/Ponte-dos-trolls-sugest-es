@@ -19,7 +19,7 @@ export interface UserRankInfo {
 export const RANKS_CONFIG = [
   {
     level: 1,
-    name: 'Aprendiz',
+    name: 'Aprendiz da Ponte',
     min: 0,
     max: 10,
     iconName: 'BookOpen' as const,
@@ -59,7 +59,7 @@ export const RANKS_CONFIG = [
   },
   {
     level: 5,
-    name: 'Paragon',
+    name: 'Lenda',
     min: 71,
     max: 100,
     iconName: 'Sparkles' as const,
@@ -69,7 +69,7 @@ export const RANKS_CONFIG = [
   },
   {
     level: 6,
-    name: 'Deus Ascendente',
+    name: 'Guardião Lendário',
     min: 101,
     max: null,
     iconName: 'Sun' as const,
@@ -195,7 +195,7 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       min: config.min,
       max: config.max,
       currentCount: count,
-      nextRankName: 'Paragon',
+      nextRankName: 'Lenda',
       neededForNext: 71 - count,
       progressPercent,
       isMaxRank: false,
@@ -215,7 +215,7 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       min: config.min,
       max: config.max,
       currentCount: count,
-      nextRankName: 'Deus Ascendente',
+      nextRankName: 'Guardião Lendário',
       neededForNext: 101 - count,
       progressPercent,
       isMaxRank: false,
