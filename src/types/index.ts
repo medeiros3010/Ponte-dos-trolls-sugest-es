@@ -129,8 +129,11 @@ export interface FundingPackage {
   minimoParticipantes: number; // Mínimo de cotistas, ex: 35
   valorMaximoPorPessoa: number; // valorTotalBRL / minimoParticipantes
   valorCatalogoBRL?: number; // Preço de aquisição no catálogo de produtos
+  valorCota?: number; // Valor da cota unitária histórica
+  precoAquisicao?: number; // Preço de aquisição do catálogo
   linkLoja?: string;
   linkDrive?: string;
+  links?: string[]; // Links de referência ou compra dos módulos
   itensInclusos?: string[]; // Retrocompatibilidade
   sugestoesIds?: string[];
   status: PackageStatus; // 'Financiamento' | 'Catálogo'

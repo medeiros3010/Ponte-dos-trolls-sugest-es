@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './src/data/seedData';
+import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES, HISTORICAL_CATALOG_PACKAGES } from './src/data/seedData';
 import { normalizeProductType } from './src/types';
 
 // ==================== CONFIGURAÇÕES & SEGURANÇA ====================
@@ -13,6 +13,11 @@ const SERVER_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Ponte#dos#trolls';
 const MASTER_ADMIN_NAME = 'Ponte dos Trolls';
 
 function getPort(): number {
+  const portEq = process.argv.find((arg) => arg.startsWith('--port='));
+  if (portEq) {
+    const parsed = parseInt(portEq.split('=')[1], 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
   const portArgIndex = process.argv.indexOf('--port');
   if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
     const parsed = parseInt(process.argv[portArgIndex + 1], 10);
@@ -26,6 +31,10 @@ function getPort(): number {
 }
 
 function getHost(): string {
+  const hostEq = process.argv.find((arg) => arg.startsWith('--host='));
+  if (hostEq) {
+    return hostEq.split('=')[1];
+  }
   const hostArgIndex = process.argv.indexOf('--host');
   if (hostArgIndex !== -1 && process.argv[hostArgIndex + 1]) {
     return process.argv[hostArgIndex + 1];
@@ -258,9 +267,12 @@ function sanitizePackage(pkg: any): any {
     dataPagamento: pkg.dataPagamento || '',
     minimoParticipantes: typeof pkg.minimoParticipantes === 'number' && pkg.minimoParticipantes > 0 ? pkg.minimoParticipantes : 35,
     valorMaximoPorPessoa: typeof pkg.valorMaximoPorPessoa === 'number' ? pkg.valorMaximoPorPessoa : 0,
-    valorCatalogoBRL: typeof pkg.valorCatalogoBRL === 'number' ? pkg.valorCatalogoBRL : undefined,
+    valorCatalogoBRL: typeof pkg.valorCatalogoBRL === 'number' ? pkg.valorCatalogoBRL : (typeof pkg.valorCota === 'number' ? pkg.valorCota : (typeof pkg.precoAquisicao === 'number' ? pkg.precoAquisicao : undefined)),
+    valorCota: typeof pkg.valorCota === 'number' ? pkg.valorCota : (parseFloat(pkg.valorCota) || undefined),
+    precoAquisicao: typeof pkg.precoAquisicao === 'number' ? pkg.precoAquisicao : (parseFloat(pkg.precoAquisicao) || undefined),
     linkLoja: sanitizeUrl(pkg.linkLoja),
     linkDrive: sanitizeUrl(pkg.linkDrive),
+    links: Array.isArray(pkg.links) ? pkg.links : [],
     itensInclusos: Array.isArray(pkg.itensInclusos) ? pkg.itensInclusos : [],
     sugestoesIds: Array.isArray(pkg.sugestoesIds) ? pkg.sugestoesIds : [],
     status: pkg.status === 'Catálogo' ? 'Catálogo' : 'Financiamento',
@@ -305,7 +317,19 @@ function readBinData(binId: string): any {
   if (!Array.isArray(data.packages)) data.packages = SEED_PACKAGES;
   if (!Array.isArray(data.items)) data.items = SEED_ITEMS;
   if (!Array.isArray(data.solicitacoes)) data.solicitacoes = [];
-  data.packages = data.packages.map(sanitizePackage);
+  
+  // Remove pacotes de teste legados (pack-3, pack-4, pack-5) e garante todos os 100 pacotes do Catálogo
+  const cleaned = (data.packages as any[]).filter((p: any) => !['pack-3', 'pack-4', 'pack-5'].includes(p?.id));
+  const pkgMap = new Map<string, any>();
+  for (const p of cleaned) {
+    if (p && p.id) pkgMap.set(p.id, p);
+  }
+  for (const hp of HISTORICAL_CATALOG_PACKAGES) {
+    if (!pkgMap.has(hp.id)) {
+      pkgMap.set(hp.id, hp);
+    }
+  }
+  data.packages = Array.from(pkgMap.values()).map(sanitizePackage);
   return data;
 }
 

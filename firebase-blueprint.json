@@ -105,7 +105,7 @@
         "titulo": {
           "type": "string",
           "description": "Título do pacote ou vaquinha",
-          "maxLength": 150
+          "maxLength": 300
         },
         "sistema": {
           "type": "string",
@@ -130,6 +130,14 @@
         "valorTotalBRL": {
           "type": "number",
           "description": "Valor total estimado ou final em Reais"
+        },
+        "valorCota": {
+          "type": "number",
+          "description": "Valor da cota unitária em Reais"
+        },
+        "precoAquisicao": {
+          "type": "number",
+          "description": "Preço de aquisição no catálogo em Reais"
         },
         "dataFinalizar": {
           "type": "string",
@@ -162,6 +170,22 @@
           "type": "string",
           "description": "Link seguro do Google Drive para cotistas",
           "maxLength": 500
+        },
+        "links": {
+          "type": "array",
+          "description": "Links de referência ou compra dos módulos"
+        },
+        "itens": {
+          "type": "array",
+          "description": "Lista de itens inclusos no pacote"
+        },
+        "apoiadores": {
+          "type": "array",
+          "description": "Lista de apoiadores e compradores"
+        },
+        "solicitacoesAcesso": {
+          "type": "array",
+          "description": "Solicitações pendentes de acesso ao drive"
         },
         "status": {
           "type": "string",

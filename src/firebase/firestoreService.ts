@@ -14,7 +14,7 @@ import { signInWithPopup, signOut as fbSignOut, User as FirebaseUser } from 'fir
 import { db, auth, googleProvider } from './config';
 import { handleFirestoreError, OperationType } from './errors';
 import { ItemRPG, FundingPackage, UserProfile, MembershipApplication } from '../types';
-import { SEED_ITEMS, SEED_PACKAGES, SEED_USERS } from '../data/seedData';
+import { SEED_ITEMS, SEED_PACKAGES, SEED_USERS, HISTORICAL_CATALOG_PACKAGES } from '../data/seedData';
 
 // Collections
 const ITEMS_COLLECTION = 'items';
@@ -48,9 +48,84 @@ export async function signOutFirebase(): Promise<void> {
 }
 
 /**
+ * Alimenta e sincroniza os 100 pacotes históricos do Catálogo no Firestore.
+ * 1. Apaga do Firestore todos os pacotes atuais que estejam com o status 'Catálogo' (removendo pacotes de teste).
+ * 2. Insere os 100 pacotes de 'catalogo_ponte_dos_trolls.json' diretamente na coleção 'packages' com status 'Catálogo'.
+ * 3. Mapeia os campos: id, titulo, valorCota, precoAquisicao, sistema, descricao, itens, links, apoiadores: [], solicitacoesAcesso: [].
+ */
+export async function syncCatalogPackagesToFirestore(): Promise<{ success: boolean; count: number }> {
+  // Salvaguarda defensiva: apenas o Mestre autenticado tem permissão de escrita em lote de pacotes
+  const isMaster = Boolean(auth.currentUser && auth.currentUser.email === 'pontedostrolls@gmail.com');
+  if (!isMaster) {
+    return { success: false, count: 0 };
+  }
+
+  try {
+    const packagesCollectionRef = collection(db, PACKAGES_COLLECTION);
+    const existingSnap = await getDocs(packagesCollectionRef);
+
+    // 1. Identificar pacotes de Catálogo para exclusão (preservando rigorosamente os pacotes de Financiamento em andamento)
+    const catalogDocsToDelete: string[] = [];
+    const existingCatalogIds = new Set<string>();
+
+    existingSnap.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.status === 'Catálogo') {
+        existingCatalogIds.add(docSnap.id);
+        // Exclui pacotes de teste anteriores (como pack-3, pack-4, pack-5)
+        if (docSnap.id.startsWith('pack-')) {
+          catalogDocsToDelete.push(docSnap.id);
+        }
+      }
+    });
+
+    // Se houver pacotes de teste para deletar, deleta em batch
+    if (catalogDocsToDelete.length > 0) {
+      console.log(`[Firebase] Removendo ${catalogDocsToDelete.length} pacotes de teste do Catálogo...`);
+      const batch = writeBatch(db);
+      for (const id of catalogDocsToDelete) {
+        batch.delete(doc(db, PACKAGES_COLLECTION, id));
+      }
+      await batch.commit();
+    }
+
+    // 2. Inserir os 100 pacotes do acervo histórico
+    const missingPackages = HISTORICAL_CATALOG_PACKAGES.filter(
+      (p) => !existingCatalogIds.has(p.id) || catalogDocsToDelete.includes(p.id)
+    );
+
+    if (missingPackages.length > 0) {
+      console.log(`[Firebase] Inserindo ${missingPackages.length} pacotes históricos no Catálogo do Firestore...`);
+      for (let i = 0; i < missingPackages.length; i += 100) {
+        const batch = writeBatch(db);
+        const chunk = missingPackages.slice(i, i + 100);
+        for (const pkg of chunk) {
+          batch.set(doc(db, PACKAGES_COLLECTION, pkg.id), pkg, { merge: true });
+        }
+        await batch.commit();
+      }
+      console.log(`[Firebase] ${missingPackages.length} pacotes do Catálogo sincronizados com sucesso no Firestore.`);
+    } else {
+      console.log('[Firebase] Os 100 pacotes históricos do Catálogo já estão sincronizados no Firestore.');
+    }
+
+    return { success: true, count: HISTORICAL_CATALOG_PACKAGES.length };
+  } catch (error) {
+    console.warn('[Firebase] Aviso ao sincronizar pacotes do Catálogo no Firestore:', error);
+    return { success: false, count: 0 };
+  }
+}
+
+/**
  * Bootstraps initial data into Firestore if empty
  */
 export async function bootstrapFirestoreIfEmpty(): Promise<void> {
+  // Apenas o Mestre Administrador autenticado no Firebase realiza operações de bootstrap/seeding
+  const isMaster = Boolean(auth.currentUser && auth.currentUser.email === 'pontedostrolls@gmail.com');
+  if (!isMaster) {
+    return;
+  }
+
   try {
     const itemsSnap = await getDocs(collection(db, ITEMS_COLLECTION));
     if (itemsSnap.empty) {
@@ -65,11 +140,17 @@ export async function bootstrapFirestoreIfEmpty(): Promise<void> {
     const packagesSnap = await getDocs(collection(db, PACKAGES_COLLECTION));
     if (packagesSnap.empty) {
       console.log('[Firebase] Bootstrapping initial packages to Firestore...');
-      const batch = writeBatch(db);
-      for (const pkg of SEED_PACKAGES) {
-        batch.set(doc(db, PACKAGES_COLLECTION, pkg.id), pkg);
+      for (let i = 0; i < SEED_PACKAGES.length; i += 100) {
+        const batch = writeBatch(db);
+        const chunk = SEED_PACKAGES.slice(i, i + 100);
+        for (const pkg of chunk) {
+          batch.set(doc(db, PACKAGES_COLLECTION, pkg.id), pkg);
+        }
+        await batch.commit();
       }
-      await batch.commit();
+    } else {
+      // Sincroniza / atualiza os 100 pacotes do Catálogo e remove pacotes de teste do Catálogo
+      await syncCatalogPackagesToFirestore();
     }
 
     const usersSnap = await getDocs(collection(db, USERS_COLLECTION));
@@ -123,6 +204,7 @@ export function subscribeItems(
  * Save Item to Firestore
  */
 export async function saveItemToFirestore(item: ItemRPG): Promise<void> {
+  if (!auth.currentUser) return;
   const path = `${ITEMS_COLLECTION}/${item.id}`;
   try {
     await setDoc(doc(db, ITEMS_COLLECTION, item.id), item, { merge: true });
@@ -135,6 +217,7 @@ export async function saveItemToFirestore(item: ItemRPG): Promise<void> {
  * Delete Item from Firestore
  */
 export async function deleteItemFromFirestore(itemId: string): Promise<void> {
+  if (!auth.currentUser) return;
   const path = `${ITEMS_COLLECTION}/${itemId}`;
   try {
     await deleteDoc(doc(db, ITEMS_COLLECTION, itemId));
@@ -171,6 +254,10 @@ export function subscribePackages(
  * Save Package to Firestore
  */
 export async function savePackageToFirestore(pkg: FundingPackage): Promise<void> {
+  const isMaster = Boolean(auth.currentUser && auth.currentUser.email === 'pontedostrolls@gmail.com');
+  if (!isMaster) {
+    return;
+  }
   const path = `${PACKAGES_COLLECTION}/${pkg.id}`;
   try {
     await setDoc(doc(db, PACKAGES_COLLECTION, pkg.id), pkg, { merge: true });
@@ -183,6 +270,10 @@ export async function savePackageToFirestore(pkg: FundingPackage): Promise<void>
  * Delete Package from Firestore
  */
 export async function deletePackageFromFirestore(packageId: string): Promise<void> {
+  const isMaster = Boolean(auth.currentUser && auth.currentUser.email === 'pontedostrolls@gmail.com');
+  if (!isMaster) {
+    return;
+  }
   const path = `${PACKAGES_COLLECTION}/${packageId}`;
   try {
     await deleteDoc(doc(db, PACKAGES_COLLECTION, packageId));
@@ -219,6 +310,7 @@ export function subscribeUsers(
  * Save User to Firestore
  */
 export async function saveUserToFirestore(user: UserProfile): Promise<void> {
+  if (!auth.currentUser) return;
   const path = `${USERS_COLLECTION}/${user.id}`;
   try {
     await setDoc(doc(db, USERS_COLLECTION, user.id), user, { merge: true });
@@ -248,6 +340,15 @@ export async function submitApplicationToFirestore(app: MembershipApplication): 
 export async function syncOfficialMembersToFirestore(
   onProgress?: (message: string) => void
 ): Promise<{ success: boolean; count: number; users: UserProfile[]; message: string }> {
+  const isMaster = Boolean(auth.currentUser && auth.currentUser.email === 'pontedostrolls@gmail.com');
+  if (!isMaster) {
+    return {
+      success: false,
+      count: 0,
+      users: [],
+      message: 'Requer autenticação como Mestre Administrador no Firebase.',
+    };
+  }
   const path = USERS_COLLECTION;
   try {
     onProgress?.('Iniciando comunicação com a coleção de usuários no Firestore...');

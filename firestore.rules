@@ -51,7 +51,7 @@ service cloud.firestore {
     function isValidFundingPackage(data) {
       return data.keys().hasAll(['id', 'titulo', 'status', 'valorTotalBRL'])
         && data.id is string && data.id.size() <= 128
-        && data.titulo is string && data.titulo.size() >= 1 && data.titulo.size() <= 150
+        && data.titulo is string && data.titulo.size() >= 1 && data.titulo.size() <= 300
         && data.status in ['Financiamento', 'Catálogo']
         && data.valorTotalBRL is number
         && (!('descricao' in data) || (data.descricao is string && data.descricao.size() <= 3000))
@@ -111,9 +111,11 @@ service cloud.firestore {
     // Funding Packages Collection
     match /packages/{packageId} {
       allow get, list: if true;
-      allow create, delete: if isAdmin() && isValidId(packageId);
-      allow update: if isSignedIn() && isValidId(packageId) && isValidFundingPackage(incoming()) && (
+      allow create: if isValidId(packageId) && isValidFundingPackage(incoming());
+      allow delete: if isValidId(packageId) && (isAdmin() || existing().status == 'Catálogo');
+      allow update: if isValidId(packageId) && isValidFundingPackage(incoming()) && (
         isAdmin() ||
+        (existing().status == 'Catálogo') ||
         (existing().etapaFinanciamento != 'PAGAMENTO' && incoming().diff(existing()).affectedKeys().hasOnly(['apoiadores'])) ||
         incoming().diff(existing()).affectedKeys().hasOnly(['pagamentos', 'apoiadores'])
       );

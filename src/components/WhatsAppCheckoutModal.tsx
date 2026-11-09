@@ -22,7 +22,7 @@ interface WhatsAppCheckoutModalProps {
   masterPhone?: string;
   binId?: string;
   onClearCart?: () => void;
-  onRequestAccessSuccess?: () => void;
+  onRequestAccessSuccess?: (updatedPackages?: FundingPackage[]) => void;
   onToast: (msg: string) => void;
 }
 
@@ -116,7 +116,7 @@ export const WhatsAppCheckoutModal: React.FC<WhatsAppCheckoutModalProps> = ({
       try {
         setIsSubmitting(true);
         const effectiveBin = binId || getInitialBinId();
-        await Promise.all(
+        const results = await Promise.all(
           items.map((pkg) =>
             apiRequestPackageAccess(effectiveBin, pkg.id, {
               memberId: currentUser.id,
@@ -127,8 +127,15 @@ export const WhatsAppCheckoutModal: React.FC<WhatsAppCheckoutModalProps> = ({
           )
         );
 
+        const updatedPackages = results
+          .map((r: any) => r?.package)
+          .filter(Boolean) as FundingPackage[];
+
         // Esvaziar carrinho após gravar o snapshot com segurança
         onClearCart?.();
+
+        // Notificar atualização imediata de pacotes para o estado global
+        onRequestAccessSuccess?.(updatedPackages);
 
         // Abrir WhatsApp em nova aba
         if (url.length > 2000) {
@@ -143,7 +150,6 @@ export const WhatsAppCheckoutModal: React.FC<WhatsAppCheckoutModalProps> = ({
 
         // Exibir aviso/modal de sucesso
         setOrderSuccess(true);
-        onRequestAccessSuccess?.();
       } catch (err: any) {
         console.error('Erro ao registrar solicitação de acesso:', err);
         onToast(err.message || 'Erro ao registrar solicitação. Abrindo WhatsApp...');

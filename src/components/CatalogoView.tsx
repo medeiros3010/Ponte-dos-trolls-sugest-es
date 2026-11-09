@@ -711,6 +711,13 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredAndSortedPackages.map((pkg) => {
                 const isUserParticipant = isPackageAcquired(pkg, currentUser);
+                const isUserPending = Boolean(
+                  (pkg.solicitacoesAcesso || []).some(
+                    (s) =>
+                      s.memberId === currentUser.id ||
+                      (currentUser.nome && s.nome?.trim().toLowerCase() === currentUser.nome.trim().toLowerCase())
+                  )
+                );
                 const isInCart = cartPackageIds.includes(pkg.id);
 
                 const catalogPrice =
@@ -751,6 +758,13 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                         <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-md bg-[#3e4e1a] text-[#F8EDD5] text-[11px] font-bold shadow-md flex items-center gap-1 border border-[#5d7328]">
                           <CheckCircle2 className="w-3.5 h-3.5 text-[#a8d363]" />
                           <span>No seu acervo</span>
+                        </div>
+                      )}
+
+                      {/* Selo: Solicitação Pendente (Top Left) */}
+                      {!isUserParticipant && isUserPending && (
+                        <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-md bg-[#E5DCC9] text-[#786C56] text-[11px] font-bold shadow-md flex items-center gap-1 border border-[#C6AD78]">
+                          <span>⏳ Solicitação Pendente</span>
                         </div>
                       )}
 
@@ -905,7 +919,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           </button>
                         </div>
 
-                        {/* Ação Principal: Adicionar ao Carrinho / No seu acervo / No carrinho */}
+                        {/* Ação Principal: Adicionar ao Carrinho / No seu acervo / Solicitação Pendente / No carrinho */}
                         <div>
                           {isUserParticipant ? (
                             <button
@@ -919,6 +933,15 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                             >
                               <CheckCircle2 className="w-3.5 h-3.5 text-[#48551F]" />
                               <span>No seu acervo</span>
+                            </button>
+                          ) : isUserPending ? (
+                            <button
+                              type="button"
+                              disabled={true}
+                              className="px-3 py-1.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-xs font-bold shadow-none flex items-center gap-1.5 cursor-not-allowed opacity-90 select-none"
+                              title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
+                            >
+                              <span>⏳ Solicitação Pendente</span>
                             </button>
                           ) : isInCart ? (
                             <button
@@ -1042,10 +1065,42 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                 </div>
               )}
 
+              {/* Links de Referência */}
+              {Array.isArray(selectedPackageDetails.links) && selectedPackageDetails.links.length > 0 && (
+                <div className="p-4 rounded-xl bg-[#FBF4E4] border border-[#D6C296] space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#71634D] flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5 text-[#716016]" />
+                    <span>Links de Referência ({selectedPackageDetails.links.length})</span>
+                  </h4>
+                  <ul className="divide-y divide-[#E3D1AC] text-xs">
+                    {selectedPackageDetails.links.map((lnk, idx) => (
+                      <li key={idx} className="py-1.5 flex items-center justify-between gap-2">
+                        <a
+                          href={lnk}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#48551F] hover:underline flex items-center gap-1 text-[11px] truncate max-w-full"
+                        >
+                          <span className="truncate">{lnk}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Seção de Acesso ao Drive ou Compra */}
               {(() => {
                 const isUserParticipant = (selectedPackageDetails.apoiadores || []).some(
                   (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
+                );
+                const isUserPending = Boolean(
+                  (selectedPackageDetails.solicitacoesAcesso || []).some(
+                    (s) =>
+                      s.memberId === currentUser.id ||
+                      (currentUser.nome && s.nome?.trim().toLowerCase() === currentUser.nome.trim().toLowerCase())
+                  )
                 );
                 const catalogPrice =
                   typeof selectedPackageDetails.valorCatalogoBRL === 'number'
@@ -1078,6 +1133,20 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                             Pasta do Drive sendo atualizada pelo Mestre.
                           </div>
                         )
+                      ) : isUserPending ? (
+                        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+                          <button
+                            type="button"
+                            disabled={true}
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-xs font-bold shadow-none flex items-center justify-center gap-1.5 cursor-not-allowed opacity-90 select-none"
+                            title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
+                          >
+                            <span>⏳ Solicitação Pendente</span>
+                          </button>
+                          <span className="text-xs text-[#71634D] italic text-center sm:text-left">
+                            Aguardando aprovação do Mestre.
+                          </span>
+                        </div>
                       ) : (
                         <div className="flex flex-wrap items-center gap-2">
                           {cartPackageIds.includes(selectedPackageDetails.id) ? (

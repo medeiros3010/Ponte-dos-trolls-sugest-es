@@ -9,7 +9,7 @@ import {
   ProductType,
   MembershipApplication,
 } from './types';
-import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES } from './data/seedData';
+import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES, HISTORICAL_CATALOG_PACKAGES } from './data/seedData';
 import { DEFAULT_EXCHANGE_RATE } from './utils/helpers';
 import {
   getInitialBinId,
@@ -48,6 +48,7 @@ import { isPackageAcquired, getUserAcquiredPackages } from './utils/ranksAndAcqu
 import { testConnection, auth } from './firebase/config';
 import {
   bootstrapFirestoreIfEmpty,
+  syncCatalogPackagesToFirestore,
   subscribeItems,
   subscribePackages,
   subscribeUsers,
@@ -135,7 +136,18 @@ export default function App() {
       const stored = localStorage.getItem(STORAGE_KEY_PACKAGES);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const cleanStored = parsed.filter((p: any) => !['pack-3', 'pack-4', 'pack-5'].includes(p?.id));
+          const pkgMap = new Map<string, FundingPackage>();
+          for (const p of cleanStored) {
+            pkgMap.set(p.id, p);
+          }
+          const mergedCatalog: FundingPackage[] = HISTORICAL_CATALOG_PACKAGES.map((hp) => {
+            return pkgMap.get(hp.id) || hp;
+          });
+          const otherPackages = cleanStored.filter((p) => !p.id.startsWith('pkg-acervo-'));
+          return [...otherPackages, ...mergedCatalog];
+        }
       }
     } catch (e) {
       console.warn('Fallback to seed packages', e);
@@ -264,6 +276,11 @@ export default function App() {
     const unsubAuth = auth.onAuthStateChanged((fbUser) => {
       if (fbUser) {
         const isMasterEmail = fbUser.email === 'pontedostrolls@gmail.com';
+        if (isMasterEmail) {
+          syncCatalogPackagesToFirestore().catch((err) =>
+            console.warn('[Firebase] Aviso ao sincronizar acervo no login do Mestre:', err)
+          );
+        }
         const matched = users.find(
           (u) => (fbUser.email && u.email && u.email.toLowerCase() === fbUser.email.toLowerCase()) || u.id === fbUser.uid
         );
@@ -295,7 +312,20 @@ export default function App() {
 
       unsubPackages = subscribePackages((cloudPackages) => {
         if (cloudPackages && cloudPackages.length > 0) {
-          setPackages(cloudPackages);
+          // Remove pacotes de teste do Catálogo (pack-3, pack-4, pack-5)
+          const cleanCloud = cloudPackages.filter(
+            (p) => !['pack-3', 'pack-4', 'pack-5'].includes(p.id)
+          );
+          const cloudMap = new Map<string, FundingPackage>();
+          for (const p of cleanCloud) {
+            cloudMap.set(p.id, p);
+          }
+          // Garante que todos os 100 pacotes históricos do Catálogo estejam presentes
+          const mergedCatalog: FundingPackage[] = HISTORICAL_CATALOG_PACKAGES.map((hp) => {
+            return cloudMap.get(hp.id) || hp;
+          });
+          const otherPackages = cleanCloud.filter((p) => !p.id.startsWith('pkg-acervo-'));
+          setPackages([...otherPackages, ...mergedCatalog]);
         }
       });
 
@@ -403,7 +433,18 @@ export default function App() {
             setItems(cloudData.items);
           }
           if (Array.isArray(cloudData.packages)) {
-            setPackages(cloudData.packages);
+            const cleanPackages = cloudData.packages.filter(
+              (p: any) => !['pack-3', 'pack-4', 'pack-5'].includes(p?.id)
+            );
+            const pkgMap = new Map<string, FundingPackage>();
+            for (const p of cleanPackages) {
+              pkgMap.set(p.id, p);
+            }
+            const mergedCatalog: FundingPackage[] = HISTORICAL_CATALOG_PACKAGES.map((hp) => {
+              return pkgMap.get(hp.id) || hp;
+            });
+            const otherPackages = cleanPackages.filter((p: any) => !p.id.startsWith('pkg-acervo-'));
+            setPackages([...otherPackages, ...mergedCatalog]);
           }
           if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
             setUsers(cloudData.users);
@@ -610,10 +651,22 @@ export default function App() {
 
   // Cart Handlers
   const handleAddToCart = (packageId: string) => {
+    if (!currentUser) return;
+    const pkg = packages.find((p) => p.id === packageId);
+    if (pkg) {
+      const isPending = (pkg.solicitacoesAcesso || []).some(
+        (s) =>
+          s.memberId === currentUser.id ||
+          (currentUser.nome && s.nome?.trim().toLowerCase() === currentUser.nome.trim().toLowerCase())
+      );
+      if (isPending) {
+        showToast('Você já possui uma solicitação pendente para este pacote.');
+        return;
+      }
+    }
     if (!cart.includes(packageId)) {
       const nextCart = [...cart, packageId];
       setCart(nextCart);
-      const pkg = packages.find((p) => p.id === packageId);
       showToast(`Adicionado ao carrinho: ${pkg?.titulo || 'Pacote'}`);
     } else {
       showToast('Este pacote já está no seu carrinho.');
@@ -1454,6 +1507,38 @@ export default function App() {
         currentUser={currentUser}
         binId={binId}
         onClearCart={handleClearCart}
+        onRequestAccessSuccess={(updatedPkgs) => {
+          if (updatedPkgs && updatedPkgs.length > 0) {
+            setPackages((prev) =>
+              prev.map((p) => {
+                const found = updatedPkgs.find((u) => u.id === p.id);
+                return found || p;
+              })
+            );
+          } else if (currentUser) {
+            const requestedIds = cart;
+            setPackages((prev) =>
+              prev.map((p) => {
+                if (!requestedIds.includes(p.id)) return p;
+                const existing = p.solicitacoesAcesso || [];
+                if (existing.some((s) => s.memberId === currentUser.id)) return p;
+                return {
+                  ...p,
+                  solicitacoesAcesso: [
+                    ...existing,
+                    {
+                      memberId: currentUser.id,
+                      nome: currentUser.nome,
+                      telefone: currentUser.telefone || '',
+                      email: currentUser.email || '',
+                      data: new Date().toISOString(),
+                    },
+                  ],
+                };
+              })
+            );
+          }
+        }}
         onToast={showToast}
       />
 

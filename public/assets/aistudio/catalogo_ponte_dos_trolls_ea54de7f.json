@@ -1,0 +1,2755 @@
+[
+  {
+    "id": "pkg-acervo-001",
+    "titulo": "Domille's Wondrous Works",
+    "valorCota": 4.28,
+    "precoAquisicao": 4.28,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Domille's Wondrous Works",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Domille's Wondrous Works",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-002",
+    "titulo": "Beneos Battlemaps",
+    "valorCota": 6.7,
+    "precoAquisicao": 6.7,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Beneos Battlemaps",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Beneos Battlemaps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-003",
+    "titulo": "VividAdventuremaps + Frag Maps",
+    "valorCota": 6.3,
+    "precoAquisicao": 6.3,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: VividAdventuremaps + Frag Maps",
+    "links": [],
+    "itens": [
+      {
+        "nome": "VividAdventuremaps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Frag Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-004",
+    "titulo": "Battlezoo Bestiary Foundry Vtt (Pathfinder 2e)",
+    "valorCota": 8.88,
+    "precoAquisicao": 8.88,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Battlezoo Bestiary Foundry Vtt (Pathfinder 2e)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Battlezoo Bestiary Foundry Vtt (Pathfinder 2e)",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-005",
+    "titulo": "Angela Maps + James RPG Art",
+    "valorCota": 5.45,
+    "precoAquisicao": 5.45,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Angela Maps + James RPG Art",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Angela Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "James RPG Art",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-006",
+    "titulo": "Arecibo + Mercenary Makertplace + Animated Maps",
+    "valorCota": 9.5,
+    "precoAquisicao": 9.5,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Arecibo + Mercenary Makertplace + Animated Maps",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Arecibo",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Mercenary Makertplace",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Animated Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-007",
+    "titulo": "3D printable Stuff",
+    "valorCota": 17.0,
+    "precoAquisicao": 17.0,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: 3D printable Stuff",
+    "links": [],
+    "itens": [
+      {
+        "nome": "3D printable Stuff",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-008",
+    "titulo": "Forgotten Adventure + CyrensMaps",
+    "valorCota": 9.19,
+    "precoAquisicao": 9.19,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Forgotten Adventure + CyrensMaps",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Forgotten Adventure",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "CyrensMaps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-009",
+    "titulo": "700 Dungeon Maps to draw on + Heroic Maps + Savage Worlds  Adventure Deck",
+    "valorCota": 9.59,
+    "precoAquisicao": 9.59,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: 700 Dungeon Maps to draw on + Heroic Maps + Savage Worlds  Adventure Deck",
+    "links": [],
+    "itens": [
+      {
+        "nome": "700 Dungeon Maps to draw on",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Heroic Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Savage Worlds  Adventure Deck",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-010",
+    "titulo": "3 MÓDULOS Oficiais da campanha de Outlaw of Alkenstar no FOUNDRY",
+    "valorCota": 20.0,
+    "precoAquisicao": 20.0,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: 3 MÓDULOS Oficiais da campanha de Outlaw of Alkenstar no FOUNDRY",
+    "links": [],
+    "itens": [
+      {
+        "nome": "3 MÓDULOS Oficiais da campanha de Outlaw of Alkenstar no FOUNDRY",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-011",
+    "titulo": "Dynammic Dungeons + Savage words Bennies templates + Old Roads Maps + Paper Mage",
+    "valorCota": 8.1,
+    "precoAquisicao": 8.1,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Dynammic Dungeons + Savage words Bennies templates + Old Roads Maps + Paper Mage",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Dynammic Dungeons",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Savage words Bennies templates",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Old Roads Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Paper Mage",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-012",
+    "titulo": "Limithron + Neutral Party + Weird Word News",
+    "valorCota": 9.97,
+    "precoAquisicao": 9.97,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Limithron + Neutral Party + Weird Word News",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Limithron",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Neutral Party",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Weird Word News",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-013",
+    "titulo": "Bonus Action + Paper Golem + DR Mapzo + PrintableHeroes",
+    "valorCota": 5.49,
+    "precoAquisicao": 5.49,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Bonus Action + Paper Golem + DR Mapzo + PrintableHeroes",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Bonus Action",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Paper Golem",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "DR Mapzo",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "PrintableHeroes",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-014",
+    "titulo": "Mikwewa + Amatsu maps + LOST ACUMEN",
+    "valorCota": 10.39,
+    "precoAquisicao": 10.39,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Mikwewa + Amatsu maps + LOST ACUMEN",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Mikwewa",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Amatsu maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "LOST ACUMEN",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-015",
+    "titulo": "P + P Fatum Ancient Deity Pack (All Content)",
+    "valorCota": 11.17,
+    "precoAquisicao": 11.17,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: P + P Fatum Ancient Deity Pack (All Content)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "P",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "P Fatum Ancient Deity Pack (All Content)",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-016",
+    "titulo": "PeaPu’s Cyberpunk Tokens #1 FULL + Pathfinder for Savage Worlds Bestiary + Zach Moeller",
+    "valorCota": 8.98,
+    "precoAquisicao": 8.98,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: PeaPu’s Cyberpunk Tokens #1 FULL + Pathfinder for Savage Worlds Bestiary + Zach Moeller",
+    "links": [],
+    "itens": [
+      {
+        "nome": "PeaPu’s Cyberpunk Tokens #1 FULL",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Pathfinder for Savage Worlds Bestiary",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Zach Moeller",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-017",
+    "titulo": "Rise of the Drow: Collector’s Edition (Foundry VTT)",
+    "valorCota": 23.74,
+    "precoAquisicao": 23.74,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Rise of the Drow: Collector’s Edition (Foundry VTT)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Rise of the Drow: Collector’s Edition (Foundry VTT)",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-018",
+    "titulo": "Pathfinder Adventure Path #182: Graveclaw (Blood Lords 2 of 6) e (Blood lords 3 of 6) (Foundry VTT)",
+    "valorCota": 20.84,
+    "precoAquisicao": 20.84,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Pathfinder Adventure Path #182: Graveclaw (Blood Lords 2 of 6) e (Blood lords 3 of 6) (Foundry VTT)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #182: Graveclaw (Blood Lords 2 of 6) e (Blood lords 3 of 6) (Foundry VTT)",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-019",
+    "titulo": "Tom Cartos + HoloGrounds + HoloHeroes",
+    "valorCota": 7.23,
+    "precoAquisicao": 7.23,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Tom Cartos + HoloGrounds + HoloHeroes",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Tom Cartos",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "HoloGrounds",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "HoloHeroes",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-020",
+    "titulo": "Miskas + Cze and Peku",
+    "valorCota": 10.54,
+    "precoAquisicao": 10.54,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Miskas + Cze and Peku",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Miskas",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Cze and Peku",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-021",
+    "titulo": "Venatus Maps + Dread Maps + PeaPu’s Modern Ships FULL",
+    "valorCota": 7.4,
+    "precoAquisicao": 7.4,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Venatus Maps + Dread Maps + PeaPu’s Modern Ships FULL",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Venatus Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Dread Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "PeaPu’s Modern Ships FULL",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-022",
+    "titulo": "Pathfinder® for Savage Worlds – FoundryVTT",
+    "valorCota": 20.84,
+    "precoAquisicao": 20.84,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Pathfinder® for Savage Worlds – FoundryVTT",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder® for Savage Worlds – FoundryVTT",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-023",
+    "titulo": "Rise of the Runelords! The Skinsaw Murders + NPC Index: Warriors Foundry Support + NPC Index: Spellcasters - Foundry Support",
+    "valorCota": 13.84,
+    "precoAquisicao": 13.84,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Rise of the Runelords! The Skinsaw Murders + NPC Index: Warriors Foundry Support + NPC Index: Spellcasters - Foundry Support",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Rise of the Runelords! The Skinsaw Murders",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "NPC Index: Warriors Foundry Support",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "NPC Index: Spellcasters - Foundry Support",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-024",
+    "titulo": "Blood Lords 6 of 6: Ghost King's Rage + dransky + Tych Maps + Rise of the Runelords! (3 de 6) The Hook Mountain Massacre + Beneos Tokens + PeaPu",
+    "valorCota": 13.89,
+    "precoAquisicao": 13.89,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Blood Lords 6 of 6: Ghost King's Rage + dransky + Tych Maps + Rise of the Runelords! (3 de 6) The Hook Mountain Massacre + Beneos Tokens + PeaPu",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Blood Lords 6 of 6: Ghost King's Rage",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "dransky",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Tych Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Rise of the Runelords! (3 de 6) The Hook Mountain Massacre",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Beneos Tokens",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "PeaPu",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-025",
+    "titulo": "NPC Index: Undead Templates + Dyson Logos + Ame Kuma + NPC Index: Undead Templates",
+    "valorCota": 11.98,
+    "precoAquisicao": 11.98,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: NPC Index: Undead Templates + Dyson Logos + Ame Kuma + NPC Index: Undead Templates",
+    "links": [],
+    "itens": [
+      {
+        "nome": "NPC Index: Undead Templates",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Dyson Logos",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Ame Kuma",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "NPC Index: Undead Templates",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-026",
+    "titulo": "Gatewalkers 1 of 3: The Seventh Arch (foundry) + Rise of the Runelords! Fortress of the Stone Giants – Foundry VTT",
+    "valorCota": 17.94,
+    "precoAquisicao": 17.94,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Gatewalkers 1 of 3: The Seventh Arch (foundry) + Rise of the Runelords! Fortress of the Stone Giants – Foundry VTT",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Gatewalkers 1 of 3: The Seventh Arch (foundry)",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Rise of the Runelords! Fortress of the Stone Giants – Foundry VTT",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-027",
+    "titulo": "Eightfold Paper + Summit Games Maps + Richard Dufault",
+    "valorCota": 9.84,
+    "precoAquisicao": 9.84,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Eightfold Paper + Summit Games Maps + Richard Dufault",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Eightfold Paper",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Summit Games Maps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Richard Dufault",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-028",
+    "titulo": "Gatewalkers 2/3: They Watched the Stars + Gatewalkers 3 /3: Dreamers of the Nameless Spires + Rise of the Runelords! Sins of the Saviors 5/6",
+    "valorCota": 18.18,
+    "precoAquisicao": 18.18,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Gatewalkers 2/3: They Watched the Stars + Gatewalkers 3 /3: Dreamers of the Nameless Spires + Rise of the Runelords! Sins of the Saviors 5/6",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Gatewalkers 2/3: They Watched the Stars",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Gatewalkers 3 /3: Dreamers of the Nameless Spires",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Rise of the Runelords! Sins of the Saviors 5/6",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-029",
+    "titulo": "Crossland + Tome of Salvaterra + DEVIN'S TOKEN SITE TP 160: Big Nasty Beasts Animated",
+    "valorCota": 6.02,
+    "precoAquisicao": 6.02,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Crossland + Tome of Salvaterra + DEVIN'S TOKEN SITE TP 160: Big Nasty Beasts Animated",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Crossland",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Tome of Salvaterra",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "DEVIN'S TOKEN SITE TP 160: Big Nasty Beasts Animated",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-030",
+    "titulo": "Fantasy Forgeworks + Raakdos + Banana Tokens",
+    "valorCota": 7.64,
+    "precoAquisicao": 7.64,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: Fantasy Forgeworks + Raakdos + Banana Tokens",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Fantasy Forgeworks",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Raakdos",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Banana Tokens",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-031",
+    "titulo": "TP 162: Cosmic Horrors Animated + Loot Tavern + SolutionMaps",
+    "valorCota": 8.64,
+    "precoAquisicao": 8.64,
+    "status": "Catálogo",
+    "sistema": "Diversos / Foundry VTT",
+    "descricao": "Pacote contendo: TP 162: Cosmic Horrors Animated + Loot Tavern + SolutionMaps",
+    "links": [],
+    "itens": [
+      {
+        "nome": "TP 162: Cosmic Horrors Animated",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "Loot Tavern",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      },
+      {
+        "nome": "SolutionMaps",
+        "sistema": "Diversos / VTT",
+        "tipo": "Material de RPG / VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-032",
+    "titulo": "Studio WyldFurr + Advanced Animated Dungeon Maps",
+    "valorCota": 9.95,
+    "precoAquisicao": 9.95,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "Studio WyldFurr (Estúdio de mapas/tiles/assets e módulos para VTT (map tiles, tokens, módulos de aventura etc.)) | Advanced Animated Dungeon Maps (Módulo / Asset VTT)",
+    "links": [
+      "https://wyldfurr.com/",
+      "https://www.patreon.com/animatedmaps"
+    ],
+    "itens": [
+      {
+        "nome": "Studio WyldFurr",
+        "sistema": "Genérico / VTT",
+        "tipo": "Estúdio de mapas/tiles/assets e módulos para VTT (map tiles, tokens, módulos de aventura etc.)",
+        "link": "https://wyldfurr.com/"
+      },
+      {
+        "nome": "Advanced Animated Dungeon Maps",
+        "sistema": "Genérico / VTT",
+        "tipo": "Módulo / Asset VTT",
+        "link": "https://www.patreon.com/animatedmaps"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-033",
+    "titulo": "Pathfinder Adventure Path #190: The Choosing (Stolen Fate 1 of 3) + Pathfinder Adventure Path #191: The Destiny War (Stolen Fate 2 of 3)",
+    "valorCota": 19.48,
+    "precoAquisicao": 19.48,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path #190: The Choosing (Stolen Fate 1 of 3) (Adventure Path — Parte 1 de 3) | Pathfinder Adventure Path #191: The Destiny War (Stolen Fate 2 of 3) (Adventure Path — Parte 2 de 3)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap190-the-choosing",
+      "https://foundryvtt.com/packages/pf2e-ap191-the-destiny-war"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #190: The Choosing (Stolen Fate 1 of 3)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 1 de 3",
+        "link": "https://foundryvtt.com/packages/pf2e-ap190-the-choosing"
+      },
+      {
+        "nome": "Pathfinder Adventure Path #191: The Destiny War (Stolen Fate 2 of 3)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 2 de 3",
+        "link": "https://foundryvtt.com/packages/pf2e-ap191-the-destiny-war"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-034",
+    "titulo": "DM Andy Maps + Epic Isometric + PogS Props + the dungeon madames",
+    "valorCota": 7.97,
+    "precoAquisicao": 7.97,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "DM Andy Maps (Battlemaps / mapas prontos para VTT (fantasia, horror, vilas, masmorras etc.)) | Epic Isometric (Mapas, tiles modulares e assets para RPG/VTT (mapas top‑down e isométricos)) | PogS Props (Pacote de props, mapas e assets para RPG / VTT (diversos estilos)) | the dungeon madames (Módulo / Asset VTT)",
+    "links": [
+      "https://foundryvtt.com/creators/dm-andy-maps/",
+      "https://epicisometric.com/",
+      "https://www.patreon.com/PogS_Props",
+      "https://lostatlas.co/c/the_dungeon_madames"
+    ],
+    "itens": [
+      {
+        "nome": "DM Andy Maps",
+        "sistema": "Genérico / VTT",
+        "tipo": "Battlemaps / mapas prontos para VTT (fantasia, horror, vilas, masmorras etc.)",
+        "link": "https://foundryvtt.com/creators/dm-andy-maps/"
+      },
+      {
+        "nome": "Epic Isometric",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, tiles modulares e assets para RPG/VTT (mapas top‑down e isométricos)",
+        "link": "https://epicisometric.com/"
+      },
+      {
+        "nome": "PogS Props",
+        "sistema": "Genérico / VTT",
+        "tipo": "Pacote de props, mapas e assets para RPG / VTT (diversos estilos)",
+        "link": "https://www.patreon.com/PogS_Props"
+      },
+      {
+        "nome": "the dungeon madames",
+        "sistema": "Genérico / VTT",
+        "tipo": "Módulo / Asset VTT",
+        "link": "https://lostatlas.co/c/the_dungeon_madames"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-035",
+    "titulo": "Battlezoo Bestiary: Strange & Unusual (Foundry VTT / D&D 5e & Pathfinder 2e)",
+    "valorCota": 1.75,
+    "precoAquisicao": 1.75,
+    "status": "Catálogo",
+    "sistema": "D&D 5e e Pathfinder 2e",
+    "descricao": "Battlezoo Bestiary: Strange & Unusual (Foundry VTT / D&D 5e & Pathfinder 2e) (Bestiário / Compêndio de monstros + regras extras (Monster Parts, backgrounds, itens mágicos, etc.))",
+    "links": [
+      "https://battlezoo.com/products/preorder-battlezoo-bestiary-strange-unusual-for-foundry-vtt"
+    ],
+    "itens": [
+      {
+        "nome": "Battlezoo Bestiary: Strange & Unusual (Foundry VTT / D&D 5e & Pathfinder 2e)",
+        "sistema": "D&D 5e e Pathfinder 2e",
+        "tipo": "Bestiário / Compêndio de monstros + regras extras (Monster Parts, backgrounds, itens mágicos, etc.)",
+        "link": "https://battlezoo.com/products/preorder-battlezoo-bestiary-strange-unusual-for-foundry-vtt"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-036",
+    "titulo": "Pathfinder Adventure Path #192: Worst of All Possible Worlds (Stolen Fate 3 of 3 — Foundry VTT) + Rise of the Runelords: Spires of Xin‑Shalast (Book 6/6 — Foundry VTT)",
+    "valorCota": 19.29,
+    "precoAquisicao": 19.29,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, Pathfinder (via adaptação Savage/Foundry — conforme módulo)",
+    "descricao": "Pathfinder Adventure Path #192: Worst of All Possible Worlds (Stolen Fate 3 of 3 — Foundry VTT) (Adventure Path — Final da trilogia) | Rise of the Runelords: Spires of Xin‑Shalast (Book 6/6 — Foundry VTT) (Adventure Path — Parte final (6 de 6))",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap192-the-worst-of-all-possible-worlds",
+      "https://peginc.com/product/rise-of-the-runelords-spires-of-xin-shalast-foundry-vtt/"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #192: Worst of All Possible Worlds (Stolen Fate 3 of 3 — Foundry VTT)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Final da trilogia",
+        "link": "https://foundryvtt.com/packages/pf2e-ap192-the-worst-of-all-possible-worlds"
+      },
+      {
+        "nome": "Rise of the Runelords: Spires of Xin‑Shalast (Book 6/6 — Foundry VTT)",
+        "sistema": "Pathfinder (via adaptação Savage/Foundry — conforme módulo)",
+        "tipo": "Adventure Path — Parte final (6 de 6)",
+        "link": "https://peginc.com/product/rise-of-the-runelords-spires-of-xin-shalast-foundry-vtt/"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-037",
+    "titulo": "MarkDrummondJ + Epic Isometric + PogS Props",
+    "valorCota": 8.86,
+    "precoAquisicao": 8.86,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "MarkDrummondJ (Battlemaps e mapas temáticos (fantasia / sci‑fi / outros) prontos para VTT, com versões para Foundry VTT.) | Epic Isometric (Mapas, tiles modulares, monstros e assets para RPG/VTT (fantasia, mas inclusive com possibilidade de sci‑fi), compatível com VTT.) | PogS Props (Mapas, props, tiles, assets e battlemaps para RPG/VTT, com grande coleção de dungeons, wilderness, cidades etc.)",
+    "links": [
+      "https://markdrummondj.com/",
+      "https://epicisometric.com/",
+      "https://www.patreon.com/PogS_Props"
+    ],
+    "itens": [
+      {
+        "nome": "MarkDrummondJ",
+        "sistema": "Genérico / VTT",
+        "tipo": "Battlemaps e mapas temáticos (fantasia / sci‑fi / outros) prontos para VTT, com versões para Foundry VTT.",
+        "link": "https://markdrummondj.com/"
+      },
+      {
+        "nome": "Epic Isometric",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, tiles modulares, monstros e assets para RPG/VTT (fantasia, mas inclusive com possibilidade de sci‑fi), compatível com VTT.",
+        "link": "https://epicisometric.com/"
+      },
+      {
+        "nome": "PogS Props",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, props, tiles, assets e battlemaps para RPG/VTT, com grande coleção de dungeons, wilderness, cidades etc.",
+        "link": "https://www.patreon.com/PogS_Props"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-038",
+    "titulo": "Dungeon‑X",
+    "valorCota": 23.51,
+    "precoAquisicao": 23.51,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT independente (para dungeons, mapas e cenários físicos ou impressos)",
+    "descricao": "Dungeon‑X (Conjunto modular de dungeons (3D printable + mapas PDF / papel) para RPGs de mesa)",
+    "links": [
+      "https://www.kickstarter.com/projects/lordzsezseworks/dungeon-x"
+    ],
+    "itens": [
+      {
+        "nome": "Dungeon‑X",
+        "sistema": "Genérico / VTT independente (para dungeons, mapas e cenários físicos ou impressos)",
+        "tipo": "Conjunto modular de dungeons (3D printable + mapas PDF / papel) para RPGs de mesa",
+        "link": "https://www.kickstarter.com/projects/lordzsezseworks/dungeon-x"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-039",
+    "titulo": "Jewel of the Indigo Isles (Foundry VTT / Pathfinder 2e)",
+    "valorCota": 22.6,
+    "precoAquisicao": 22.6,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Jewel of the Indigo Isles (Foundry VTT / Pathfinder 2e) (Adventure Path / Campanha)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Jewel of the Indigo Isles (Foundry VTT / Pathfinder 2e)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path / Campanha",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-040",
+    "titulo": "Living Realms + White Fox Works + Tales Arcane + Cze and Peku",
+    "valorCota": 12.36,
+    "precoAquisicao": 12.36,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "Living Realms (— Não achei um link oficial confiável com esse nome específico associado a mapas/VTT. Se tiver um link ou nome completo, manda pra eu checar direito.) | White Fox Works (Mapas, texturas e assets digitais para RPG/VTT) | Tales Arcane (— Não consegui confirmar um link público ou ativo com esse nome exato para assets/VTT. Se puder me dar mais contexto (loja, plataforma, região), posso tentar achar de novo.) | Cze and Peku (Mapas e battlemaps desenhados à mão para RPG/VTT (fantasia, dungeons, cenários variados))",
+    "links": [
+      "https://www.patreon.com/WhiteFoxWorks",
+      "https://www.patreon.com/czepeku"
+    ],
+    "itens": [
+      {
+        "nome": "Living Realms",
+        "sistema": "Genérico / VTT",
+        "tipo": "— Não achei um link oficial confiável com esse nome específico associado a mapas/VTT. Se tiver um link ou nome completo, manda pra eu checar direito.",
+        "link": ""
+      },
+      {
+        "nome": "White Fox Works",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, texturas e assets digitais para RPG/VTT",
+        "link": "https://www.patreon.com/WhiteFoxWorks"
+      },
+      {
+        "nome": "Tales Arcane",
+        "sistema": "Genérico / VTT",
+        "tipo": "— Não consegui confirmar um link público ou ativo com esse nome exato para assets/VTT. Se puder me dar mais contexto (loja, plataforma, região), posso tentar achar de novo.",
+        "link": ""
+      },
+      {
+        "nome": "Cze and Peku",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas e battlemaps desenhados à mão para RPG/VTT (fantasia, dungeons, cenários variados)",
+        "link": "https://www.patreon.com/czepeku"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-041",
+    "titulo": "Pathfinder Adventure Path #193: Mantle of Gold (Sky King's Tomb 1 of 3)",
+    "valorCota": 14.59,
+    "precoAquisicao": 14.59,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path #193: Mantle of Gold (Sky King's Tomb 1 of 3) (Adventure Path — Parte 1 de 3)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap193-mantle-of-gold"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #193: Mantle of Gold (Sky King's Tomb 1 of 3)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 1 de 3",
+        "link": "https://foundryvtt.com/packages/pf2e-ap193-mantle-of-gold"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-042",
+    "titulo": "AtaraxianBear + Michaël Ghelfi Studios + LOVEMAPS Cthulhu",
+    "valorCota": 9.78,
+    "precoAquisicao": 9.78,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "AtaraxianBear (Mapas / battlemaps / assets para VTT (fantasia, natureza etc.)) | Michaël Ghelfi Studios (Áudio e trilhas / ambiências para RPG / TTRPG (compatíveis com VTTs)) | LOVEMAPS Cthulhu (Mapas / battlemaps / cenários de horror / horror cósmico / assets para RPG/VTT (temáticos para horror))",
+    "links": [
+      "https://www.patreon.com/AtaraxianBear",
+      "https://www.michaelghelfistudios.com",
+      "https://lovemaps-rpg.com"
+    ],
+    "itens": [
+      {
+        "nome": "AtaraxianBear",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas / battlemaps / assets para VTT (fantasia, natureza etc.)",
+        "link": "https://www.patreon.com/AtaraxianBear"
+      },
+      {
+        "nome": "Michaël Ghelfi Studios",
+        "sistema": "Genérico / VTT",
+        "tipo": "Áudio e trilhas / ambiências para RPG / TTRPG (compatíveis com VTTs)",
+        "link": "https://www.michaelghelfistudios.com"
+      },
+      {
+        "nome": "LOVEMAPS Cthulhu",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas / battlemaps / cenários de horror / horror cósmico / assets para RPG/VTT (temáticos para horror)",
+        "link": "https://lovemaps-rpg.com"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-043",
+    "titulo": "The Ghouls Hunger (Blood Lords 4 of 6) + A Taste of Ashes (Blood Lords 5 of 6)",
+    "valorCota": 23.83,
+    "precoAquisicao": 23.83,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "The Ghouls Hunger (Blood Lords 4 of 6) (Adventure Path — Parte 4 de 6) | A Taste of Ashes (Blood Lords 5 of 6) (Adventure Path — Parte 5 de 6)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap184-the-ghouls-hunger",
+      "https://foundryvtt.com/packages/pf2e-ap185-a-taste-of-ashes"
+    ],
+    "itens": [
+      {
+        "nome": "The Ghouls Hunger (Blood Lords 4 of 6)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 4 de 6",
+        "link": "https://foundryvtt.com/packages/pf2e-ap184-the-ghouls-hunger"
+      },
+      {
+        "nome": "A Taste of Ashes (Blood Lords 5 of 6)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 5 de 6",
+        "link": "https://foundryvtt.com/packages/pf2e-ap185-a-taste-of-ashes"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-044",
+    "titulo": "Pathfinder: Kingmaker (Foundry VTT)",
+    "valorCota": 16.53,
+    "precoAquisicao": 16.53,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder: Kingmaker (Foundry VTT) (Campaign / Adventure Path completo)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-kingmaker"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder: Kingmaker (Foundry VTT)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Campaign / Adventure Path completo",
+        "link": "https://foundryvtt.com/packages/pf2e-kingmaker"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-045",
+    "titulo": "Sky King's Tomb 2 of 3: Cult of the Cave Worm (Foundry VTT) + Sky King's Tomb 3 of 3: Heavy is the Crown (Foundry VTT)",
+    "valorCota": 23.47,
+    "precoAquisicao": 23.47,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Sky King's Tomb 2 of 3: Cult of the Cave Worm (Foundry VTT) (Adventure Path — Parte 2 de 3) | Sky King's Tomb 3 of 3: Heavy is the Crown (Foundry VTT) (Adventure Path — Parte 3 de 3)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap194-cult-of-the-cave-worm",
+      "https://foundryvtt.com/packages/pf2e-ap195-heavy-is-the-crown"
+    ],
+    "itens": [
+      {
+        "nome": "Sky King's Tomb 2 of 3: Cult of the Cave Worm (Foundry VTT)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 2 de 3",
+        "link": "https://foundryvtt.com/packages/pf2e-ap194-cult-of-the-cave-worm"
+      },
+      {
+        "nome": "Sky King's Tomb 3 of 3: Heavy is the Crown (Foundry VTT)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 3 de 3",
+        "link": "https://foundryvtt.com/packages/pf2e-ap195-heavy-is-the-crown"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-046",
+    "titulo": "Bearworks + Epic Quest Battlemaps + Cassastereo's Mapperie",
+    "valorCota": 10.98,
+    "precoAquisicao": 10.98,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "Bearworks (Mapas / battlemaps / assets para VTT (fantasia, etc.)) | Epic Quest Battlemaps (Mapas estáticos e animados + pacotes de mapas para RPG/VTT (D&D, Pathfinder, etc.)) | Cassastereo's Mapperie (Mapas, handouts e tokens para RPG/VTT — material artístico e utilitário)",
+    "links": [
+      "https://bearworkshq.com",
+      "https://www.epicquestbattlemaps.com",
+      "https://www.patreon.com/cassastereo"
+    ],
+    "itens": [
+      {
+        "nome": "Bearworks",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas / battlemaps / assets para VTT (fantasia, etc.)",
+        "link": "https://bearworkshq.com"
+      },
+      {
+        "nome": "Epic Quest Battlemaps",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas estáticos e animados + pacotes de mapas para RPG/VTT (D&D, Pathfinder, etc.)",
+        "link": "https://www.epicquestbattlemaps.com"
+      },
+      {
+        "nome": "Cassastereo's Mapperie",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, handouts e tokens para RPG/VTT — material artístico e utilitário",
+        "link": "https://www.patreon.com/cassastereo"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-047",
+    "titulo": "Pathfinder® for Savage Worlds Advanced Player’s Guide (SWADE – Foundry VTT) + Mythos Monsters (Pathfinder 2e – Foundry VTT Module)",
+    "valorCota": 20.62,
+    "precoAquisicao": 20.62,
+    "status": "Catálogo",
+    "sistema": "Savage Worlds Adventure Edition (com adaptação Pathfinder), Pathfinder 2e",
+    "descricao": "Pathfinder® for Savage Worlds Advanced Player’s Guide (SWADE – Foundry VTT) (Suplemento / guia de regras expandidas para Savage-Pathfinder) | Mythos Monsters (Pathfinder 2e – Foundry VTT Module) (Módulo de monstros / bestiário (criaturas temáticas horror / “eldritch”))",
+    "links": [
+      "https://foundryvtt.com/packages/swpf-apg",
+      "https://foundryvtt.com/packages/legendary-mythos-monsters-pf2e"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder® for Savage Worlds Advanced Player’s Guide (SWADE – Foundry VTT)",
+        "sistema": "Savage Worlds Adventure Edition (com adaptação Pathfinder)",
+        "tipo": "Suplemento / guia de regras expandidas para Savage-Pathfinder",
+        "link": "https://foundryvtt.com/packages/swpf-apg"
+      },
+      {
+        "nome": "Mythos Monsters (Pathfinder 2e – Foundry VTT Module)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Módulo de monstros / bestiário (criaturas temáticas horror / “eldritch”)",
+        "link": "https://foundryvtt.com/packages/legendary-mythos-monsters-pf2e"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-048",
+    "titulo": "Pathfinder Adventure Path: The Summer That Never Was (Season of Ghosts 1 of 4) — Foundry VTT + PDF",
+    "valorCota": 11.11,
+    "precoAquisicao": 11.11,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path: The Summer That Never Was (Season of Ghosts 1 of 4) — Foundry VTT + PDF (Adventure Path — Volume 1 de 4)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap196-the-summer-that-never-was"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path: The Summer That Never Was (Season of Ghosts 1 of 4) — Foundry VTT + PDF",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Volume 1 de 4",
+        "link": "https://foundryvtt.com/packages/pf2e-ap196-the-summer-that-never-was"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-049",
+    "titulo": "Devin Night + Splattered Ink + DnDavid",
+    "valorCota": 9.62,
+    "precoAquisicao": 9.62,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "Devin Night (Tokens e recursos para VTT (fantasia, sci-fi, moderno etc.)) | Splattered Ink (Tokens, monstros, mapas e assets para RPG/VTT (principalmente D&D 5e)) | DnDavid (Mapas, assets e cenas para RPG/VTT (diversos estilos e sistemas))",
+    "links": [
+      "https://www.patreon.com/devinnight",
+      "https://www.patreon.com/splatteredink",
+      "https://www.patreon.com/DnDavid"
+    ],
+    "itens": [
+      {
+        "nome": "Devin Night",
+        "sistema": "Genérico / VTT",
+        "tipo": "Tokens e recursos para VTT (fantasia, sci-fi, moderno etc.)",
+        "link": "https://www.patreon.com/devinnight"
+      },
+      {
+        "nome": "Splattered Ink",
+        "sistema": "Genérico / VTT",
+        "tipo": "Tokens, monstros, mapas e assets para RPG/VTT (principalmente D&D 5e)",
+        "link": "https://www.patreon.com/splatteredink"
+      },
+      {
+        "nome": "DnDavid",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, assets e cenas para RPG/VTT (diversos estilos e sistemas)",
+        "link": "https://www.patreon.com/DnDavid"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-050",
+    "titulo": "Battlezoo Ancestries: Year of Monsters (Foundry VTT) + Pathfinder Adventure Path: Let the Leaves Fall (Season of Ghosts 2 of 4) (Foundry VTT)",
+    "valorCota": 24.11,
+    "precoAquisicao": 24.11,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e (também compatível com D&D 5e), Pathfinder 2e",
+    "descricao": "Battlezoo Ancestries: Year of Monsters (Foundry VTT) (Pacote de ancestrais/monstros + tokens/assets) | Pathfinder Adventure Path: Let the Leaves Fall (Season of Ghosts 2 of 4) (Foundry VTT) (Adventure Path — Parte 2 de 4)",
+    "links": [
+      "https://battlezoo.com/products/battlezoo-ancestries-year-of-monsters-foundry-vtt",
+      "https://foundryvtt.com/packages/pf2e-ap197-let-the-leaves-fall"
+    ],
+    "itens": [
+      {
+        "nome": "Battlezoo Ancestries: Year of Monsters (Foundry VTT)",
+        "sistema": "Pathfinder 2e (também compatível com D&D 5e)",
+        "tipo": "Pacote de ancestrais/monstros + tokens/assets",
+        "link": "https://battlezoo.com/products/battlezoo-ancestries-year-of-monsters-foundry-vtt"
+      },
+      {
+        "nome": "Pathfinder Adventure Path: Let the Leaves Fall (Season of Ghosts 2 of 4) (Foundry VTT)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 2 de 4",
+        "link": "https://foundryvtt.com/packages/pf2e-ap197-let-the-leaves-fall"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-051",
+    "titulo": "Caeora + Meditating Munky",
+    "valorCota": 10.63,
+    "precoAquisicao": 10.63,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "Caeora (Mapas, tokens e assets para VTT) | Meditating Munky (Mapas, tokens e módulos para VTT (diversos estilos))",
+    "links": [
+      "https://www.caeora.com/",
+      "https://www.meditatingmunky.com/"
+    ],
+    "itens": [
+      {
+        "nome": "Caeora",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, tokens e assets para VTT",
+        "link": "https://www.caeora.com/"
+      },
+      {
+        "nome": "Meditating Munky",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas, tokens e módulos para VTT (diversos estilos)",
+        "link": "https://www.meditatingmunky.com/"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-052",
+    "titulo": "Daniel's Maps + The Planet Hoppers",
+    "valorCota": 6.33,
+    "precoAquisicao": 6.33,
+    "status": "Catálogo",
+    "sistema": "Genérico / VTT",
+    "descricao": "Daniel's Maps (Mapas/recursos artísticos para VTT) | The Planet Hoppers (Assets, battlemaps e módulos para Foundry VTT (sci-fi / genéricos))",
+    "links": [
+      "https://danielsmaps.com",
+      "https://themad.network/the-planet-hoppers"
+    ],
+    "itens": [
+      {
+        "nome": "Daniel's Maps",
+        "sistema": "Genérico / VTT",
+        "tipo": "Mapas/recursos artísticos para VTT",
+        "link": "https://danielsmaps.com"
+      },
+      {
+        "nome": "The Planet Hoppers",
+        "sistema": "Genérico / VTT",
+        "tipo": "Assets, battlemaps e módulos para Foundry VTT (sci-fi / genéricos)",
+        "link": "https://themad.network/the-planet-hoppers"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-053",
+    "titulo": "Pathfinder Adventure Path #198: No Breath to Cry (Season of Ghosts 3 of 4)",
+    "valorCota": 16.22,
+    "precoAquisicao": 16.22,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path #198: No Breath to Cry (Season of Ghosts 3 of 4) (Adventure Path — Parte 3 de 4)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap198-no-breath-to-cry"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #198: No Breath to Cry (Season of Ghosts 3 of 4)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 3 de 4",
+        "link": "https://foundryvtt.com/packages/pf2e-ap198-no-breath-to-cry"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-054",
+    "titulo": "Seafoot Games + Annomicon + Thorfinn",
+    "valorCota": 6.49,
+    "precoAquisicao": 6.49,
+    "status": "Catálogo",
+    "sistema": "Genérico",
+    "descricao": "Seafoot Games (Criador de mapas, tiles e cenas completas para VTTs (map packs)) | Annomicon (Criador de mapas, assets e recursos de fantasia para VTT) | Thorfinn (Artista/estúdio de mapas e conteúdo visual para mesas virtuais)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Seafoot Games",
+        "sistema": "Genérico",
+        "tipo": "Criador de mapas, tiles e cenas completas para VTTs (map packs)",
+        "link": ""
+      },
+      {
+        "nome": "Annomicon",
+        "sistema": "Genérico",
+        "tipo": "Criador de mapas, assets e recursos de fantasia para VTT",
+        "link": ""
+      },
+      {
+        "nome": "Thorfinn",
+        "sistema": "Genérico",
+        "tipo": "Artista/estúdio de mapas e conteúdo visual para mesas virtuais",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-055",
+    "titulo": "Pathfinder Adventure Path #199: To Bloom Below the Web (Season of Ghosts 4 of 4)",
+    "valorCota": 14.37,
+    "precoAquisicao": 14.37,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path #199: To Bloom Below the Web (Season of Ghosts 4 of 4) (Adventure Path — Parte 4 de 4 (conclusão))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #199: To Bloom Below the Web (Season of Ghosts 4 of 4)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 4 de 4 (conclusão)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-056",
+    "titulo": "Crymic + Amplus Ordo Games + Gimmie Pig's Map Emporium + Dice Grimorium + Mauna Maps + ZenMaps",
+    "valorCota": 5.63,
+    "precoAquisicao": 5.63,
+    "status": "Catálogo",
+    "sistema": "Genérico",
+    "descricao": "Crymic (Criador de mapas, tokens e assets (recurso artístico)) | Amplus Ordo Games (Estúdio criador de mapas, aventuras e assets para VTT) | Gimmie Pig's Map Emporium (Mapas de batalha / assets para VTT) | Dice Grimorium (Criador de tokens, criaturas e assets para mapas) | Mauna Maps (Mapas de batalha / cenas para Foundry e outros VTTs) | ZenMaps (Mapas e recursos visuais (map packs))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Crymic",
+        "sistema": "Genérico",
+        "tipo": "Criador de mapas, tokens e assets (recurso artístico)",
+        "link": ""
+      },
+      {
+        "nome": "Amplus Ordo Games",
+        "sistema": "Genérico",
+        "tipo": "Estúdio criador de mapas, aventuras e assets para VTT",
+        "link": ""
+      },
+      {
+        "nome": "Gimmie Pig's Map Emporium",
+        "sistema": "Genérico",
+        "tipo": "Mapas de batalha / assets para VTT",
+        "link": ""
+      },
+      {
+        "nome": "Dice Grimorium",
+        "sistema": "Genérico",
+        "tipo": "Criador de tokens, criaturas e assets para mapas",
+        "link": ""
+      },
+      {
+        "nome": "Mauna Maps",
+        "sistema": "Genérico",
+        "tipo": "Mapas de batalha / cenas para Foundry e outros VTTs",
+        "link": ""
+      },
+      {
+        "nome": "ZenMaps",
+        "sistema": "Genérico",
+        "tipo": "Mapas e recursos visuais (map packs)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-057",
+    "titulo": "Pathfinder Adventure: Rusthenge",
+    "valorCota": 16.91,
+    "precoAquisicao": 16.91,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure: Rusthenge (Aventura)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure: Rusthenge",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Aventura",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-058",
+    "titulo": "RuinWorks + Tomesmith Press + Dungeon Master Erik",
+    "valorCota": 6.96,
+    "precoAquisicao": 6.96,
+    "status": "Catálogo",
+    "sistema": "Genérico",
+    "descricao": "RuinWorks (Mapas, assets e recursos artísticos (criador de conteúdo para VTT)) | Tomesmith Press (Editora / criador de suplementos, mapas e materiais diversos) | Dungeon Master Erik (Criador de mapas, tokens e recursos visuais)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "RuinWorks",
+        "sistema": "Genérico",
+        "tipo": "Mapas, assets e recursos artísticos (criador de conteúdo para VTT)",
+        "link": ""
+      },
+      {
+        "nome": "Tomesmith Press",
+        "sistema": "Genérico",
+        "tipo": "Editora / criador de suplementos, mapas e materiais diversos",
+        "link": ""
+      },
+      {
+        "nome": "Dungeon Master Erik",
+        "sistema": "Genérico",
+        "tipo": "Criador de mapas, tokens e recursos visuais",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-059",
+    "titulo": "Pathfinder Adventure Path: Seven Dooms for Sandpoint (1 of 1) – Bundle (Foundry VTT + Livros)",
+    "valorCota": 19.41,
+    "precoAquisicao": 19.41,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path: Seven Dooms for Sandpoint (1 of 1) – Bundle (Foundry VTT + Livros) (Adventure Path completo (1 de 1) + Bundle com livros físicos/digitais)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path: Seven Dooms for Sandpoint (1 of 1) – Bundle (Foundry VTT + Livros)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path completo (1 de 1) + Bundle com livros físicos/digitais",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-060",
+    "titulo": "Cthulhu Architect + Sheppi <TSRodriguez> + Brave New Worlds",
+    "valorCota": 9.61,
+    "precoAquisicao": 9.61,
+    "status": "Catálogo",
+    "sistema": "Genérico",
+    "descricao": "Cthulhu Architect (Mapas / assets de arquitetura em estilo Cthulhu (material artístico)) | Sheppi <TSRodriguez> (Criador/artista de mapas e assets (pacote de recursos)) | Brave New Worlds (Assets, mapas ou recursos visuais (coleção artística para VTTs))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Cthulhu Architect",
+        "sistema": "Genérico",
+        "tipo": "Mapas / assets de arquitetura em estilo Cthulhu (material artístico)",
+        "link": ""
+      },
+      {
+        "nome": "Sheppi <TSRodriguez>",
+        "sistema": "Genérico",
+        "tipo": "Criador/artista de mapas e assets (pacote de recursos)",
+        "link": ""
+      },
+      {
+        "nome": "Brave New Worlds",
+        "sistema": "Genérico",
+        "tipo": "Assets, mapas ou recursos visuais (coleção artística para VTTs)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-061",
+    "titulo": "Dragon Collection Dice (Foundry VTT) + Kit Phantyr – Módulo de Aventura",
+    "valorCota": 7.42,
+    "precoAquisicao": 7.42,
+    "status": "Catálogo",
+    "sistema": "Genérico, D&D 5e",
+    "descricao": "Dragon Collection Dice (Foundry VTT) (Coleção de dados digitais) | Kit Phantyr – Módulo de Aventura (Aventura / Módulo oficial ou third-party (compatível com 5e))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Dragon Collection Dice (Foundry VTT)",
+        "sistema": "Genérico",
+        "tipo": "Coleção de dados digitais",
+        "link": ""
+      },
+      {
+        "nome": "Kit Phantyr – Módulo de Aventura",
+        "sistema": "D&D 5e",
+        "tipo": "Aventura / Módulo oficial ou third-party (compatível com 5e)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-062",
+    "titulo": "Battlezoo Eldamon (Foundry VTT)",
+    "valorCota": 18.38,
+    "precoAquisicao": 18.38,
+    "status": "Catálogo",
+    "sistema": "D&D 5e e Pathfinder 2e",
+    "descricao": "Battlezoo Eldamon (Foundry VTT) (Suplemento / Compêndio híbrido (compatível com ambos os sistemas))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Battlezoo Eldamon (Foundry VTT)",
+        "sistema": "D&D 5e e Pathfinder 2e",
+        "tipo": "Suplemento / Compêndio híbrido (compatível com ambos os sistemas)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-063",
+    "titulo": "Tasha's Cauldron of Everything + Pathfinder Adventure Path: Wardens of Wildwood 2 of 3",
+    "valorCota": 15.26,
+    "precoAquisicao": 15.26,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Pathfinder 2e",
+    "descricao": "Tasha's Cauldron of Everything (Suplemento de regras) | Pathfinder Adventure Path: Wardens of Wildwood 2 of 3 (Adventure Path — Parte 2 de 3)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Tasha's Cauldron of Everything",
+        "sistema": "D&D 5e",
+        "tipo": "Suplemento de regras",
+        "link": ""
+      },
+      {
+        "nome": "Pathfinder Adventure Path: Wardens of Wildwood 2 of 3",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 2 de 3",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-064",
+    "titulo": "D&D Player’s Handbook (2024) + Wardens of Wildwood 3 of 3",
+    "valorCota": 13.18,
+    "precoAquisicao": 13.18,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Pathfinder 2e",
+    "descricao": "D&D Player’s Handbook (2024) (Livro básico oficial (2024)) | Wardens of Wildwood 3 of 3 (Adventure Path — Parte 3 de 3 (última parte))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "D&D Player’s Handbook (2024)",
+        "sistema": "D&D 5e",
+        "tipo": "Livro básico oficial (2024)",
+        "link": ""
+      },
+      {
+        "nome": "Wardens of Wildwood 3 of 3",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 3 de 3 (última parte)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-065",
+    "titulo": "Prey for Death",
+    "valorCota": 18.59,
+    "precoAquisicao": 18.59,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Prey for Death (Aventura)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Prey for Death",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Aventura",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-066",
+    "titulo": "Pathfinder Tokens: Monster Core + Dungeon Master's Guide (2024)",
+    "valorCota": 7.24,
+    "precoAquisicao": 7.24,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, D&D 5e",
+    "descricao": "Pathfinder Tokens: Monster Core (Pacote de tokens (monstros)) | Dungeon Master's Guide (2024) (Livro básico (2024))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Tokens: Monster Core",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Pacote de tokens (monstros)",
+        "link": ""
+      },
+      {
+        "nome": "Dungeon Master's Guide (2024)",
+        "sistema": "D&D 5e",
+        "tipo": "Livro básico (2024)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-067",
+    "titulo": "Starfinder Second Edition – Playtest Deluxe Adventure Pack",
+    "valorCota": 22.24,
+    "precoAquisicao": 22.24,
+    "status": "Catálogo",
+    "sistema": "Starfinder 2e (Playtest)",
+    "descricao": "Starfinder Second Edition – Playtest Deluxe Adventure Pack (Módulo / Pacote de Aventuras do Playtest)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Starfinder Second Edition – Playtest Deluxe Adventure Pack",
+        "sistema": "Starfinder 2e (Playtest)",
+        "tipo": "Módulo / Pacote de Aventuras do Playtest",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-068",
+    "titulo": "Pathfinder Tokens: Character Gallery",
+    "valorCota": 14.93,
+    "precoAquisicao": 14.93,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Tokens: Character Gallery (Pacote de tokens / galeria de personagens)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Tokens: Character Gallery",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Pacote de tokens / galeria de personagens",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-069",
+    "titulo": "Phandelver and Below: The Shattered Obelisk + Morvold Press – Master Cartographer Module",
+    "valorCota": 14.95,
+    "precoAquisicao": 14.95,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Genérico",
+    "descricao": "Phandelver and Below: The Shattered Obelisk (Campanha / Aventura oficial) | Morvold Press – Master Cartographer Module (Módulo de criação/gestão de mapas (ferramenta de cartografia))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Phandelver and Below: The Shattered Obelisk",
+        "sistema": "D&D 5e",
+        "tipo": "Campanha / Aventura oficial",
+        "link": ""
+      },
+      {
+        "nome": "Morvold Press – Master Cartographer Module",
+        "sistema": "Genérico",
+        "tipo": "Módulo de criação/gestão de mapas (ferramenta de cartografia)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-070",
+    "titulo": "Pathfinder Adventure Path: Curtain Call 2 of 3 + Pathfinder Adventure Path: Curtain Call 3 of 3",
+    "valorCota": 16.95,
+    "precoAquisicao": 16.95,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path: Curtain Call 2 of 3 (Adventure Path (Parte 2 de 3)) | Pathfinder Adventure Path: Curtain Call 3 of 3 (Adventure Path (Parte 3 de 3))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path: Curtain Call 2 of 3",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 2 de 3)",
+        "link": ""
+      },
+      {
+        "nome": "Pathfinder Adventure Path: Curtain Call 3 of 3",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 3 de 3)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-071",
+    "titulo": "Pathfinder Adventure Path #207: The Resurrection Flood (Triumph of the Tusk 1 of 3)",
+    "valorCota": 7.31,
+    "precoAquisicao": 7.31,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Adventure Path #207: The Resurrection Flood (Triumph of the Tusk 1 of 3) (Adventure Path (Parte 1 de 3) — Bundle)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #207: The Resurrection Flood (Triumph of the Tusk 1 of 3)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 1 de 3) — Bundle",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-072",
+    "titulo": "Pathfinder Adventure Path #208: Triumph of the Tusk 2 of 3 + Wanderer's Guide to Enchanted Emporiums",
+    "valorCota": 7.48,
+    "precoAquisicao": 7.48,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, D&D 5e",
+    "descricao": "Pathfinder Adventure Path #208: Triumph of the Tusk 2 of 3 (Adventure Path (Parte 2 de 3)) | Wanderer's Guide to Enchanted Emporiums (Suplemento / Guia de itens mágicos)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #208: Triumph of the Tusk 2 of 3",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 2 de 3)",
+        "link": ""
+      },
+      {
+        "nome": "Wanderer's Guide to Enchanted Emporiums",
+        "sistema": "D&D 5e",
+        "tipo": "Suplemento / Guia de itens mágicos",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-073",
+    "titulo": "Kobold DM + Cropox Battlemaps + Lodaim",
+    "valorCota": 7.16,
+    "precoAquisicao": 7.16,
+    "status": "Catálogo",
+    "sistema": "Genérico",
+    "descricao": "Kobold DM (Recurso para mestres (mapas, tokens ou ferramentas — dependendo do pacote)) | Cropox Battlemaps (Mapas de batalha / material de mapa) | Lodaim (Mapas / assets (coleção artística voltada para mapas e cenas))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Kobold DM",
+        "sistema": "Genérico",
+        "tipo": "Recurso para mestres (mapas, tokens ou ferramentas — dependendo do pacote)",
+        "link": ""
+      },
+      {
+        "nome": "Cropox Battlemaps",
+        "sistema": "Genérico",
+        "tipo": "Mapas de batalha / material de mapa",
+        "link": ""
+      },
+      {
+        "nome": "Lodaim",
+        "sistema": "Genérico",
+        "tipo": "Mapas / assets (coleção artística voltada para mapas e cenas)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-074",
+    "titulo": "Triumph of the Tusk 3 of 3: Destroyer's Doom + Spore War 1 of 3: Whispers in the Dirt + D&D Monster Manual (2024)",
+    "valorCota": 11.65,
+    "precoAquisicao": 11.65,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, D&D 5e",
+    "descricao": "Triumph of the Tusk 3 of 3: Destroyer's Doom (Adventure Path (Parte 3 de 3)) | Spore War 1 of 3: Whispers in the Dirt (Adventure Path (Parte 1 de 3)) | D&D Monster Manual (2024) (Livro básico de monstros (edição 2024))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Triumph of the Tusk 3 of 3: Destroyer's Doom",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 3 de 3)",
+        "link": ""
+      },
+      {
+        "nome": "Spore War 1 of 3: Whispers in the Dirt",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 1 de 3)",
+        "link": ""
+      },
+      {
+        "nome": "D&D Monster Manual (2024)",
+        "sistema": "D&D 5e",
+        "tipo": "Livro básico de monstros (edição 2024)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-075",
+    "titulo": "Warhammer 40,000: Wrath & Glory – Foundry Core Module + Deadlands: Blood Drive – Foundry VTT",
+    "valorCota": 11.65,
+    "precoAquisicao": 11.65,
+    "status": "Catálogo",
+    "sistema": "Wrath & Glory (Warhammer 40k RPG), Deadlands (Savage Worlds Adventure Edition – SWADE)",
+    "descricao": "Warhammer 40,000: Wrath & Glory – Foundry Core Module (Módulo Core / Compêndio) | Deadlands: Blood Drive – Foundry VTT (Aventura)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Warhammer 40,000: Wrath & Glory – Foundry Core Module",
+        "sistema": "Wrath & Glory (Warhammer 40k RPG)",
+        "tipo": "Módulo Core / Compêndio",
+        "link": ""
+      },
+      {
+        "nome": "Deadlands: Blood Drive – Foundry VTT",
+        "sistema": "Deadlands (Savage Worlds Adventure Edition – SWADE)",
+        "tipo": "Aventura",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-076",
+    "titulo": "Flee, Mortals! & Where Evil Lives",
+    "valorCota": 14.32,
+    "precoAquisicao": 14.32,
+    "status": "Catálogo",
+    "sistema": "D&D 5e",
+    "descricao": "Flee, Mortals! & Where Evil Lives (Suplementos de monstros e masmorras (MCDM))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Flee, Mortals! & Where Evil Lives",
+        "sistema": "D&D 5e",
+        "tipo": "Suplementos de monstros e masmorras (MCDM)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-077",
+    "titulo": "Dungeons of Drakkenheim + Spore War 2 of 3 + Spore War 3 of 3",
+    "valorCota": 16.66,
+    "precoAquisicao": 16.66,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Pathfinder 2e",
+    "descricao": "Dungeons of Drakkenheim (Campanha / Aventura completa) | Spore War 2 of 3 (Adventure Path (Parte 2 de 3)) | Spore War 3 of 3 (Adventure Path (Parte 3 de 3))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Dungeons of Drakkenheim",
+        "sistema": "D&D 5e",
+        "tipo": "Campanha / Aventura completa",
+        "link": ""
+      },
+      {
+        "nome": "Spore War 2 of 3",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 2 de 3)",
+        "link": ""
+      },
+      {
+        "nome": "Spore War 3 of 3",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Parte 3 de 3)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-078",
+    "titulo": "Pathfinder Tokens: NPC Core + Shades of Blood 1 of 3: Thirst for Blood",
+    "valorCota": 13.98,
+    "precoAquisicao": 13.98,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pathfinder Tokens: NPC Core (Pacote de tokens) | Shades of Blood 1 of 3: Thirst for Blood (Adventure Path (Aventura – Parte 1 de 3))",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Tokens: NPC Core",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Pacote de tokens",
+        "link": ""
+      },
+      {
+        "nome": "Shades of Blood 1 of 3: Thirst for Blood",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Aventura – Parte 1 de 3)",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-079",
+    "titulo": "Call of Cthulhu – Starter Set + Mutant: Year Zero – Core Rules + Shadow of the Demon Lord – Compendia",
+    "valorCota": 16.03,
+    "precoAquisicao": 16.03,
+    "status": "Catálogo",
+    "sistema": "Call of Cthulhu (CoC 7ª edição), Mutant: Year Zero, Shadow of the Demon Lord",
+    "descricao": "Call of Cthulhu – Starter Set (Caixa de Introdução / Regras básicas) | Mutant: Year Zero – Core Rules (Livro básico / Compêndio de regras) | Shadow of the Demon Lord – Compendia (Compêndio de regras / Suplemento)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Call of Cthulhu – Starter Set",
+        "sistema": "Call of Cthulhu (CoC 7ª edição)",
+        "tipo": "Caixa de Introdução / Regras básicas",
+        "link": ""
+      },
+      {
+        "nome": "Mutant: Year Zero – Core Rules",
+        "sistema": "Mutant: Year Zero",
+        "tipo": "Livro básico / Compêndio de regras",
+        "link": ""
+      },
+      {
+        "nome": "Shadow of the Demon Lord – Compendia",
+        "sistema": "Shadow of the Demon Lord",
+        "tipo": "Compêndio de regras / Suplemento",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-080",
+    "titulo": "Pathfinder Adventure Path #214: The Broken Palace (Shades of Blood 2 of 3) + Sebastian Crowe's Guide to Drakkenheim",
+    "valorCota": 14.03,
+    "precoAquisicao": 14.03,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, D&D 5e",
+    "descricao": "Pathfinder Adventure Path #214: The Broken Palace (Shades of Blood 2 of 3) (Adventure Path (Aventura oficial)) | Sebastian Crowe's Guide to Drakkenheim (Suplemento de regras / expansão de ambientação)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path #214: The Broken Palace (Shades of Blood 2 of 3)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path (Aventura oficial)",
+        "link": ""
+      },
+      {
+        "nome": "Sebastian Crowe's Guide to Drakkenheim",
+        "sistema": "D&D 5e",
+        "tipo": "Suplemento de regras / expansão de ambientação",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-081",
+    "titulo": "Pathfinder: Claws of the Tyrant + Terminal (módulo do Foundry)",
+    "valorCota": 9.43,
+    "precoAquisicao": 9.43,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, Genérico",
+    "descricao": "Pathfinder: Claws of the Tyrant (Aventura / Módulo) | Terminal (módulo do Foundry) (Módulo utilitário para Foundry VTT)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Pathfinder: Claws of the Tyrant",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Aventura / Módulo",
+        "link": ""
+      },
+      {
+        "nome": "Terminal (módulo do Foundry)",
+        "sistema": "Genérico",
+        "tipo": "Módulo utilitário para Foundry VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-082",
+    "titulo": "Ruins of Symbaroum – Player’s Guide + 1 Ano de Assinatura Inkarnate (conta compartilhada do PDT) + Pathfinder Tokens: Myth and Magic",
+    "valorCota": 17.22,
+    "precoAquisicao": 17.22,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Genérico, Pathfinder 2e",
+    "descricao": "Ruins of Symbaroum – Player’s Guide (Módulo / Asset VTT) | 1 Ano de Assinatura Inkarnate (conta compartilhada do PDT) (Ferramenta de criação de mapas) | Pathfinder Tokens: Myth and Magic (Módulo / Asset VTT)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Ruins of Symbaroum – Player’s Guide",
+        "sistema": "D&D 5e",
+        "tipo": "Módulo / Asset VTT",
+        "link": ""
+      },
+      {
+        "nome": "1 Ano de Assinatura Inkarnate (conta compartilhada do PDT)",
+        "sistema": "Genérico",
+        "tipo": "Ferramenta de criação de mapas",
+        "link": ""
+      },
+      {
+        "nome": "Pathfinder Tokens: Myth and Magic",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Módulo / Asset VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-083",
+    "titulo": "Tomb of Annihilation + Pathfinder Society – Year of Unfettered Exploration: Asset Pack",
+    "valorCota": 13.18,
+    "precoAquisicao": 13.18,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Pathfinder 2e",
+    "descricao": "Tomb of Annihilation (Módulo / Asset VTT) | Pathfinder Society – Year of Unfettered Exploration: Asset Pack (Foundry VTT)",
+    "links": [],
+    "itens": [
+      {
+        "nome": "Tomb of Annihilation",
+        "sistema": "D&D 5e",
+        "tipo": "Módulo / Asset VTT",
+        "link": ""
+      },
+      {
+        "nome": "Pathfinder Society – Year of Unfettered Exploration: Asset Pack",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Foundry VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-084",
+    "titulo": "Wanderer's Guide to Merchants & Magic (Foundry VTT / D&D 5e) + Shades of Blood 3 of 3: To Blot Out the Sun (Foundry VTT / Pathfinder 2e)",
+    "valorCota": 9.2,
+    "precoAquisicao": 9.2,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Pathfinder 2e",
+    "descricao": "Wanderer's Guide to Merchants & Magic (Foundry VTT / D&D 5e) (Suplemento de comércio e itens mágicos + aventuras prontas para VTT) | Shades of Blood 3 of 3: To Blot Out the Sun (Foundry VTT / Pathfinder 2e) (Adventure Path — Volume 3 de 3 (conclusão da saga))",
+    "links": [
+      "https://foundryvtt.com/packages/wanderers-guide-2-merchants-n-magic",
+      "https://foundryvtt.com/packages/pf2e-ap215-to-blot-out-the-sun"
+    ],
+    "itens": [
+      {
+        "nome": "Wanderer's Guide to Merchants & Magic (Foundry VTT / D&D 5e)",
+        "sistema": "D&D 5e",
+        "tipo": "Suplemento de comércio e itens mágicos + aventuras prontas para VTT",
+        "link": "https://foundryvtt.com/packages/wanderers-guide-2-merchants-n-magic"
+      },
+      {
+        "nome": "Shades of Blood 3 of 3: To Blot Out the Sun (Foundry VTT / Pathfinder 2e)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Volume 3 de 3 (conclusão da saga)",
+        "link": "https://foundryvtt.com/packages/pf2e-ap215-to-blot-out-the-sun"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-085",
+    "titulo": "Myth‑Speaker 1 of 3: The Acropolis Pyre + Cosmere RPG: Stormlight Bridge Nine Adventure + Cosmere RPG: Stormlight Stonewalkers Adventure + Warhammer Fantasy Roleplay (Core Module para Foundry VTT / community‑driven)",
+    "valorCota": 16.28,
+    "precoAquisicao": 16.28,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, Cosmere RPG, Warhammer Fantasy Roleplay (versão compatível com Foundry VTT)",
+    "descricao": "Myth‑Speaker 1 of 3: The Acropolis Pyre (Adventure Path — Parte 1 de 3) | Cosmere RPG: Stormlight Bridge Nine Adventure (Aventura introdutória / one‑shot) | Cosmere RPG: Stormlight Stonewalkers Adventure (Aventura / Campanha) | Warhammer Fantasy Roleplay (Core Module para Foundry VTT / community‑driven) (Sistema / módulo base para o RPG)",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap216-the-acropolis-pyre",
+      "https://foundryvtt.com/packages/cosmere-rpg-stormlight-bridge-nine",
+      "https://foundryvtt.com/packages/cosmere-rpg-stormlight-stonewalkers"
+    ],
+    "itens": [
+      {
+        "nome": "Myth‑Speaker 1 of 3: The Acropolis Pyre",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 1 de 3",
+        "link": "https://foundryvtt.com/packages/pf2e-ap216-the-acropolis-pyre"
+      },
+      {
+        "nome": "Cosmere RPG: Stormlight Bridge Nine Adventure",
+        "sistema": "Cosmere RPG",
+        "tipo": "Aventura introdutória / one‑shot",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-stormlight-bridge-nine"
+      },
+      {
+        "nome": "Cosmere RPG: Stormlight Stonewalkers Adventure",
+        "sistema": "Cosmere RPG",
+        "tipo": "Aventura / Campanha",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-stormlight-stonewalkers"
+      },
+      {
+        "nome": "Warhammer Fantasy Roleplay (Core Module para Foundry VTT / community‑driven)",
+        "sistema": "Warhammer Fantasy Roleplay (versão compatível com Foundry VTT)",
+        "tipo": "Sistema / módulo base para o RPG",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-086",
+    "titulo": "Cosmere RPG: Stormlight World Guide + Myth‑Speaker 2 of 3: Death Sails a Wine‑Dark Sea + Weapons of Legend (D&D 5e — Foundry VTT)",
+    "valorCota": 11.03,
+    "precoAquisicao": 11.03,
+    "status": "Catálogo",
+    "sistema": "Cosmere RPG, Pathfinder 2e, D&D 5e",
+    "descricao": "Cosmere RPG: Stormlight World Guide (Guia do mundo / configuração de campanha para VTT) | Myth‑Speaker 2 of 3: Death Sails a Wine‑Dark Sea (Adventure Path — Parte 2 de 3) | Weapons of Legend (D&D 5e — Foundry VTT) (Suplemento / Compêndio de armas lendárias / itens mágicos para VTT)",
+    "links": [
+      "https://foundryvtt.com/packages/cosmere-rpg-stormlight-worldguide",
+      "https://foundryvtt.com/packages/pf2e-ap217-death-sails-a-wine-dark-sea"
+    ],
+    "itens": [
+      {
+        "nome": "Cosmere RPG: Stormlight World Guide",
+        "sistema": "Cosmere RPG",
+        "tipo": "Guia do mundo / configuração de campanha para VTT",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-stormlight-worldguide"
+      },
+      {
+        "nome": "Myth‑Speaker 2 of 3: Death Sails a Wine‑Dark Sea",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte 2 de 3",
+        "link": "https://foundryvtt.com/packages/pf2e-ap217-death-sails-a-wine-dark-sea"
+      },
+      {
+        "nome": "Weapons of Legend (D&D 5e — Foundry VTT)",
+        "sistema": "D&D 5e",
+        "tipo": "Suplemento / Compêndio de armas lendárias / itens mágicos para VTT",
+        "link": ""
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-087",
+    "titulo": "Heroes of the Borderlands (Foundry VTT / D&D 5e) + Mutant: Mechatron Core Rulebook (Foundry VTT / Mutant: Year Zero) + Skyfall RPG - Core Rulebook (Foundry VTT / Skyfall RPG)",
+    "valorCota": 15.43,
+    "precoAquisicao": 15.43,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Mutant: Year Zero, Skyfall RPG",
+    "descricao": "Heroes of the Borderlands (Foundry VTT / D&D 5e) (Aventura / Starter‑set para VTT) | Mutant: Mechatron Core Rulebook (Foundry VTT / Mutant: Year Zero) (Livro básico / módulo core para VTT) | Skyfall RPG - Core Rulebook (Foundry VTT / Skyfall RPG) (Livro básico / sistema completo para VTT)",
+    "links": [
+      "https://foundryvtt.com/packages/dnd-heroes-borderlands",
+      "https://foundryvtt.com/packages/myz-mechatron",
+      "https://foundryvtt.com/packages/skyfall-core"
+    ],
+    "itens": [
+      {
+        "nome": "Heroes of the Borderlands (Foundry VTT / D&D 5e)",
+        "sistema": "D&D 5e",
+        "tipo": "Aventura / Starter‑set para VTT",
+        "link": "https://foundryvtt.com/packages/dnd-heroes-borderlands"
+      },
+      {
+        "nome": "Mutant: Mechatron Core Rulebook (Foundry VTT / Mutant: Year Zero)",
+        "sistema": "Mutant: Year Zero",
+        "tipo": "Livro básico / módulo core para VTT",
+        "link": "https://foundryvtt.com/packages/myz-mechatron"
+      },
+      {
+        "nome": "Skyfall RPG - Core Rulebook (Foundry VTT / Skyfall RPG)",
+        "sistema": "Skyfall RPG",
+        "tipo": "Livro básico / sistema completo para VTT",
+        "link": "https://foundryvtt.com/packages/skyfall-core"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-088",
+    "titulo": "Myth‑Speaker 3 of 3: Titanbane + Call of Cthulhu: Core Content + Boss Loot Collection",
+    "valorCota": 17.01,
+    "precoAquisicao": 17.01,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, Call of Cthulhu (7ª edição), D&D 5e",
+    "descricao": "Myth‑Speaker 3 of 3: Titanbane (Adventure Path — Parte final (3 de 3)) | Call of Cthulhu: Core Content (Pacote básico / compêndio completo com regras, monstros, armas etc.) | Boss Loot Collection (Módulo de conteúdo (itens mágicos, monstros, mapas, aventuras, loot pronto))",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap218-titanbane",
+      "https://foundryvtt.com/packages/cha-coc-fvtt-en-keeperitems",
+      "https://foundryvtt.com/packages/boss-loot-adventures-premium"
+    ],
+    "itens": [
+      {
+        "nome": "Myth‑Speaker 3 of 3: Titanbane",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path — Parte final (3 de 3)",
+        "link": "https://foundryvtt.com/packages/pf2e-ap218-titanbane"
+      },
+      {
+        "nome": "Call of Cthulhu: Core Content",
+        "sistema": "Call of Cthulhu (7ª edição)",
+        "tipo": "Pacote básico / compêndio completo com regras, monstros, armas etc.",
+        "link": "https://foundryvtt.com/packages/cha-coc-fvtt-en-keeperitems"
+      },
+      {
+        "nome": "Boss Loot Collection",
+        "sistema": "D&D 5e",
+        "tipo": "Módulo de conteúdo (itens mágicos, monstros, mapas, aventuras, loot pronto)",
+        "link": "https://foundryvtt.com/packages/boss-loot-adventures-premium"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-089",
+    "titulo": "Revenge of the Runelords 1 of 3 (Foundry VTT / Pathfinder 2e) + Cosmere RPG: Stormlight – The First Step Adventure (Foundry VTT / Cosmere RPG) + Milando's Guide to Magical Marvels (Foundry VTT / D&D 5e)",
+    "valorCota": 9.88,
+    "precoAquisicao": 9.88,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, Cosmere RPG, D&D 5e",
+    "descricao": "Revenge of the Runelords 1 of 3 (Foundry VTT / Pathfinder 2e) (Adventure Path – Parte 1 de 3) | Cosmere RPG: Stormlight – The First Step Adventure (Foundry VTT / Cosmere RPG) (Aventura introdutória / prólogo) | Milando's Guide to Magical Marvels (Foundry VTT / D&D 5e) (Suplemento de itens mágicos / regras de magia + aventuras prontas)",
+    "links": [
+      "https://www.peginc.com/product/rise-of-the-runelords-burnt-offerings-foundry-vtt-code/",
+      "https://foundryvtt.com/packages/cosmere-rpg-stormlight-first-step",
+      "https://www.foundryvtt-hub.com/package/milandos-guide-to-magical-marvels/"
+    ],
+    "itens": [
+      {
+        "nome": "Revenge of the Runelords 1 of 3 (Foundry VTT / Pathfinder 2e)",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Adventure Path – Parte 1 de 3",
+        "link": "https://www.peginc.com/product/rise-of-the-runelords-burnt-offerings-foundry-vtt-code/"
+      },
+      {
+        "nome": "Cosmere RPG: Stormlight – The First Step Adventure (Foundry VTT / Cosmere RPG)",
+        "sistema": "Cosmere RPG",
+        "tipo": "Aventura introdutória / prólogo",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-stormlight-first-step"
+      },
+      {
+        "nome": "Milando's Guide to Magical Marvels (Foundry VTT / D&D 5e)",
+        "sistema": "D&D 5e",
+        "tipo": "Suplemento de itens mágicos / regras de magia + aventuras prontas",
+        "link": "https://www.foundryvtt-hub.com/package/milandos-guide-to-magical-marvels/"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-090",
+    "titulo": "Battlezoo Bestiary: Elemental Storm",
+    "valorCota": 18.88,
+    "precoAquisicao": 18.88,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e e D&D 5e",
+    "descricao": "Battlezoo Bestiary: Elemental Storm (Bestiário / módulo de monstros + sistema de “Monster Parts”, novas magias e monstros elementais.)",
+    "links": [
+      "https://foundryvtt.com/packages/battlezoo-bestiary-es-pf2e",
+      "https://foundryvtt.com/packages/battlezoo-bestiary-es-dnd5e"
+    ],
+    "itens": [
+      {
+        "nome": "Battlezoo Bestiary: Elemental Storm",
+        "sistema": "Pathfinder 2e e D&D 5e",
+        "tipo": "Bestiário / módulo de monstros + sistema de “Monster Parts”, novas magias e monstros elementais.",
+        "link": "https://foundryvtt.com/packages/battlezoo-bestiary-es-pf2e"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-091",
+    "titulo": "Forgotten Realms: Heroes of Faerûn + Starfinder Tokens: Alien Core + Cosmere RPG: Speak The Words + Material Patreon (Foundry VTT)",
+    "valorCota": 15.98,
+    "precoAquisicao": 15.98,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Starfinder e Cosmere RPG",
+    "descricao": "Pacote contendo suplementos, aventuras, tokens e materiais oficiais para Foundry VTT, incluindo Forgotten Realms: Heroes of Faerûn, Starfinder Tokens: Alien Core, Cosmere RPG: Speak The Words e conteúdos exclusivos do Patreon.",
+    "links": [
+      "https://foundryvtt.com/packages/heroes-of-faerun",
+      "https://foundryvtt.com/packages/starfinder-tokens-alien-core",
+      "https://foundryvtt.com/packages/cosmere-rpg-speak-the-words"
+    ],
+    "itens": [
+      {
+        "nome": "Heroes of Faerûn",
+        "sistema": "D&D 5e, Starfinder e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/heroes-of-faerun"
+      },
+      {
+        "nome": "Starfinder Tokens Alien Core",
+        "sistema": "D&D 5e, Starfinder e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/starfinder-tokens-alien-core"
+      },
+      {
+        "nome": "Cosmere RPG Speak The Words",
+        "sistema": "D&D 5e, Starfinder e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-speak-the-words"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-092",
+    "titulo": "Forgotten Realms: Adventures in Faerûn + Revenge of the Runelords 2 of 3: Crypt of Runes + Cosmere RPG: Speak The Words + Dynamic Dungeons (Foundry VTT)",
+    "valorCota": 14.66,
+    "precoAquisicao": 14.66,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Pathfinder 2e e Cosmere RPG",
+    "descricao": "Pacote contendo o suplemento oficial Forgotten Realms: Adventures in Faerûn, a segunda parte da Adventure Path Revenge of the Runelords, a aventura Speak The Words para Cosmere RPG e uma coleção de mapas animados e recursos do Dynamic Dungeons para uso em campanhas no Foundry VTT. (Foundry Virtual Tabletop)",
+    "links": [
+      "https://foundryvtt.com/packages/dnd-adventures-faerun",
+      "https://foundryvtt.com/packages/pf2e-ap220-crypt-of-runes",
+      "https://foundryvtt.com/packages/cosmere-rpg-stormlight-speak-the-words",
+      "https://dynamicdungeons.com/"
+    ],
+    "itens": [
+      {
+        "nome": "Forgotten Realms Adventures in Faerûn",
+        "sistema": "D&D 5e, Pathfinder 2e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/dnd-adventures-faerun"
+      },
+      {
+        "nome": "Revenge of the Runelords 2 of 3 Crypt of Runes",
+        "sistema": "D&D 5e, Pathfinder 2e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/pf2e-ap220-crypt-of-runes"
+      },
+      {
+        "nome": "Cosmere RPG Speak The Words",
+        "sistema": "D&D 5e, Pathfinder 2e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-stormlight-speak-the-words"
+      },
+      {
+        "nome": "Dynamic Dungeons",
+        "sistema": "D&D 5e, Pathfinder 2e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://dynamicdungeons.com/"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-093",
+    "titulo": "Revenge of the Runelords 3 of 3: Into the Apocalypse Archive + Dragonix's Deadly Denizens III + Eberron: Forge of the Artificer + Cosmere RPG: Stormlight Advanced Adversaries (Foundry VTT)",
+    "valorCota": 11.57,
+    "precoAquisicao": 11.57,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, D&D 5e e Cosmere RPG",
+    "descricao": "Pacote contendo a terceira e última parte da Adventure Path Revenge of the Runelords, o bestiário Dragonix's Deadly Denizens III, o suplemento oficial Eberron: Forge of the Artificer e Stormlight Advanced Adversaries, adicionando novos inimigos, criaturas, opções para personagens e conteúdos prontos para campanhas no Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap221-into-the-apocalypse-archive",
+      "https://foundryvtt.com/packages/dragonixs-deadly-denizens-iii",
+      "https://foundryvtt.com/packages/dnd-forge-of-the-artificer",
+      "https://foundryvtt.com/packages/cosmere-rpg-stormlight-advanced-adversaries"
+    ],
+    "itens": [
+      {
+        "nome": "Revenge of the Runelords 3 of 3 Into the Apocalypse Archive",
+        "sistema": "Pathfinder 2e, D&D 5e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/pf2e-ap221-into-the-apocalypse-archive"
+      },
+      {
+        "nome": "Dragonix's Deadly Denizens III",
+        "sistema": "Pathfinder 2e, D&D 5e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/dragonixs-deadly-denizens-iii"
+      },
+      {
+        "nome": "Eberron Forge of the Artificer",
+        "sistema": "Pathfinder 2e, D&D 5e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/dnd-forge-of-the-artificer"
+      },
+      {
+        "nome": "Cosmere RPG Stormlight Advanced Adversaries",
+        "sistema": "Pathfinder 2e, D&D 5e e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-stormlight-advanced-adversaries"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-094",
+    "titulo": "Monsters of Drakkenheim + Call of Cthulhu®: No Time To Scream + Battlezoo Adventures: Release the Kraken! + Cosmere RPG: Stormlight Scenarios (Foundry VTT)",
+    "valorCota": 18.23,
+    "precoAquisicao": 18.23,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Call of Cthulhu e Cosmere RPG",
+    "descricao": "Pacote contendo o bestiário Monsters of Drakkenheim, a aventura investigativa Call of Cthulhu®: No Time To Scream, a aventura Battlezoo Adventures: Release the Kraken! para Pathfinder 2e e Stormlight Scenarios, uma coleção de cenários prontos para o Cosmere RPG, todos adaptados para o Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/monsters-of-drakkenheim",
+      "https://foundryvtt.com/packages/coc7-no-time-to-scream",
+      "https://foundryvtt.com/packages/battlezoo-adventures-release-the-kraken-pf2e",
+      "https://foundryvtt.com/packages/cosmere-rpg-stormlight-scenarios"
+    ],
+    "itens": [
+      {
+        "nome": "Monsters of Drakkenheim",
+        "sistema": "D&D 5e, Call of Cthulhu e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/monsters-of-drakkenheim"
+      },
+      {
+        "nome": "Call of Cthulhu® No Time To Scream",
+        "sistema": "D&D 5e, Call of Cthulhu e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/coc7-no-time-to-scream"
+      },
+      {
+        "nome": "Battlezoo Adventures Release the Kraken!",
+        "sistema": "D&D 5e, Call of Cthulhu e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/battlezoo-adventures-release-the-kraken-pf2e"
+      },
+      {
+        "nome": "Cosmere RPG Stormlight Scenarios",
+        "sistema": "D&D 5e, Call of Cthulhu e Cosmere RPG",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/cosmere-rpg-stormlight-scenarios"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-095",
+    "titulo": "Historica Arcanum: Era of the Crusades Bundle + Pathfinder Tokens: Monster Core 2 + MCDM Draw Steel – The Delian Tomb (Foundry VTT)",
+    "valorCota": 19.22,
+    "precoAquisicao": 19.22,
+    "status": "Catálogo",
+    "sistema": "D&D 5e, Pathfinder 2e e Draw Steel",
+    "descricao": "Pacote contendo Historica Arcanum: Era of the Crusades Bundle, uma coleção de aventuras e suplementos inspirados nas Cruzadas; Pathfinder Tokens: Monster Core 2, com tokens oficiais para as criaturas do Monster Core 2; e MCDM Draw Steel – The Delian Tomb, aventura introdutória oficial para o sistema Draw Steel, totalmente preparada para o Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/historica-arcanum-era-of-the-crusades-bundle",
+      "https://foundryvtt.com/packages/pf2e-tokens-monster-core-2",
+      "https://foundryvtt.com/packages/mcdm-draw-steel-the-delian-tomb"
+    ],
+    "itens": [
+      {
+        "nome": "Historica Arcanum Era of the Crusades Bundle",
+        "sistema": "D&D 5e, Pathfinder 2e e Draw Steel",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/historica-arcanum-era-of-the-crusades-bundle"
+      },
+      {
+        "nome": "Pathfinder Tokens Monster Core 2",
+        "sistema": "D&D 5e, Pathfinder 2e e Draw Steel",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/pf2e-tokens-monster-core-2"
+      },
+      {
+        "nome": "MCDM Draw Steel – The Delian Tomb",
+        "sistema": "D&D 5e, Pathfinder 2e e Draw Steel",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/mcdm-draw-steel-the-delian-tomb"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-096",
+    "titulo": "Pathfinder Adventure Path: Hellbreakers + Moonlight Maps – Battle Map Collections: Cyberpunk 1 (Foundry VTT)",
+    "valorCota": 15.13,
+    "precoAquisicao": 15.13,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e",
+    "descricao": "Pacote contendo a Adventure Path Hellbreakers, com uma campanha oficial para Pathfinder 2e, e a coleção Moonlight Maps – Battle Map Collections: Cyberpunk 1, oferecendo mapas detalhados e prontos para uso em cenários futuristas e campanhas de ficção científica no Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-ap-hellbreakers",
+      "https://foundryvtt.com/packages/moonlight-maps-battle-map-collections-cyberpunk-1"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder Adventure Path Hellbreakers",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/pf2e-ap-hellbreakers"
+      },
+      {
+        "nome": "Moonlight Maps – Battle Map Collections Cyberpunk 1",
+        "sistema": "Pathfinder 2e",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/moonlight-maps-battle-map-collections-cyberpunk-1"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-097",
+    "titulo": "Draw Steel – Heroes + Pendragon® 6th Edition – Core Rulebook + Old-School Essentials: Premium Game (Foundry VTT)",
+    "valorCota": 9.26,
+    "precoAquisicao": 9.26,
+    "status": "Catálogo",
+    "sistema": "Draw Steel, Pendragon 6ª Edição e Old-School Essentials",
+    "descricao": "Pacote contendo Draw Steel – Heroes, com opções oficiais para criação de personagens; Pendragon® 6th Edition – Core Rulebook, trazendo o livro básico completo do sistema de RPG arturiano; e Old-School Essentials: Premium Game, com o conjunto essencial de regras e recursos clássicos totalmente integrados ao Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/mcdm-draw-steel-heroes",
+      "https://foundryvtt.com/packages/pendragon-6e-core-rulebook",
+      "https://foundryvtt.com/packages/old-school-essentials-premium-game"
+    ],
+    "itens": [
+      {
+        "nome": "Draw Steel – Heroes",
+        "sistema": "Draw Steel, Pendragon 6ª Edição e Old-School Essentials",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/mcdm-draw-steel-heroes"
+      },
+      {
+        "nome": "Pendragon® 6th Edition – Core Rulebook",
+        "sistema": "Draw Steel, Pendragon 6ª Edição e Old-School Essentials",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/pendragon-6e-core-rulebook"
+      },
+      {
+        "nome": "OldSchool Essentials Premium Game",
+        "sistema": "Draw Steel, Pendragon 6ª Edição e Old-School Essentials",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/old-school-essentials-premium-game"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-098",
+    "titulo": "Pathfinder Tokens: Draconic Codex + Draw Steel – Monsters + The Black Madonna (KULT: Divinity Lost) + Starfinder Adventure: Guilt of the Grave World (Foundry VTT)",
+    "valorCota": 15.44,
+    "precoAquisicao": 15.44,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e, Draw Steel, KULT: Divinity Lost e Starfinder",
+    "descricao": "Pacote contendo Pathfinder Tokens: Draconic Codex, com tokens oficiais de dragões e criaturas dracônicas; Draw Steel – Monsters, adicionando um bestiário oficial para o sistema Draw Steel; The Black Madonna, uma aventura de horror para KULT: Divinity Lost; e Starfinder Adventure: Guilt of the Grave World, uma aventura oficial pronta para uso no Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-tokens-draconic-codex",
+      "https://foundryvtt.com/packages/mcdm-draw-steel-monsters",
+      "https://foundryvtt.com/packages/kult-the-black-madonna",
+      "https://foundryvtt.com/packages/starfinder-guilt-of-the-grave-world"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder Tokens Draconic Codex",
+        "sistema": "Pathfinder 2e, Draw Steel, KULT: Divinity Lost e Starfinder",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/pf2e-tokens-draconic-codex"
+      },
+      {
+        "nome": "Draw Steel – Monsters",
+        "sistema": "Pathfinder 2e, Draw Steel, KULT: Divinity Lost e Starfinder",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/mcdm-draw-steel-monsters"
+      },
+      {
+        "nome": "The Black Madonna (KULT Divinity Lost)",
+        "sistema": "Pathfinder 2e, Draw Steel, KULT: Divinity Lost e Starfinder",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/kult-the-black-madonna"
+      },
+      {
+        "nome": "Starfinder Adventure Guilt of the Grave World",
+        "sistema": "Pathfinder 2e, Draw Steel, KULT: Divinity Lost e Starfinder",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/starfinder-guilt-of-the-grave-world"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-099",
+    "titulo": "Pathfinder 2e: Secrets of Grayce + A House Divided + TC Modern – Maps Modern (Foundry VTT)",
+    "valorCota": 20.18,
+    "precoAquisicao": 20.18,
+    "status": "Catálogo",
+    "sistema": "Pathfinder 2e e D&D 5e",
+    "descricao": "Pacote contendo a aventura Pathfinder 2e: Secrets of Grayce, a campanha A House Divided para D&D 5e e TC Modern – Maps Modern, uma coleção de mapas modernos de alta qualidade, prontos para uso em campanhas contemporâneas no Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/pf2e-secrets-of-grayce",
+      "https://foundryvtt.com/packages/a-house-divided",
+      "https://foundryvtt.com/packages/tc-modern-maps"
+    ],
+    "itens": [
+      {
+        "nome": "Pathfinder 2e Secrets of Grayce",
+        "sistema": "Pathfinder 2e e D&D 5e",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/pf2e-secrets-of-grayce"
+      },
+      {
+        "nome": "A House Divided (D&D 5e)",
+        "sistema": "Pathfinder 2e e D&D 5e",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/a-house-divided"
+      },
+      {
+        "nome": "TC Modern – Maps Modern",
+        "sistema": "Pathfinder 2e e D&D 5e",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/tc-modern-maps"
+      }
+    ]
+  },
+  {
+    "id": "pkg-acervo-100",
+    "titulo": "Ravenloft: The Horrors Within + Dragonbane – Core Rules + Moonlight Maps – Battle Map Collections: Post-Apocalypse 1 (Foundry VTT)",
+    "valorCota": 14.14,
+    "precoAquisicao": 14.14,
+    "status": "Catálogo",
+    "sistema": "D&D 5e e Dragonbane",
+    "descricao": "Pacote contendo Ravenloft: The Horrors Within, uma aventura de horror ambientada nos Domínios do Medo; Dragonbane – Core Rules, com o livro básico oficial do sistema Dragonbane; e Moonlight Maps – Battle Map Collections: Post-Apocalypse 1, uma coleção de mapas pós-apocalípticos detalhados, prontos para campanhas modernas e de sobrevivência no Foundry VTT.",
+    "links": [
+      "https://foundryvtt.com/packages/ravenloft-the-horrors-within",
+      "https://foundryvtt.com/packages/dragonbane-core-rules",
+      "https://foundryvtt.com/packages/moonlight-maps-battle-map-collections-post-apocalypse-1"
+    ],
+    "itens": [
+      {
+        "nome": "Ravenloft The Horrors Within",
+        "sistema": "D&D 5e e Dragonbane",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/ravenloft-the-horrors-within"
+      },
+      {
+        "nome": "Dragonbane – Core Rules",
+        "sistema": "D&D 5e e Dragonbane",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/dragonbane-core-rules"
+      },
+      {
+        "nome": "Moonlight Maps – Battle Map Collections PostApocalypse 1",
+        "sistema": "D&D 5e e Dragonbane",
+        "tipo": "Módulo / Suplemento",
+        "link": "https://foundryvtt.com/packages/moonlight-maps-battle-map-collections-post-apocalypse-1"
+      }
+    ]
+  }
+]

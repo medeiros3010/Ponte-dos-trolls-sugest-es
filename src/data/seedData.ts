@@ -1,4 +1,5 @@
-import { ItemRPG, UserProfile, FundingPackage } from '../types';
+import { ItemRPG, UserProfile, FundingPackage, PackageSubItem } from '../types';
+import catalogoRaw from '../../public/assets/aistudio/catalogo_ponte_dos_trolls_ea54de7f.json';
 
 export const SEED_USERS: UserProfile[] = [
   { id: "u_1", nome: "Alef Henrique", telefone: "8293951773", email: "alefffhenriquee2@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
@@ -406,168 +407,42 @@ export const SEED_PACKAGES: FundingPackage[] = [
       { id: 'ap-p9', nome: "Augusto F. Sant'ana", telefone: '(27) 99908-4467' },
     ],
   },
-  // --- PACOTES FINALIZADOS NO CATÁLOGO (NO DRIVE DO GRUPO) ---
-  {
-    id: 'pack-3',
-    titulo: 'Bundle Pathfinder 2e Remaster - Player Core & Monster Core',
-    sistema: 'PF2E',
-    tipo: 'Material para VTT',
-    imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-    descricao: 'Os livros basilares do novo Remaster de Pathfinder 2e para Foundry VTT, com integração total de fichas, feitiços e bestiário completo.',
-    valorTotalBRL: 420.00,
-    valorCatalogoBRL: 480.00,
-    minimoParticipantes: 35,
-    valorMaximoPorPessoa: 12.00,
-    linkLoja: 'https://paizo.com/pathfinder/remaster',
-    linkDrive: 'https://drive.google.com/drive/folders/ponte-dos-trolls-pf2e-core',
-    itens: [
-      {
-        id: 'it-7',
-        nome: 'Módulo Oficial Foundry Player Core Remaster',
-        sistema: 'PF2E',
-        tipo: 'Material para VTT',
-        link: 'https://paizo.com/products/player-core-foundry',
-        precoBRL: 210.00,
-      },
-      {
-        id: 'it-8',
-        nome: 'Módulo Oficial Foundry Monster Core (Bestiário)',
-        sistema: 'PF2E',
-        tipo: 'Livros',
-        link: 'https://paizo.com/products/monster-core-foundry',
-        precoBRL: 160.00,
-      },
-      {
-        id: 'it-9',
-        nome: 'PDFs em Alta Qualidade dos Manuais',
-        sistema: 'PF2E',
-        tipo: 'Livros',
-        link: 'https://paizo.com/products/remaster-pdfs',
-        precoBRL: 50.00,
-      },
-    ],
-    itensInclusos: [
-      'Módulo Oficial Foundry Player Core Remaster',
-      'Módulo Oficial Foundry Monster Core (Bestiário Completo)',
-      'PDFs em Alta Qualidade dos Manuais',
-    ],
-    status: 'Catálogo',
-    criadoEm: '2026-01-10',
-    finalizadoEm: '2026-01-28',
-    apoiadores: [
-      { id: 'ap-c1', nome: "Augusto F. Sant'ana", telefone: '(27) 99908-4467' },
-      { id: 'ap-c2', nome: 'Erick Santos', telefone: '(19) 98151-2030' },
-      { id: 'ap-c3', nome: 'Gustavo Mozer', telefone: '(27) 99818-7614' },
-      { id: 'ap-c4', nome: 'Rafael Motta', telefone: '(71) 99196-0427' },
-      { id: 'ap-c5', nome: 'Igor Santos', telefone: '(37) 99116-3440' },
-      { id: 'ap-c6', nome: 'Daniel Nach', telefone: '(31) 97234-7005' },
-      { id: 'ap-c7', nome: 'Nelson Neto', telefone: '(11) 95557-2486' },
-    ],
-  },
-  {
-    id: 'pack-4',
-    titulo: 'Tormenta20 - Ameaças de Arton & Deuses e Heróis',
-    sistema: 'Tormenta20',
-    tipo: 'Livros',
-    imageUrl: 'https://images.unsplash.com/photo-1532012164546-f432f2e3777f?auto=format&fit=crop&w=600&q=80',
-    descricao: 'Bestiário expandido com mais de 300 ameaças de Arton e o suplemento de divindades, totalmente configurado com módulos e fichas para VTT.',
-    valorTotalBRL: 280.00,
-    valorCatalogoBRL: 340.00,
-    minimoParticipantes: 30,
-    valorMaximoPorPessoa: 9.33,
-    linkLoja: 'https://jamboeditora.com.br/produto/ameacas-de-arton/',
-    linkDrive: 'https://drive.google.com/drive/folders/ponte-dos-trolls-t20-ameacas',
-    itens: [
-      {
-        id: 'it-10',
-        nome: 'PDF Completo Ameaças de Arton com Marcadores',
-        sistema: 'Tormenta20',
-        tipo: 'Livros',
-        link: 'https://jamboeditora.com.br/produto/ameacas-de-arton/',
-        precoBRL: 120.00,
-      },
-      {
-        id: 'it-11',
-        nome: 'Compêndio T20 Foundry VTT com Tokens e Fichas Prontas',
-        sistema: 'Tormenta20',
-        tipo: 'Material para VTT',
-        link: 'https://jamboeditora.com.br/produto/t20-vtt/',
-        precoBRL: 120.00,
-      },
-      {
-        id: 'it-12',
-        nome: 'Aventuras Rápidas em PDF',
-        sistema: 'Tormenta20',
-        tipo: 'Livros',
-        link: 'https://jamboeditora.com.br/produto/aventuras-breves/',
-        precoBRL: 40.00,
-      },
-    ],
-    itensInclusos: [
-      'PDF Completo Ameaças de Arton com Marcadores',
-      'Compêndio T20 Foundry VTT com Tokens e Fichas Prontas',
-      'Aventuras Rápidas em PDF',
-    ],
-    status: 'Catálogo',
-    criadoEm: '2026-01-05',
-    finalizadoEm: '2026-01-20',
-    apoiadores: [
-      { id: 'ap-c8', nome: 'Mateus de Medeiros (rato)', telefone: '(48) 99637-7018' },
-      { id: 'ap-c9', nome: 'Ivan', telefone: '(43) 99952-8095' },
-      { id: 'ap-c10', nome: 'Diego Santos', telefone: '(21) 97607-0637' },
-      { id: 'ap-c11', nome: 'William', telefone: '(15) 99157-3318' },
-      { id: 'ap-c12', nome: 'Murillo Duran', telefone: '(11) 99379-9630' },
-    ],
-  },
-  {
-    id: 'pack-5',
-    titulo: 'Forbidden Lands - O Sangue dos Corvos & O Pomar Sagrado',
-    sistema: 'Forbidden Land',
-    tipo: 'Material para VTT',
-    imageUrl: 'https://images.unsplash.com/photo-1519638399535-1b036603ac77?auto=format&fit=crop&w=600&q=80',
-    descricao: 'Campanhas de exploração e sobrevivência em terras proibidas pela Free League, com gerador de clima e mapa hexagonal interativo para Foundry VTT.',
-    valorTotalBRL: 210.00,
-    valorCatalogoBRL: 250.00,
-    minimoParticipantes: 25,
-    valorMaximoPorPessoa: 8.40,
-    linkLoja: 'https://freeleaguepublishing.com/games/forbidden-lands/',
-    linkDrive: 'https://drive.google.com/drive/folders/ponte-dos-trolls-forbidden-lands',
-    itens: [
-      {
-        id: 'it-13',
-        nome: 'Módulo Foundry Forbidden Lands Raven Blood Campaign',
-        sistema: 'Forbidden Land',
-        link: 'https://freeleaguepublishing.com/games/forbidden-lands/',
-        precoBRL: 120.00,
-      },
-      {
-        id: 'it-14',
-        nome: 'Mapa Hexagonal Interativo com Fog of War',
-        sistema: 'Forbidden Land',
-        link: 'https://freeleaguepublishing.com/games/forbidden-lands-map/',
-        precoBRL: 50.00,
-      },
-      {
-        id: 'it-15',
-        nome: 'Trilha Sonora Temática e Efeitos Ambientes',
-        sistema: 'Foundry VTT Geral',
-        link: 'https://freeleaguepublishing.com/games/soundtrack/',
-        precoBRL: 40.00,
-      },
-    ],
-    itensInclusos: [
-      'Módulo Foundry Forbidden Lands Raven Blood Campaign',
-      'Mapa Hexagonal Interativo com Fog of War',
-      'Trilha Sonora Temática e Efeitos Ambientes',
-    ],
-    status: 'Catálogo',
-    criadoEm: '2026-01-12',
-    finalizadoEm: '2026-02-02',
-    apoiadores: [
-      { id: 'ap-c13', nome: 'Henrique Müller', telefone: '(51) 99312-0758' },
-      { id: 'ap-c14', nome: 'Matheus Bueno', telefone: '(11) 99523-4946' },
-      { id: 'ap-c15', nome: 'Luiz Eduardo Vilar (Duds)', telefone: '(32) 99818-9166' },
-      { id: 'ap-c16', nome: 'Trizz', telefone: '(91) 98400-2651' },
-    ],
-  },
 ];
+
+export const HISTORICAL_CATALOG_PACKAGES: FundingPackage[] = (catalogoRaw as any[]).map((p: any) => {
+  const cota = typeof p.valorCota === 'number' ? p.valorCota : (parseFloat(p.valorCota) || 0);
+  const aquisicao = typeof p.precoAquisicao === 'number' ? p.precoAquisicao : (parseFloat(p.precoAquisicao) || cota);
+  const subItens: PackageSubItem[] = Array.isArray(p.itens)
+    ? p.itens.map((it: any, idx: number) => ({
+        id: `${p.id}-it-${idx + 1}`,
+        nome: String(it.nome || 'Item').trim(),
+        sistema: it.sistema || p.sistema || 'Diversos / VTT',
+        tipo: 'Material para VTT',
+        link: it.link || '',
+        precoBRL: 0,
+      }))
+    : [];
+
+  return {
+    id: p.id,
+    titulo: String(p.titulo || '').trim(),
+    sistema: p.sistema || 'Diversos / Foundry VTT',
+    tipo: 'Material para VTT',
+    descricao: String(p.descricao || '').trim(),
+    itens: subItens,
+    links: Array.isArray(p.links) ? p.links : [],
+    valorTotalBRL: aquisicao,
+    valorCatalogoBRL: cota,
+    valorCota: cota,
+    precoAquisicao: aquisicao,
+    valorMaximoPorPessoa: cota,
+    minimoParticipantes: 1,
+    status: 'Catálogo',
+    apoiadores: [],
+    solicitacoesAcesso: [],
+    criadoEm: '2024-01-01',
+    finalizadoEm: '2024-01-01',
+  };
+});
+
+SEED_PACKAGES.push(...HISTORICAL_CATALOG_PACKAGES);
