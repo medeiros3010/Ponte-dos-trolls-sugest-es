@@ -1223,3 +1223,33 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
   });
 }
 
+/**
+ * Chama o endpoint administrativo do backend para sincronizar os 125 membros da planilha oficial.
+ */
+export async function apiSyncOfficialMembers(adminPassword?: string): Promise<{
+  success: boolean;
+  count: number;
+  users: UserProfile[];
+  message: string;
+}> {
+  const token = getSessionToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['x-session-token'] = token;
+  if (adminPassword) headers['x-admin-password'] = adminPassword;
+
+  const res = await fetch('/api/admin/sync-official-members', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ adminPassword }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || 'Erro ao sincronizar membros oficiais no servidor.');
+  }
+  return json;
+}
+
+

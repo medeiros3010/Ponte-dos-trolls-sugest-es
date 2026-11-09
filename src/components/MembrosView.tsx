@@ -30,6 +30,7 @@ import {
   HelpCircle,
   Eye,
   MessageSquare,
+  RefreshCw,
 } from 'lucide-react';
 import { PageBanner } from './PageBanner';
 import { getUserRank, getUserAcquiredPackages } from '../utils/ranksAndAcquisitions';
@@ -51,6 +52,7 @@ interface MembrosViewProps {
   onDeleteUser: (userId: string) => void;
   onApproveApplication?: (applicationId: string, adminPassword: string) => Promise<boolean>;
   onRejectApplication?: (applicationId: string, observacoes: string, adminPassword: string) => Promise<boolean>;
+  onOpenSyncOfficialModal?: () => void;
   onToast: (msg: string) => void;
 }
 
@@ -67,6 +69,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   onDeleteUser,
   onApproveApplication,
   onRejectApplication,
+  onOpenSyncOfficialModal,
   onToast,
 }) => {
   const [activeTab, setActiveTab] = useState<'membros' | 'solicitacoes'>('membros');
@@ -473,13 +476,26 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             </div>
 
             {isMaster && (
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="px-4 py-2.5 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
-              >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Cadastrar membro</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {onOpenSyncOfficialModal && (
+                  <button
+                    onClick={onOpenSyncOfficialModal}
+                    className="px-3.5 py-2.5 bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                    title="Sincronizar os 125 membros da planilha oficial no Firestore e no servidor"
+                  >
+                    <RefreshCw className="w-4 h-4 text-[#716016]" />
+                    <span className="hidden sm:inline">Sincronizar Planilha Oficial</span>
+                    <span className="sm:hidden">Sincronizar 125</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="px-4 py-2.5 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
+                  <span>Cadastrar membro</span>
+                </button>
+              </div>
             )}
           </div>
 

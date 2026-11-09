@@ -1,7 +1,7 @@
 {
   "id": "test-audit-bin",
   "name": "Base de Teste Isolada - Auditoria",
-  "updatedAt": "2026-11-08T18:13:49.575Z",
+  "updatedAt": "2026-11-09T18:49:45.019Z",
   "usersVersion": "v2_125_oficial",
   "items": [
     {
@@ -27,47 +27,1261 @@
       "id": "usr-master",
       "nome": "Ponte dos Trolls",
       "telefone": "(19) 98151-2030",
-      "email": "mestre@teste.com",
-      "dataEntrada": "2026-01-01",
+      "email": "pontedostrolls@gmail.com",
       "status": "aprovado",
-      "isMaster": true,
-      "strikes": []
+      "createdAt": "2026-01-01",
+      "strikes": [],
+      "isMaster": true
     },
     {
-      "id": "usr-teste-a",
-      "nome": "Aventureiro Alpha",
-      "telefone": "(11) 98888-1111",
-      "email": "alpha@teste.com",
-      "dataEntrada": "2026-02-01",
+      "id": "u_1",
+      "nome": "Alef Henrique",
+      "telefone": "8293951773",
+      "email": "alefffhenriquee2@gmail.com",
       "status": "aprovado",
-      "strikes": 0
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
     },
     {
-      "id": "usr-teste-b",
-      "nome": "Aventureiro Beta",
-      "telefone": "(11) 98888-2222",
-      "email": "beta@teste.com",
-      "dataEntrada": "2026-02-15",
+      "id": "u_2",
+      "nome": "Alex",
+      "telefone": "11980921700",
+      "email": "oplanewalker@gmail.com",
       "status": "aprovado",
-      "strikes": 1
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
     },
     {
-      "id": "usr-teste-pendente",
-      "nome": "Candidato Pendente",
-      "telefone": "(11) 98888-3333",
-      "email": "pendente@teste.com",
-      "dataEntrada": "2026-03-01",
-      "status": "pendente",
-      "strikes": 0
+      "id": "u_3",
+      "nome": "Alysson",
+      "telefone": "6191232668",
+      "email": "alyssonlago@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
     },
     {
-      "id": "usr-teste-recusado",
-      "nome": "Candidato Recusado",
-      "telefone": "(11) 98888-4444",
-      "email": "recusado@teste.com",
-      "dataEntrada": "2026-03-01",
-      "status": "recusado",
-      "strikes": 0
+      "id": "u_4",
+      "nome": "Arthur Norberto",
+      "telefone": "8587763092",
+      "email": "dungeon.dragon.5e@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_5",
+      "nome": "Bruno Gomes",
+      "telefone": "8187935596",
+      "email": "brcomando12@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_6",
+      "nome": "D' Alcantara",
+      "telefone": "21988534661",
+      "email": "serojunior@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_7",
+      "nome": "Daniel Coimbra",
+      "telefone": "96991245826",
+      "email": "danielmacapa@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_8",
+      "nome": "Daniel Malka",
+      "telefone": "21980205166",
+      "email": "malkadark@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_9",
+      "nome": "Daniel Nach",
+      "telefone": "31982666733",
+      "email": "dan.nachmanowicz@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_10",
+      "nome": "Danilo",
+      "telefone": "3198477438",
+      "email": "danilodmota@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_11",
+      "nome": "Danilo Silva",
+      "telefone": "6285560515",
+      "email": "daniloacaciosilvas@outlook.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_12",
+      "nome": "David Gomes",
+      "telefone": "4792789862",
+      "email": "davidgomesdesouza1995@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_13",
+      "nome": "Davison",
+      "telefone": "3182063236",
+      "email": "davidsonandrelima@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_14",
+      "nome": "Diego Lopes",
+      "telefone": "65999566018",
+      "email": "dastl1diego@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_15",
+      "nome": "Diego Rodrigues",
+      "telefone": "8788269499",
+      "email": "diegohox98@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_16",
+      "nome": "aRIEDO /Eduardo",
+      "telefone": "11971022573",
+      "email": "eduardoariedo@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_17",
+      "nome": "Elmadan Alvarenga",
+      "telefone": "91332472",
+      "email": "elmadanalvarenga@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_18",
+      "nome": "Emanuel",
+      "telefone": "8296327878",
+      "email": "emanuelmessias201@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_19",
+      "nome": "Erick",
+      "telefone": "19981512030",
+      "email": "ericksantos500@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_20",
+      "nome": "Fabio Carvalho",
+      "telefone": "21999266686",
+      "email": "fabiocarvalhorpg@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_21",
+      "nome": "Felipe Campos",
+      "telefone": "3181772409",
+      "email": "cmn.felipe@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_22",
+      "nome": "Fernando Proj DM aluguel",
+      "telefone": "21966202627",
+      "email": "arautomestre@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_23",
+      "nome": "Flávio",
+      "telefone": "5197863929",
+      "email": "flaviodasilvajunioroficial@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_24",
+      "nome": "Frankyston",
+      "telefone": "8591344016",
+      "email": "frankyston@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_25",
+      "nome": "Guilherme Muniz",
+      "telefone": "8198559973",
+      "email": "guilherme.mfarias10@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_26",
+      "nome": "Gustavo Mozer",
+      "telefone": "27998187614",
+      "email": "gustavo.mozer@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_27",
+      "nome": "Heber",
+      "telefone": "992191900",
+      "email": "designer.parceria@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_28",
+      "nome": "Iam mendes",
+      "telefone": "21979512634",
+      "email": "ilanmendesdasilva@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_29",
+      "nome": "Jefersom Lomenha",
+      "telefone": "21976684894",
+      "email": "jefferson.lomenha@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_30",
+      "nome": "Joalisson",
+      "telefone": "84994735050",
+      "email": "harionrpg@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_31",
+      "nome": "João Paulo",
+      "telefone": "27988254987",
+      "email": "zechsbaldur@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_32",
+      "nome": "Kaio Corsato",
+      "telefone": "11999614407",
+      "email": "kaiocorsato@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_33",
+      "nome": "Luan Miranda Sales",
+      "telefone": "6193382299",
+      "email": "miniaturagames@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_34",
+      "nome": "Lucas Loureiro",
+      "telefone": "8597100714",
+      "email": "lucasloureiro0805@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_35",
+      "nome": "Luciano Viana",
+      "telefone": "3196523070",
+      "email": "lucianomarques@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_36",
+      "nome": "Marcelo Fernandes",
+      "telefone": "8393952531",
+      "email": "marcelozumaki@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_37",
+      "nome": "Mateus/Rato",
+      "telefone": "4896377018",
+      "email": "mateus_mate11@hotmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_38",
+      "nome": "Matheus",
+      "telefone": "3788279180",
+      "email": "kingdorugha@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_39",
+      "nome": "Matheus",
+      "telefone": "5083457012",
+      "email": "cs.matheus164@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_40",
+      "nome": "Rafael Balbi",
+      "telefone": "992237678",
+      "email": "rafaelbalbineto@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_41",
+      "nome": "Rafael ToA",
+      "telefone": "9182475432",
+      "email": "dmfarra00@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_42",
+      "nome": "Rannyery",
+      "telefone": "8586531842",
+      "email": "rannieryracko@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_43",
+      "nome": "Sidney",
+      "telefone": "8196514497",
+      "email": "sidney.andrade123@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_44",
+      "nome": "Thiago Netto",
+      "telefone": "21996948076",
+      "email": "tf.netto@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_45",
+      "nome": "Vitor",
+      "telefone": "3194981870",
+      "email": "agantyr.midgard@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_46",
+      "nome": "Vinicius gaspar",
+      "telefone": "3831789105",
+      "email": "vhgvini@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_47",
+      "nome": "Felipe Cesar",
+      "telefone": "94849188",
+      "email": "felipecesarap@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_48",
+      "nome": "Thiago Daldegan",
+      "telefone": "4192589175",
+      "email": "thiagodaldegan@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_49",
+      "nome": "Gabriel Marques",
+      "telefone": "8599328676",
+      "email": "bielmn2@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_50",
+      "nome": "Lucas Decoté",
+      "telefone": "28999916980",
+      "email": "zpirate.backup@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_51",
+      "nome": "Augusto F. de Sant'ana",
+      "telefone": "27999084467",
+      "email": "augusto.santana30@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_52",
+      "nome": "Aécio",
+      "telefone": "3195705868",
+      "email": "aeciobf@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_53",
+      "nome": "rodrigo alcides",
+      "telefone": "986183767",
+      "email": "dgmaster.falhacritica@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_54",
+      "nome": "Dilson",
+      "telefone": "3288233302",
+      "email": "d-san_@hotmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_55",
+      "nome": "Paulo Soares",
+      "telefone": "11993383940",
+      "email": "paulo.scamargo@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_56",
+      "nome": "Julio Cesar Gomes de Oliveira",
+      "telefone": "799418816",
+      "email": "julio.cesar1989@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_57",
+      "nome": "Thiago Savin",
+      "telefone": "21986929689",
+      "email": "thiagosavin@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_58",
+      "nome": "Carlos B",
+      "telefone": "7481026116",
+      "email": "josecar.bsf@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_59",
+      "nome": "~Rafael Fidalgo",
+      "telefone": "99575127",
+      "email": "rafaelmaradona@hotmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_60",
+      "nome": "Juliano Sebastião Neves",
+      "telefone": "4198579145",
+      "email": "neves.juliano.s@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_61",
+      "nome": "Ivan Calijuri",
+      "telefone": "4399528095",
+      "email": "calijuri@hotmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_62",
+      "nome": "Nelson Abacherli Neto",
+      "telefone": "955572486",
+      "email": "nelsonabacherli1@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_63",
+      "nome": "Augustos",
+      "telefone": "4888358700",
+      "email": "abdielrk@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_64",
+      "nome": "Fernando de Souza Motta",
+      "telefone": "11971669985",
+      "email": "blaster.inc@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_65",
+      "nome": "Douglas",
+      "telefone": "5194442451",
+      "email": "aquintalamina1@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_66",
+      "nome": "Pedro",
+      "telefone": "6193181098",
+      "email": "plgmartins@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_67",
+      "nome": "Italo Johnata de Deus",
+      "telefone": "62935000405",
+      "email": "bunkohiroki@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_68",
+      "nome": "Geiser",
+      "telefone": "388078598",
+      "email": "supergeider@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_69",
+      "nome": "Bruno",
+      "telefone": "96627324",
+      "email": "bronus@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_70",
+      "nome": "Ailton de Resende Neiva Junior",
+      "telefone": "86188565",
+      "email": "juninhoneiva@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_71",
+      "nome": "Caio Henrique Di Giaimo Silva",
+      "telefone": "994692854",
+      "email": "chgiaimo36@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_72",
+      "nome": "Rodrigo Ranzi De Souza",
+      "telefone": "997229931",
+      "email": "rodrigoranzi@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_73",
+      "nome": "Tiago dos santos",
+      "telefone": "7185246002",
+      "email": "pimpowpathfinder@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_74",
+      "nome": "William José Costa Mandaloufas",
+      "telefone": "15991573318",
+      "email": "williamjcm77@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_75",
+      "nome": "Pedro Henrique Eliseu Mota",
+      "telefone": "19994807240",
+      "email": "pedrohe.mota@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_76",
+      "nome": "~Diogo Borges",
+      "telefone": "7188959916",
+      "email": "diogoted@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_77",
+      "nome": "Oliver Meneguetti",
+      "telefone": "11951693209",
+      "email": "noliverfotos@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_78",
+      "nome": "Bruno Brito",
+      "telefone": "96627324",
+      "email": "britosbruno@icloud.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_79",
+      "nome": "Rubens Viana Santiago",
+      "telefone": "3197339120",
+      "email": "rubensvsx@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_80",
+      "nome": "Matheus Silveira Bueno",
+      "telefone": "11995234946",
+      "email": "matheusbueno126@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_81",
+      "nome": "Marcelo Gonsales dos Santos",
+      "telefone": "11949973098",
+      "email": "marcelogonsales1@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_82",
+      "nome": "Matheus Lopes",
+      "telefone": "5191010924",
+      "email": "matheus1994ln@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_83",
+      "nome": "Marcos luciano",
+      "telefone": "19991115613",
+      "email": "pomaroli.advogado@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_84",
+      "nome": "Rodrigo",
+      "telefone": "21983853177",
+      "email": "rodrigoamiranda16@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_85",
+      "nome": "Igor Quintanilha Soares Alvarez",
+      "telefone": "994926699",
+      "email": "salveminhamesa@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_86",
+      "nome": "Diego Rosa",
+      "telefone": "3596721988",
+      "email": "diego_rosa1@hotmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_87",
+      "nome": "Augustus Oliveira",
+      "telefone": "48988358700",
+      "email": "abdielrk@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_88",
+      "nome": "Elian Camargo",
+      "telefone": "12996714426",
+      "email": "elian.camargo850@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_89",
+      "nome": "Gustavo Piazza",
+      "telefone": "4216419",
+      "email": "gustavopiazzza@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_90",
+      "nome": "Alan Miranda de Freitas",
+      "telefone": "22997620505",
+      "email": "alanmirandadefreitas@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_91",
+      "nome": "Wendel Henrique",
+      "telefone": "991269468",
+      "email": "webgis33@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_92",
+      "nome": "King",
+      "telefone": "22992613249",
+      "email": "viniciusspaschoal@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_93",
+      "nome": "Luiz",
+      "telefone": "98189166",
+      "email": "luiz.evncontato@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_94",
+      "nome": "~Vinícius",
+      "telefone": "831789105",
+      "email": "vhgvini@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_95",
+      "nome": "Diego Santos",
+      "telefone": "21976070637",
+      "email": "diegodsantos84@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_96",
+      "nome": "Kallyemerson Raimundo",
+      "telefone": "47984186184",
+      "email": "kallyemerson@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_97",
+      "nome": "Rafael da Motta Correa",
+      "telefone": "191960427",
+      "email": "evilmagus@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_98",
+      "nome": "Ciro",
+      "telefone": "67999629044",
+      "email": "cirofragadesouza@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_99",
+      "nome": "Luiz Calmon Neto",
+      "telefone": "71991712376",
+      "email": "chewiechangas@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_100",
+      "nome": "Adriel Lucas Balieiro Rodrigues",
+      "telefone": "92054869",
+      "email": "adriel.l.b.rodrigues@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_101",
+      "nome": "Jean Velith",
+      "telefone": "96464934821973881975",
+      "email": "jeanvelith14@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_102",
+      "nome": "~Henrique - Papo Dado RPG",
+      "telefone": "5193120758",
+      "email": "henriquepmuller@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_103",
+      "nome": "Lily Chermont",
+      "telefone": "82962273",
+      "email": "lilygenshin22@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_104",
+      "nome": "Vinicius Rosolen",
+      "telefone": "953538132",
+      "email": "vini.rosolen@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_105",
+      "nome": "Alexandre (stay quiet)",
+      "telefone": "3197992436",
+      "email": "tayeralexandre@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_106",
+      "nome": "Pedro alves",
+      "telefone": "85996703972",
+      "email": "mestrepedraum@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_107",
+      "nome": "Pedro Henrique Freitas Pereira",
+      "telefone": "985313334",
+      "email": "phfpmicrobiol@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_108",
+      "nome": "João Vitor",
+      "telefone": "17996803005",
+      "email": "joao.santos30052001@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_109",
+      "nome": "Renato Andrada",
+      "telefone": "3191862919",
+      "email": "zoom.jogos@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_110",
+      "nome": "Ian Gabriel",
+      "telefone": "3196873479",
+      "email": "iangabriel903@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_111",
+      "nome": "Igor Santos",
+      "telefone": "3791163440",
+      "email": "xaigor@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_112",
+      "nome": "fernando brito",
+      "telefone": "21995312089",
+      "email": "fernando.imagine@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_113",
+      "nome": "David",
+      "telefone": "11988570376",
+      "email": "davidkarpinski.art@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_114",
+      "nome": "Bruno Oliveira",
+      "telefone": "11945525035",
+      "email": "brunodesousaoliveira92@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_115",
+      "nome": "Murilo duran",
+      "telefone": "11993779963",
+      "email": "mestre.m.duran@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_116",
+      "nome": "Antonio",
+      "telefone": "6793348540",
+      "email": "zanzemor@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_117",
+      "nome": "Vinícius Gevú dos Santos",
+      "telefone": "21986259982",
+      "email": "viniciusgevu@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_118",
+      "nome": "Fernando Munhoz",
+      "telefone": "21966040601",
+      "email": "fernandomsdn@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_119",
+      "nome": "~",
+      "telefone": "4199293397",
+      "email": "dudamalinski@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_120",
+      "nome": "trizz",
+      "telefone": "9184002649",
+      "email": "trizzfilgueira@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_121",
+      "nome": "Giovani Chilanti Pinheiro",
+      "telefone": "5496038846",
+      "email": "giopinheiro@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_122",
+      "nome": "Henrique andrade",
+      "telefone": "14996044242",
+      "email": "henriqueandrade.rpgup@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_123",
+      "nome": "Miguel",
+      "telefone": "24981005342",
+      "email": "migchavde.oliv@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_124",
+      "nome": "Jordan Tabosa",
+      "telefone": "8587505996",
+      "email": "nightfallbr@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
+    },
+    {
+      "id": "u_125",
+      "nome": "Jeferson stankowski",
+      "telefone": "8192036609",
+      "email": "dadoviciadopodcast@gmail.com",
+      "status": "aprovado",
+      "createdAt": "2026-02-15",
+      "strikes": [],
+      "isMaster": false
     }
   ],
   "packages": [

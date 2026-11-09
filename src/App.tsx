@@ -1267,6 +1267,7 @@ export default function App() {
                 onDeleteUser={handleDeleteUser}
                 onApproveApplication={handleApproveApplication}
                 onRejectApplication={handleRejectApplication}
+                onOpenSyncOfficialModal={() => setIsSettingsOpen(true)}
                 onToast={showToast}
               />
             )}
@@ -1392,6 +1393,7 @@ export default function App() {
           currentItems={items}
           exchangeRate={exchangeRate}
           binId={binId}
+          currentUser={currentUser}
           onSaveBinId={(newId) => {
             setBinId(newId);
             saveBinId(newId);
@@ -1406,6 +1408,11 @@ export default function App() {
           onUpdateItemsFromCloud={(newItems) => {
             setItems(newItems);
             syncWithCloud(newItems, users, packages);
+          }}
+          onSyncUsers={(newUsers) => {
+            setUsers(newUsers);
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(newUsers));
+            showToast(`${newUsers.length} membros sincronizados na mesa!`);
           }}
           onClose={() => setIsSettingsOpen(false)}
           onToast={showToast}

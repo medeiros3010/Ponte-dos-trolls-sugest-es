@@ -1726,6 +1726,118 @@ app.get('/api/bin/:binId/member/:memberId/acervo', (req: Request, res: Response)
   });
 });
 
+// ==================== POST /api/admin/sync-official-members ====================
+// Sincroniza a planilha oficial de 125 membros com o banco do servidor, mapeando nome, whatsapp e email,
+// e garantindo que o Mestre Administrador permaneça ativo e intocado.
+app.post('/api/admin/sync-official-members', async (req: Request, res: Response) => {
+  const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
+  const isMaster = checkMasterPermission(req, adminPassword);
+
+  if (!isMaster) {
+    return res.status(403).json({
+      error: 'Acesso negado: apenas o Mestre Administrador autenticado pode sincronizar a base oficial de membros.',
+    });
+  }
+
+  try {
+    const jsonPaths = [
+      path.resolve(process.cwd(), 'data', 'membros_ponte_dos_trolls.json'),
+      path.resolve(process.cwd(), 'public', 'assets', 'aistudio', 'membros_ponte_dos_trolls_5a53fd88.json'),
+    ];
+
+    let rawMembers: any[] = [];
+    for (const p of jsonPaths) {
+      if (fs.existsSync(p)) {
+        try {
+          const content = fs.readFileSync(p, 'utf-8');
+          rawMembers = JSON.parse(content);
+          if (Array.isArray(rawMembers) && rawMembers.length > 0) break;
+        } catch (e) {
+          console.warn(`Erro ao ler ${p}:`, e);
+        }
+      }
+    }
+
+    if (!Array.isArray(rawMembers) || rawMembers.length === 0) {
+      return res.status(500).json({ error: 'Arquivo da planilha oficial de membros não encontrado ou vazio no servidor.' });
+    }
+
+    // 1. Mapear os 125 membros para o formato do sistema
+    const mappedMembers = rawMembers.map((m: any, idx: number) => {
+      const cleanPhone = String(m.whatsapp || m.telefone || '').replace(/[^\d+]/g, '').trim();
+      return {
+        id: `u_${idx + 1}`,
+        nome: String(m.nome || `Membro ${idx + 1}`).trim(),
+        telefone: cleanPhone || String(m.whatsapp || m.telefone || '').trim(),
+        email: String(m.email || '').trim().toLowerCase(),
+        status: 'aprovado',
+        createdAt: '2026-02-15',
+        strikes: [],
+        isMaster: false,
+      };
+    });
+
+    // 2. Preservar o Mestre Administrador (Regra 1 e Segurança)
+    const masterAdmin = {
+      id: 'usr-master',
+      nome: MASTER_ADMIN_NAME,
+      telefone: '(19) 98151-2030',
+      email: 'pontedostrolls@gmail.com',
+      status: 'aprovado',
+      createdAt: '2026-01-01',
+      strikes: [],
+      isMaster: true,
+    };
+
+    const finalUsers = [masterAdmin, ...mappedMembers];
+
+    // 3. Atualizar o arquivo de dados padrão do servidor ('trolls-rpg-oficial.json') e qualquer bin ativo
+    const binFiles = fs.readdirSync(BINS_DIR).filter(f => f.endsWith('.json'));
+    for (const f of binFiles) {
+      const bPath = path.join(BINS_DIR, f);
+      try {
+        const content = fs.readFileSync(bPath, 'utf-8');
+        const data = JSON.parse(content);
+        data.users = finalUsers;
+        data.updatedAt = new Date().toISOString();
+        data.usersVersion = USERS_VERSION;
+        fs.writeFileSync(bPath, JSON.stringify(data, null, 2), 'utf-8');
+      } catch (err) {
+        console.warn(`Erro ao atualizar bin ${f}:`, err);
+      }
+    }
+
+    return res.json({
+      success: true,
+      count: mappedMembers.length,
+      users: finalUsers,
+      message: `Sucesso: ${mappedMembers.length} membros oficiais importados. Mestre Administrador mantido ativo.`,
+    });
+  } catch (err: any) {
+    console.error('Erro na rota /api/admin/sync-official-members:', err);
+    return res.status(500).json({ error: 'Erro interno ao sincronizar membros oficiais', details: err.message });
+  }
+});
+
+// GET /api/admin/official-members - Retorna a base oficial crua para o frontend
+app.get('/api/admin/official-members', (req: Request, res: Response) => {
+  const jsonPaths = [
+    path.resolve(process.cwd(), 'data', 'membros_ponte_dos_trolls.json'),
+    path.resolve(process.cwd(), 'public', 'assets', 'aistudio', 'membros_ponte_dos_trolls_5a53fd88.json'),
+  ];
+
+  for (const p of jsonPaths) {
+    if (fs.existsSync(p)) {
+      try {
+        const content = fs.readFileSync(p, 'utf-8');
+        const data = JSON.parse(content);
+        return res.json(data);
+      } catch (e) {}
+    }
+  }
+  return res.status(404).json({ error: 'Arquivo oficial não encontrado.' });
+});
+
 // ==================== PUT /api/bin/:binId (SALVAMENTO COMPLETO - APENAS MESTRE) ====================
 app.put('/api/bin/:binId', async (req: Request, res: Response) => {
   const binId = sanitizeBinId(req.params.binId);
