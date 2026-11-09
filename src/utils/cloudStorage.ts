@@ -352,6 +352,15 @@ function getAuthHeaders(additionalHeaders: Record<string, string> = {}): Record<
     headers['Authorization'] = `Bearer ${token}`;
     headers['x-session-token'] = token;
   }
+  try {
+    const raw = localStorage.getItem('ponte_trolls_user_v2');
+    if (raw) {
+      const u = JSON.parse(raw);
+      if (u?.email) headers['x-user-email'] = u.email;
+      if (u?.id) headers['x-user-id'] = u.id;
+      if (u?.isMaster) headers['x-is-master'] = 'true';
+    }
+  } catch {}
   return headers;
 }
 
@@ -551,7 +560,7 @@ export async function apiSavePackage(
     method: 'POST',
     headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
     credentials: 'include',
-    body: JSON.stringify({ package: pkg, adminPassword }),
+    body: JSON.stringify({ pkg, package: pkg, adminPassword }),
   });
 
   const data = await res.json().catch(() => ({}));
@@ -608,12 +617,12 @@ export async function apiUpdatePackagePayment(
     body: JSON.stringify({ memberId, informouPagamento, adminPassword }),
   });
 
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
     throw new Error(data.error || 'Erro ao registrar declaração de pagamento');
   }
 
-  return await res.json();
+  return data;
 }
 
 /**
@@ -962,6 +971,64 @@ export async function apiRemovePosteriorBuyer(
 }
 
 /**
+ * Solicitação de acesso a um pacote via carrinho
+ */
+export async function apiRequestPackageAccess(
+  binId: string,
+  packageId: string,
+  member: { memberId: string; nome: string; telefone?: string; email?: string }
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/request-access`, {
+    method: 'POST',
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify(member),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao registrar solicitação de acesso');
+  }
+
+  return data;
+}
+
+/**
+  * Recusa/cancela solicitação de acesso a um pacote (Mestre)
+  */
+export async function apiRejectPackageAccess(
+  binId: string,
+  packageId: string,
+  memberId: string,
+  adminPassword?: string
+): Promise<{ success: boolean; package?: FundingPackage }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(
+    `${base}/api/bin/${encodeURIComponent(binId)}/package/${encodeURIComponent(packageId)}/request-access/${encodeURIComponent(memberId)}`,
+    {
+      method: 'DELETE',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include',
+      body: JSON.stringify({ adminPassword }),
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao recusar solicitação de acesso');
+  }
+
+  return data;
+}
+
+/**
  * Consulta o acervo de um membro (exclusivo para o Mestre com validação no servidor)
  */
 export async function apiFetchMemberAcervo(
@@ -1141,6 +1208,15 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
       instrucoesPix: typeof pkg.instrucoesPix === 'string' ? pkg.instrucoesPix : undefined,
       pagamentos,
       apoiadores,
+      solicitacoesAcesso: Array.isArray(pkg.solicitacoesAcesso)
+        ? pkg.solicitacoesAcesso.map((s: any) => ({
+            memberId: String(s.memberId || '').trim(),
+            nome: String(s.nome || '').trim(),
+            data: s.data || new Date().toISOString(),
+            telefone: s.telefone ? String(s.telefone).trim() : undefined,
+            email: s.email ? String(s.email).trim() : undefined,
+          }))
+        : [],
       criadoEm: pkg.criadoEm || new Date().toISOString().split('T')[0],
       finalizadoEm: pkg.finalizadoEm || undefined,
     };

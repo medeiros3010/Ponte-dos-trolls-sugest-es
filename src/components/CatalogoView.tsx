@@ -5,6 +5,7 @@ import {
   SISTEMAS_PADRAO,
   OFFICIAL_PRODUCT_TYPES,
   ProductType,
+  SolicitacaoAcesso,
 } from '../types';
 import {
   Search,
@@ -31,6 +32,7 @@ import {
   Check,
   UserPlus,
   Calendar,
+  Loader2,
 } from 'lucide-react';
 import { generateCatalogBuyMessage, extractPaidMemberEmails, formatDateDisplay, formatAcquisitionDate } from '../utils/helpers';
 import { isPackageAcquired } from '../utils/ranksAndAcquisitions';
@@ -53,8 +55,14 @@ interface CatalogoViewProps {
   onRemoveFromCart?: (packageId: string) => void;
   onOpenCart?: () => void;
   onGoToMyItems?: () => void;
-  onAddPosteriorBuyer?: (packageId: string, memberId: string, adminPassword?: string) => Promise<boolean>;
+  onAddPosteriorBuyer?: (
+    packageId: string,
+    memberId: string,
+    adminPassword?: string,
+    memberDetails?: { id: string; nome: string; telefone?: string; email?: string }
+  ) => Promise<boolean>;
   onRemovePosteriorBuyer?: (packageId: string, memberId: string, adminPassword?: string) => Promise<boolean>;
+  onRejectPackageAccess?: (packageId: string, memberId: string, adminPassword?: string) => Promise<boolean>;
   onToast: (msg: string) => void;
 }
 
@@ -76,6 +84,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   onGoToMyItems,
   onAddPosteriorBuyer,
   onRemovePosteriorBuyer,
+  onRejectPackageAccess,
   onToast,
 }) => {
   const isMaster = Boolean(currentUser.isMaster);
@@ -117,6 +126,17 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   const [newBuyerId, setNewBuyerId] = useState<string>('');
   const [buyerPassword, setBuyerPassword] = useState<string>('');
   const [isBuyerSaving, setIsBuyerSaving] = useState<boolean>(false);
+  const [processingSolId, setProcessingSolId] = useState<string | null>(null);
+
+  // Sincroniza selectedPackageDetails automaticamente se os pacotes forem atualizados
+  useEffect(() => {
+    if (selectedPackageDetails) {
+      const updated = packages.find((p) => p.id === selectedPackageDetails.id);
+      if (updated) {
+        setSelectedPackageDetails(updated);
+      }
+    }
+  }, [packages]);
 
   const handleAddBuyer = async (pkgId: string) => {
     if (!newBuyerId) {
@@ -154,6 +174,91 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
       onToast(e?.message || 'Erro ao registrar comprador posterior');
     } finally {
       setIsBuyerSaving(false);
+    }
+  };
+
+  const handleConfirmRequestedAccess = async (pkgId: string, sol: SolicitacaoAcesso) => {
+    if (!onAddPosteriorBuyer) return;
+
+    try {
+      setProcessingSolId(sol.memberId);
+      setIsBuyerSaving(true);
+
+      // Mutação otimista instantânea na UI do Mestre (remove do card/modal imediatamente)
+      if (selectedPackageDetails && selectedPackageDetails.id === pkgId) {
+        const nextSolicitacoes = (selectedPackageDetails.solicitacoesAcesso || []).filter(
+          (s) => s.memberId !== sol.memberId && s.nome.toLowerCase() !== sol.nome.toLowerCase()
+        );
+        const userObj = allUsers.find((u) => u.id === sol.memberId);
+        const nextApoiadores = [
+          ...(selectedPackageDetails.apoiadores || []),
+          {
+            id: sol.memberId,
+            nome: sol.nome,
+            telefone: sol.telefone || userObj?.telefone || '',
+            email: sol.email || userObj?.email || '',
+            data: new Date().toISOString(),
+            pagamentoInformado: true,
+            isPosteriorBuyer: true,
+          },
+        ];
+        setSelectedPackageDetails({
+          ...selectedPackageDetails,
+          apoiadores: nextApoiadores,
+          solicitacoesAcesso: nextSolicitacoes,
+        });
+      }
+
+      const ok = await onAddPosteriorBuyer(pkgId, sol.memberId, '', {
+        id: sol.memberId,
+        nome: sol.nome,
+        telefone: sol.telefone,
+        email: sol.email,
+      });
+
+      if (ok) {
+        onToast(`Acesso liberado com sucesso para ${sol.nome}!`);
+      }
+    } catch (e: any) {
+      onToast(e?.message || 'Erro ao confirmar acesso do solicitante');
+    } finally {
+      setIsBuyerSaving(false);
+      setProcessingSolId(null);
+    }
+  };
+
+  const handleRejectRequestedAccess = async (pkgId: string, sol: SolicitacaoAcesso) => {
+    const confirmed = typeof window !== 'undefined' && window.confirm
+      ? window.confirm(`Deseja realmente recusar a solicitação de acesso de "${sol.nome}"?`)
+      : true;
+
+    if (!confirmed) return;
+    if (!onRejectPackageAccess) return;
+
+    try {
+      setProcessingSolId(sol.memberId);
+      setIsBuyerSaving(true);
+
+      // Mutação otimista instantânea na UI do Mestre (remove do card/modal imediatamente)
+      if (selectedPackageDetails && selectedPackageDetails.id === pkgId) {
+        const nextSolicitacoes = (selectedPackageDetails.solicitacoesAcesso || []).filter(
+          (s) => s.memberId !== sol.memberId && s.nome.toLowerCase() !== sol.nome.toLowerCase()
+        );
+        setSelectedPackageDetails({
+          ...selectedPackageDetails,
+          solicitacoesAcesso: nextSolicitacoes,
+        });
+      }
+
+      const ok = await onRejectPackageAccess(pkgId, sol.memberId);
+      if (ok) {
+        onToast(`Solicitação de ${sol.nome} recusada com sucesso.`);
+      }
+    } catch (e: any) {
+      onToast(e?.message || 'Erro ao recusar solicitação');
+    } finally {
+      setIsBuyerSaving(false);
+      setProcessingSolId(null);
     }
   };
 
@@ -765,6 +870,24 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           <Calendar className="w-3.5 h-3.5 text-[#716016] shrink-0" />
                           <span>{formatAcquisitionDate(pkg.dataPagamento)}</span>
                         </div>
+
+                        {/* Alerta de Solicitações Pendentes (Visível para o Mestre) */}
+                        {isMaster && (pkg.solicitacoesAcesso?.length || 0) > 0 && (
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPackageDetails(pkg);
+                            }}
+                            className="mt-2.5 px-2.5 py-1.5 rounded-lg bg-[#FEF2F2] border border-[#F87171] flex items-center justify-between cursor-pointer hover:bg-[#FEE2E2] transition-colors"
+                            title="Clique para ver detalhes e aprovar solicitações"
+                          >
+                            <span className="text-[11px] font-bold text-[#991B1B] flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse" />
+                              <span>{pkg.solicitacoesAcesso?.length} {pkg.solicitacoesAcesso?.length === 1 ? 'solicitação pendente' : 'solicitações pendentes'}</span>
+                            </span>
+                            <span className="text-[10px] font-bold text-[#DC2626] underline">Revisar →</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Rodapé: Preço & Botão de Ação */}
@@ -1042,6 +1165,64 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                     <span className="text-[#71634D]">Nenhum participante registrado.</span>
                   )}
                 </div>
+
+                {/* Painel do Mestre: Solicitações de Acesso Pendentes via Carrinho */}
+                {isMaster && (selectedPackageDetails.solicitacoesAcesso?.length || 0) > 0 && (
+                  <div className="p-3.5 rounded-xl bg-[#FEF2F2] border-2 border-[#F87171] space-y-2.5 mt-2 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#991B1B] flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse inline-block" />
+                        <span>Solicitações de Acesso Pendentes ({selectedPackageDetails.solicitacoesAcesso?.length})</span>
+                      </span>
+                      <span className="text-[11px] text-[#B91C1C]">Pedidos via Carrinho aguardando liberação</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {selectedPackageDetails.solicitacoesAcesso?.map((sol, idx) => (
+                        <div
+                          key={`${sol.memberId}-${idx}`}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-[#FFFFFF] border border-[#FECACA]"
+                        >
+                          <div className="text-xs">
+                            <span className="font-bold text-[#1F2937] block">{sol.nome}</span>
+                            <div className="text-[11px] text-[#6B7280] flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                              {sol.data && <span>Pedido em: {new Date(sol.data).toLocaleDateString('pt-BR')}</span>}
+                              {sol.telefone && <span>WhatsApp: {sol.telefone}</span>}
+                              {sol.email && <span>Email: {sol.email}</span>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              disabled={isBuyerSaving}
+                              onClick={() => handleConfirmRequestedAccess(selectedPackageDetails.id, sol)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                              title="Confirmar pagamento e liberar acesso deste usuário"
+                            >
+                              {processingSolId === sol.memberId ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Check className="w-3.5 h-3.5" />
+                              )}
+                              <span>Confirmar Acesso</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={isBuyerSaving}
+                              onClick={() => handleRejectRequestedAccess(selectedPackageDetails.id, sol)}
+                              className="px-2.5 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 disabled:opacity-50 cursor-pointer"
+                              title="Recusar e remover esta solicitação de acesso"
+                            >
+                              <X className="w-3.5 h-3.5 text-red-600" />
+                              <span>Recusar</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Painel do Mestre: Liberação de Comprador Posterior */}
                 {isMaster && (

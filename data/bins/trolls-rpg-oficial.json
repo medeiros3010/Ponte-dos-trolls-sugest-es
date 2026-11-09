@@ -1,7 +1,7 @@
 {
   "id": "trolls-rpg-oficial",
   "name": "A Ponte dos Trolls - Rateios RPG",
-  "updatedAt": "2026-11-08T17:10:59.499Z",
+  "updatedAt": "2026-11-09T15:03:36.968Z",
   "usersVersion": "v2_125_oficial",
   "items": [
     {
@@ -573,14 +573,26 @@
       "sugestoesIds": [],
       "status": "Financiamento",
       "etapaFinanciamento": "COLETA",
-      "pagamentos": {},
+      "pagamentos": {
+        "usr-master": {
+          "memberId": "usr-master",
+          "informouPagamento": true,
+          "dataPagamentoInformado": "2026-11-09T14:58:51.790Z"
+        },
+        "ap-p1": {
+          "memberId": "ap-p1",
+          "informouPagamento": true,
+          "dataPagamentoInformado": "2026-11-09T14:59:01.735Z"
+        }
+      },
       "apoiadores": [
         {
           "id": "ap-p1",
           "nome": "Rafael Motta",
           "telefone": "(71) 99196-0427",
           "email": "",
-          "pagamentoInformado": false
+          "pagamentoInformado": true,
+          "dataPagamentoInformado": "2026-11-09T14:59:01.735Z"
         },
         {
           "id": "ap-p2",
@@ -609,8 +621,17 @@
           "telefone": "(19) 98151-2030",
           "email": "",
           "pagamentoInformado": false
+        },
+        {
+          "id": "usr-master",
+          "nome": "usr-master",
+          "valor": 10.857142857142858,
+          "data": "2026-11-09T14:58:51.790Z",
+          "pagamentoInformado": true,
+          "dataPagamentoInformado": "2026-11-09T14:58:51.790Z"
         }
       ],
+      "solicitacoesAcesso": [],
       "criadoEm": "2026-02-15"
     },
     {
@@ -692,6 +713,7 @@
           "pagamentoInformado": false
         }
       ],
+      "solicitacoesAcesso": [],
       "criadoEm": "2026-03-01"
     },
     {
@@ -794,6 +816,7 @@
           "pagamentoInformado": false
         }
       ],
+      "solicitacoesAcesso": [],
       "criadoEm": "2026-01-10",
       "finalizadoEm": "2026-01-28"
     },
@@ -883,6 +906,7 @@
           "pagamentoInformado": false
         }
       ],
+      "solicitacoesAcesso": [],
       "criadoEm": "2026-01-05",
       "finalizadoEm": "2026-01-20"
     },
@@ -965,6 +989,7 @@
           "pagamentoInformado": false
         }
       ],
+      "solicitacoesAcesso": [],
       "criadoEm": "2026-01-12",
       "finalizadoEm": "2026-02-02"
     }

@@ -31,6 +31,7 @@ import {
   apiRejectApplication,
   apiAddPosteriorBuyer,
   apiRemovePosteriorBuyer,
+  apiRejectPackageAccess,
   apiVerifySession,
   apiLogout,
   apiSaveItem,
@@ -809,32 +810,41 @@ export default function App() {
 
   const handleUpdatePackagePayment = async (packageId: string, memberId: string, informouPagamento: boolean, adminPassword?: string) => {
     try {
-      await apiUpdatePackagePayment(binId, packageId, memberId, informouPagamento, adminPassword);
-      setPackages((prev) =>
-        prev.map((p) => {
-          if (p.id !== packageId) return p;
-          const pagamentos = { ...(p.pagamentos || {}) };
-          pagamentos[memberId] = {
-            memberId,
-            informouPagamento,
-            dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
-          };
-          const apoiadores = (p.apoiadores || []).map((a) => {
-            if (a.id === memberId) {
-              return {
-                ...a,
-                pagamentoInformado: informouPagamento,
-                dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
-              };
-            }
-            return a;
-          });
-          return { ...p, pagamentos, apoiadores };
-        })
-      );
+      const res = await apiUpdatePackagePayment(binId, packageId, memberId, informouPagamento, adminPassword);
+      if (res && res.package) {
+        setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
+        savePackageToFirestore(res.package).catch((err) => console.warn('Firestore sync package notice:', err));
+      } else {
+        setPackages((prev) =>
+          prev.map((p) => {
+            if (p.id !== packageId) return p;
+            const pagamentos = { ...(p.pagamentos || {}) };
+            pagamentos[memberId] = {
+              memberId,
+              informouPagamento,
+              dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
+            };
+            const apoiadores = (p.apoiadores || []).map((a) => {
+              if (a.id === memberId) {
+                return {
+                  ...a,
+                  pagamentoInformado: informouPagamento,
+                  dataPagamentoInformado: informouPagamento ? new Date().toISOString() : undefined,
+                };
+              }
+              return a;
+            });
+            const updated = { ...p, pagamentos, apoiadores };
+            savePackageToFirestore(updated).catch((err) => console.warn('Firestore sync package notice:', err));
+            return updated;
+          })
+        );
+      }
+      showToast('Pagamento informado com sucesso!');
     } catch (err: any) {
       console.error('Error updating payment:', err);
       showToast(err.message || 'Erro ao registrar declaração de pagamento');
+      throw err;
     }
   };
 
@@ -982,6 +992,13 @@ export default function App() {
     return pendingApps + pendingUsers;
   }, [applications, users]);
 
+  // Contagem de solicitações de acesso pendentes no Catálogo para badge do Mestre (Requirement 4)
+  const pendingCatalogRequestsCount = useMemo(() => {
+    return packages
+      .filter((p) => p.status === 'Catálogo')
+      .reduce((sum, p) => sum + (p.solicitacoesAcesso?.length || 0), 0);
+  }, [packages]);
+
   // Counters for Home Hub
   const countSugestoes = useMemo(() => {
     return items.filter((i) => i.status === 'Sugestão').length;
@@ -1070,6 +1087,7 @@ export default function App() {
         currentUser={currentUser}
         currentView={view}
         pendingUsersCount={pendingApplicationsCount}
+        pendingCatalogRequestsCount={pendingCatalogRequestsCount}
         onNavigate={(v) => setView(v)}
         onChangeUser={handleChangeUser}
         onGoHome={() => setView('home')}
@@ -1178,13 +1196,13 @@ export default function App() {
                 onRemoveFromCart={handleRemoveFromCart}
                 onOpenCart={() => setIsCartModalOpen(true)}
                 onGoToMyItems={() => setView('meus-itens')}
-                onAddPosteriorBuyer={async (packageId, memberId, adminPassword) => {
-                  const member = users.find((u) => u.id === memberId);
-                  if (!member) return false;
+                onAddPosteriorBuyer={async (packageId, memberId, adminPassword, memberDetails) => {
+                  const member = memberDetails || users.find((u) => u.id === memberId) || { id: memberId, nome: memberId };
                   try {
                     const res = await apiAddPosteriorBuyer(binId, packageId, member, adminPassword);
                     if (res && res.package) {
                       setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
+                      savePackageToFirestore(res.package).catch((e) => console.warn('Firestore package update:', e));
                       showToast(`Acesso liberado para ${member.nome}!`);
                       return true;
                     }
@@ -1198,11 +1216,26 @@ export default function App() {
                     const res = await apiRemovePosteriorBuyer(binId, packageId, memberId, adminPassword);
                     if (res && res.package) {
                       setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
+                      savePackageToFirestore(res.package).catch((e) => console.warn('Firestore package update:', e));
                       showToast('Acesso removido.');
                       return true;
                     }
                   } catch (e: any) {
                     showToast(e?.message || 'Erro ao remover acesso');
+                  }
+                  return false;
+                }}
+                onRejectPackageAccess={async (packageId, memberId, adminPassword) => {
+                  try {
+                    const res = await apiRejectPackageAccess(binId, packageId, memberId, adminPassword);
+                    if (res && res.package) {
+                      setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
+                      savePackageToFirestore(res.package).catch((e) => console.warn('Firestore package update:', e));
+                      showToast('Solicitação de acesso recusada.');
+                      return true;
+                    }
+                  } catch (e: any) {
+                    showToast(e?.message || 'Erro ao recusar solicitação');
                   }
                   return false;
                 }}
@@ -1412,6 +1445,8 @@ export default function App() {
         onClose={() => setIsWhatsAppCheckoutOpen(false)}
         items={packages.filter((p) => cart.includes(p.id))}
         currentUser={currentUser}
+        binId={binId}
+        onClearCart={handleClearCart}
         onToast={showToast}
       />
 

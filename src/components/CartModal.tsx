@@ -203,7 +203,7 @@ export const CartModal: React.FC<CartModalProps> = ({
               className="px-5 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>Finalizar pedido pelo WhatsApp</span>
+              <span>Finalizar Pedido</span>
             </button>
           </div>
         )}

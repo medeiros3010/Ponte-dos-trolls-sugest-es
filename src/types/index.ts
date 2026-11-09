@@ -76,6 +76,14 @@ export interface ParticipantPaymentInfo {
   dataPagamentoInformado?: string;
 }
 
+export interface SolicitacaoAcesso {
+  memberId: string;
+  nome: string;
+  data: string;
+  telefone?: string;
+  email?: string;
+}
+
 export interface ItemRPG {
   id: string;
   data: string; // YYYY-MM-DD
@@ -132,6 +140,7 @@ export interface FundingPackage {
   instrucoesPix?: string; // Instruções adicionais do Mestre para pagamento
   pagamentos?: Record<string, ParticipantPaymentInfo>; // Registro de declaração de pagamento por memberId
   apoiadores: Apoiador[];
+  solicitacoesAcesso?: SolicitacaoAcesso[]; // Solicitações de acesso pendentes de confirmação do Mestre via carrinho
   criadoEm: string;
   finalizadoEm?: string;
 }

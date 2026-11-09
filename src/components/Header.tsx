@@ -28,6 +28,7 @@ interface HeaderProps {
   currentUser: UserProfile | null;
   currentView: AppView;
   pendingUsersCount?: number;
+  pendingCatalogRequestsCount?: number;
   cartCount?: number;
   myAcervoCount?: number;
   onNavigate: (view: AppView) => void;
@@ -51,6 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   currentView,
   pendingUsersCount = 0,
+  pendingCatalogRequestsCount = 0,
   cartCount = 0,
   myAcervoCount = 0,
   onNavigate,
@@ -168,7 +170,9 @@ export const Header: React.FC<HeaderProps> = ({
             {navItems.map((item) => {
               const isActive = currentView === item.id;
               const isMembrosTab = item.id === 'membros';
+              const isCatalogoTab = item.id === 'catalogo';
               const showPendingDot = isMembrosTab && isMaster && pendingUsersCount > 0;
+              const showCatalogDot = isCatalogoTab && isMaster && pendingCatalogRequestsCount > 0;
 
               return (
                 <button
@@ -179,7 +183,13 @@ export const Header: React.FC<HeaderProps> = ({
                       ? 'bg-[#525c28] text-[#F8EDD5] shadow-sm border border-[#6b7a35]'
                       : 'text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a]'
                   }`}
-                  aria-label={showPendingDot ? `${item.label} (Há solicitações de entrada pendentes)` : item.label}
+                  aria-label={
+                    showCatalogDot
+                      ? `${item.label} (Há ${pendingCatalogRequestsCount} solicitações de acesso pendentes)`
+                      : showPendingDot
+                      ? `${item.label} (Há solicitações de entrada pendentes)`
+                      : item.label
+                  }
                 >
                   <span>{item.label}</span>
                   {showPendingDot && (
@@ -191,6 +201,19 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 ring-2 ring-[#282D13]" />
                       <span className="sr-only">Há solicitações de entrada pendentes</span>
+                    </span>
+                  )}
+                  {showCatalogDot && (
+                    <span
+                      className="absolute -top-1 -right-1 flex h-3 w-3 pointer-events-none"
+                      title={`Há ${pendingCatalogRequestsCount} solicitação(ões) de acesso no Catálogo`}
+                      aria-label="Há solicitações de acesso no Catálogo"
+                    >
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 ring-2 ring-[#282D13] items-center justify-center text-[8px] font-bold text-white leading-none">
+                        {pendingCatalogRequestsCount}
+                      </span>
+                      <span className="sr-only">Há solicitações de acesso pendentes no Catálogo</span>
                     </span>
                   )}
                   {item.id === 'meus-itens' && typeof item.badge === 'number' && item.badge > 0 && (
@@ -445,7 +468,9 @@ export const Header: React.FC<HeaderProps> = ({
             {navItems.map((item) => {
               const isActive = currentView === item.id;
               const isMembrosTab = item.id === 'membros';
+              const isCatalogoTab = item.id === 'catalogo';
               const showPendingDot = isMembrosTab && isMaster && pendingUsersCount > 0;
+              const showCatalogDot = isCatalogoTab && isMaster && pendingCatalogRequestsCount > 0;
 
               return (
                 <button
@@ -459,7 +484,13 @@ export const Header: React.FC<HeaderProps> = ({
                       ? 'bg-[#525c28] text-[#F8EDD5] border border-[#6b7a35]'
                       : 'text-[#cfc4a6] hover:bg-[#363e1a] hover:text-[#F8EDD5]'
                   }`}
-                  aria-label={showPendingDot ? `${item.label} (Há solicitações de entrada pendentes)` : item.label}
+                  aria-label={
+                    showCatalogDot
+                      ? `${item.label} (Há ${pendingCatalogRequestsCount} solicitações de acesso pendentes)`
+                      : showPendingDot
+                      ? `${item.label} (Há solicitações de entrada pendentes)`
+                      : item.label
+                  }
                 >
                   <span>{item.label}</span>
                   {showPendingDot && (
@@ -470,6 +501,16 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F8EDD5] animate-pulse" />
                       <span>Pendências</span>
                       <span className="sr-only">Há solicitações de entrada pendentes</span>
+                    </span>
+                  )}
+                  {showCatalogDot && (
+                    <span
+                      className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-600 text-[#F8EDD5] border border-red-500 shadow-xs"
+                      title={`Há ${pendingCatalogRequestsCount} solicitações de acesso pendentes`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F8EDD5] animate-pulse" />
+                      <span>{pendingCatalogRequestsCount} pedidos</span>
+                      <span className="sr-only">Há solicitações de acesso no Catálogo</span>
                     </span>
                   )}
                 </button>
