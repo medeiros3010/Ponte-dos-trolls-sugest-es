@@ -1,0 +1,144 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net - Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'pontedostrolls@gmail.com' && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Validation Blueprint for ItemRPG
+    function isValidItemRPG(data) {
+      return data.keys().hasAll(['id', 'nome', 'produto', 'sistema', 'status'])
+        && data.id is string && data.id.size() <= 128
+        && data.nome is string && data.nome.size() >= 1 && data.nome.size() <= 100
+        && data.produto in ['Livros', 'Mapas', 'Material para VTT', 'Outros']
+        && data.sistema is string && data.sistema.size() <= 100
+        && data.status in ['Sugestão', 'Em Financiamento', 'Finalizados', 'Em Pacote', 'Arquivado']
+        && (!('descricao' in data) || (data.descricao is string && data.descricao.size() <= 2000))
+        && (!('link' in data) || (data.link is string && data.link.size() <= 500))
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500))
+        && (!('sugeridoPorNome' in data) || (data.sugeridoPorNome is string && data.sugeridoPorNome.size() <= 100))
+        && (!('valorNumerico' in data) || data.valorNumerico is number);
+    }
+
+    // Validation Blueprint for FundingPackage
+    function isValidFundingPackage(data) {
+      return data.keys().hasAll(['id', 'titulo', 'status', 'valorTotalBRL'])
+        && data.id is string && data.id.size() <= 128
+        && data.titulo is string && data.titulo.size() >= 1 && data.titulo.size() <= 150
+        && data.status in ['Financiamento', 'Catálogo']
+        && data.valorTotalBRL is number
+        && (!('descricao' in data) || (data.descricao is string && data.descricao.size() <= 3000))
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500))
+        && (!('linkLoja' in data) || (data.linkLoja is string && data.linkLoja.size() <= 500))
+        && (!('linkDrive' in data) || (data.linkDrive is string && data.linkDrive.size() <= 500))
+        && (!('etapaFinanciamento' in data) || data.etapaFinanciamento in ['COLETA', 'PAGAMENTO']);
+    }
+
+    // Validation Blueprint for UserProfile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['id', 'nome', 'status'])
+        && data.id is string && data.id.size() <= 128
+        && data.nome is string && data.nome.size() >= 1 && data.nome.size() <= 100
+        && data.status in ['aprovado', 'pendente', 'recusado']
+        && (!('telefone' in data) || (data.telefone is string && data.telefone.size() <= 50))
+        && (!('email' in data) || (data.email is string && data.email.size() <= 100));
+    }
+
+    // Validation Blueprint for MembershipApplication
+    function isValidApplication(data) {
+      return data.keys().hasAll(['id', 'nome', 'telefone', 'aceitouTermos', 'status'])
+        && data.id is string && data.id.size() <= 128
+        && data.nome is string && data.nome.size() >= 1 && data.nome.size() <= 100
+        && data.telefone is string && data.telefone.size() <= 50
+        && data.aceitouTermos == true
+        && data.status in ['pendente', 'aprovado', 'recusado']
+        && (!('email' in data) || (data.email is string && data.email.size() <= 100))
+        && (!('comoConheceu' in data) || (data.comoConheceu is string && data.comoConheceu.size() <= 500));
+    }
+
+    // Connection testing endpoint
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // Admins Collection
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && isValidId(adminId);
+    }
+
+    // ItemRPG Suggestions Collection
+    match /items/{itemId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && isValidId(itemId) && isValidItemRPG(incoming())
+        && (incoming().sugeridoPorId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && isValidId(itemId) && isValidItemRPG(incoming()) && (
+        isAdmin() ||
+        (existing().sugeridoPorId == request.auth.uid && incoming().sugeridoPorId == existing().sugeridoPorId
+          && incoming().diff(existing()).affectedKeys().hasOnly(['nome', 'produto', 'sistema', 'descricao', 'link', 'imageUrl', 'moeda', 'valorNumerico', 'observacaoValor'])) ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['apoiadores'])
+      );
+      allow delete: if isSignedIn() && isValidId(itemId) && (isAdmin() || existing().sugeridoPorId == request.auth.uid);
+    }
+
+    // Funding Packages Collection
+    match /packages/{packageId} {
+      allow get, list: if true;
+      allow create, delete: if isAdmin() && isValidId(packageId);
+      allow update: if isSignedIn() && isValidId(packageId) && isValidFundingPackage(incoming()) && (
+        isAdmin() ||
+        (existing().etapaFinanciamento != 'PAGAMENTO' && incoming().diff(existing()).affectedKeys().hasOnly(['apoiadores'])) ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['pagamentos', 'apoiadores'])
+      );
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && isValidId(userId) && isValidUserProfile(incoming())
+        && (userId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && isValidId(userId) && isValidUserProfile(incoming()) && (
+        isAdmin() ||
+        (userId == request.auth.uid && incoming().id == existing().id
+          && incoming().diff(existing()).affectedKeys().hasOnly(['nome', 'telefone', 'email']))
+      );
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+
+    // Membership Applications Collection
+    match /solicitacoes/{applicationId} {
+      allow get: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+      allow list: if isAdmin();
+      allow create: if isValidId(applicationId) && isValidApplication(incoming()) && incoming().status == 'pendente';
+      allow update: if isAdmin() && isValidId(applicationId) && isValidApplication(incoming());
+      allow delete: if isAdmin() && isValidId(applicationId);
+    }
+  }
+}

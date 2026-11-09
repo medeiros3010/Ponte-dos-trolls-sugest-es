@@ -1,0 +1,383 @@
+{
+  "entities": {
+    "ItemRPG": {
+      "title": "ItemRPG",
+      "description": "Uma sugestão de módulo Foundry VTT, livro ou material de RPG para rateio",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único da sugestão",
+          "maxLength": 128
+        },
+        "nome": {
+          "type": "string",
+          "description": "Nome do módulo ou material",
+          "maxLength": 100
+        },
+        "produto": {
+          "type": "string",
+          "description": "Categoria do produto",
+          "enum": ["Livros", "Mapas", "Material para VTT", "Outros"]
+        },
+        "sistema": {
+          "type": "string",
+          "description": "Sistema de RPG aplicável",
+          "maxLength": 100
+        },
+        "descricao": {
+          "type": "string",
+          "description": "Descrição detalhada do material",
+          "maxLength": 2000
+        },
+        "link": {
+          "type": "string",
+          "description": "Link da loja oficial ou Patreon",
+          "maxLength": 500
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL da imagem de capa",
+          "maxLength": 500
+        },
+        "sugeridoPorId": {
+          "type": "string",
+          "description": "ID do membro autor",
+          "maxLength": 128
+        },
+        "sugeridoPorNome": {
+          "type": "string",
+          "description": "Nome do membro autor",
+          "maxLength": 100
+        },
+        "sugeridoPorTelefone": {
+          "type": "string",
+          "description": "Telefone de contato do autor",
+          "maxLength": 50
+        },
+        "sugeridoPorEmail": {
+          "type": "string",
+          "description": "Email do membro autor",
+          "maxLength": 100
+        },
+        "moeda": {
+          "type": "string",
+          "description": "Moeda do valor original",
+          "enum": ["BRL", "USD"]
+        },
+        "valorNumerico": {
+          "type": "number",
+          "description": "Valor numérico cotado"
+        },
+        "observacaoValor": {
+          "type": "string",
+          "description": "Observações sobre descontos ou câmbio",
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "description": "Status do item no fluxo",
+          "enum": ["Sugestão", "Em Financiamento", "Finalizados", "Em Pacote", "Arquivado"]
+        },
+        "data": {
+          "type": "string",
+          "description": "Data de criação no formato YYYY-MM-DD",
+          "maxLength": 20
+        },
+        "packageId": {
+          "type": "string",
+          "description": "ID do pacote que agrupou o item",
+          "maxLength": 128
+        }
+      },
+      "required": ["id", "nome", "produto", "sistema", "status"]
+    },
+    "FundingPackage": {
+      "title": "FundingPackage",
+      "description": "Pacote de financiamento coletivo ou produto no catálogo",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único do pacote",
+          "maxLength": 128
+        },
+        "titulo": {
+          "type": "string",
+          "description": "Título do pacote ou vaquinha",
+          "maxLength": 150
+        },
+        "sistema": {
+          "type": "string",
+          "description": "Sistema de RPG do pacote",
+          "maxLength": 100
+        },
+        "tipo": {
+          "type": "string",
+          "description": "Categoria principal do pacote",
+          "maxLength": 100
+        },
+        "descricao": {
+          "type": "string",
+          "description": "Descrição dos módulos inclusos",
+          "maxLength": 3000
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL da capa ilustrativa",
+          "maxLength": 500
+        },
+        "valorTotalBRL": {
+          "type": "number",
+          "description": "Valor total estimado ou final em Reais"
+        },
+        "dataFinalizar": {
+          "type": "string",
+          "description": "Data de encerramento da coleta",
+          "maxLength": 30
+        },
+        "dataPagamento": {
+          "type": "string",
+          "description": "Data limite para pagamento da cota",
+          "maxLength": 30
+        },
+        "minimoParticipantes": {
+          "type": "number",
+          "description": "Meta mínima de cotistas"
+        },
+        "valorMaximoPorPessoa": {
+          "type": "number",
+          "description": "Teto estimado por participante"
+        },
+        "valorCatalogoBRL": {
+          "type": "number",
+          "description": "Preço unitário no catálogo pós-financiamento"
+        },
+        "linkLoja": {
+          "type": "string",
+          "description": "Link da loja do criador",
+          "maxLength": 500
+        },
+        "linkDrive": {
+          "type": "string",
+          "description": "Link seguro do Google Drive para cotistas",
+          "maxLength": 500
+        },
+        "status": {
+          "type": "string",
+          "description": "Status se está em financiamento ou catálogo permanente",
+          "enum": ["Financiamento", "Catálogo"]
+        },
+        "etapaFinanciamento": {
+          "type": "string",
+          "description": "Etapa atual da vaquinha",
+          "enum": ["COLETA", "PAGAMENTO"]
+        },
+        "valorFinalPorParticipante": {
+          "type": "number",
+          "description": "Cota exata calculada para pagamento Pix"
+        },
+        "chavePix": {
+          "type": "string",
+          "description": "Chave Pix cadastrada pelo Mestre",
+          "maxLength": 100
+        },
+        "instrucoesPix": {
+          "type": "string",
+          "description": "Instruções adicionais de comprovante",
+          "maxLength": 1000
+        },
+        "criadoEm": {
+          "type": "string",
+          "description": "Data de criação do pacote",
+          "maxLength": 30
+        },
+        "finalizadoEm": {
+          "type": "string",
+          "description": "Data de entrega no acervo",
+          "maxLength": 30
+        }
+      },
+      "required": ["id", "titulo", "status", "valorTotalBRL"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Perfil de membro cadastrado no grupo",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID do membro ou UID do Firebase Auth",
+          "maxLength": 128
+        },
+        "nome": {
+          "type": "string",
+          "description": "Nome completo ou apelido RPG",
+          "maxLength": 100
+        },
+        "telefone": {
+          "type": "string",
+          "description": "WhatsApp de contato",
+          "maxLength": 50
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail de acesso",
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp de cadastro",
+          "maxLength": 30
+        },
+        "dataEntrada": {
+          "type": "string",
+          "description": "Data de aprovação na comunidade",
+          "maxLength": 30
+        },
+        "isMaster": {
+          "type": "boolean",
+          "description": "Indica privilégios de Mestre da Ponte"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status de aprovação na comunidade",
+          "enum": ["aprovado", "pendente", "recusado"]
+        },
+        "solicitacaoId": {
+          "type": "string",
+          "description": "Referência da candidatura aprovada",
+          "maxLength": 128
+        }
+      },
+      "required": ["id", "nome", "status"]
+    },
+    "MembershipApplication": {
+      "title": "MembershipApplication",
+      "description": "Solicitação e questionário de novos membros",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador da solicitação",
+          "maxLength": 128
+        },
+        "nome": {
+          "type": "string",
+          "description": "Nome completo do candidato",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail para resposta",
+          "maxLength": 100
+        },
+        "telefone": {
+          "type": "string",
+          "description": "WhatsApp do candidato",
+          "maxLength": 50
+        },
+        "comoConheceu": {
+          "type": "string",
+          "description": "Como conheceu o grupo",
+          "maxLength": 500
+        },
+        "indicadoPor": {
+          "type": "string",
+          "description": "Nome de membro que indicou",
+          "maxLength": 100
+        },
+        "regrasTextoAceito": {
+          "type": "string",
+          "description": "Texto das regras no momento do aceite",
+          "maxLength": 5000
+        },
+        "regrasVersao": {
+          "type": "string",
+          "description": "Versão das regras",
+          "maxLength": 50
+        },
+        "aceitouTermos": {
+          "type": "boolean",
+          "description": "Confirmação de aceite das regras de ouro"
+        },
+        "aceitouEm": {
+          "type": "string",
+          "description": "Data e hora do aceite",
+          "maxLength": 30
+        },
+        "criadoEm": {
+          "type": "string",
+          "description": "Data de submissão",
+          "maxLength": 30
+        },
+        "status": {
+          "type": "string",
+          "description": "Status da avaliação",
+          "enum": ["pendente", "aprovado", "recusado"]
+        },
+        "observacoesMestre": {
+          "type": "string",
+          "description": "Parecer ou notas do Mestre",
+          "maxLength": 1000
+        },
+        "avaliadoEm": {
+          "type": "string",
+          "description": "Data da deliberação",
+          "maxLength": 30
+        },
+        "avaliadoPor": {
+          "type": "string",
+          "description": "Nome do avaliador",
+          "maxLength": 100
+        },
+        "userId": {
+          "type": "string",
+          "description": "ID do usuário gerado ao aprovar",
+          "maxLength": 128
+        }
+      },
+      "required": ["id", "nome", "telefone", "aceitouTermos", "status"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Registro de permissão administrativa para o Mestre da Ponte",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email do administrador",
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "description": "Nível de acesso",
+          "enum": ["admin", "master"]
+        }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/items/{itemId}": {
+      "schema": "ItemRPG",
+      "description": "Coleção de sugestões de materiais e módulos enviadas pelos membros"
+    },
+    "/packages/{packageId}": {
+      "schema": "FundingPackage",
+      "description": "Coleção de pacotes em financiamento coletivo ou catálogo permanente"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Coleção de perfis de membros aprovados e cadastrados"
+    },
+    "/solicitacoes/{applicationId}": {
+      "schema": "MembershipApplication",
+      "description": "Coleção de solicitações de novos membros para análise do Mestre"
+    },
+    "/admins/{adminId}": {
+      "schema": "AdminRecord",
+      "description": "Coleção restrita de administradores da Ponte dos Trolls"
+    }
+  }
+}

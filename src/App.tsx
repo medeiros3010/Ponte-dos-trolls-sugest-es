@@ -44,6 +44,17 @@ import {
 } from './utils/cloudStorage';
 import { RulesConfig, INITIAL_RULES_CONFIG } from './data/rulesAndQuestions';
 import { isPackageAcquired, getUserAcquiredPackages } from './utils/ranksAndAcquisitions';
+import { testConnection, auth } from './firebase/config';
+import {
+  bootstrapFirestoreIfEmpty,
+  subscribeItems,
+  subscribePackages,
+  subscribeUsers,
+  saveItemToFirestore,
+  deleteItemFromFirestore,
+  savePackageToFirestore,
+  deletePackageFromFirestore,
+} from './firebase/firestoreService';
 
 import { Header } from './components/Header';
 import { HomeHub } from './components/HomeHub';
@@ -237,6 +248,70 @@ export default function App() {
     checkSavedSession();
     return () => {
       isMounted = false;
+    };
+  }, []);
+
+  // Firebase Firestore Connection & Real-Time Sync
+  useEffect(() => {
+    // Test Firestore connection on boot (Skill Critical Constraint)
+    testConnection();
+
+    // Bootstrap initial data if Firestore is empty
+    bootstrapFirestoreIfEmpty();
+
+    // Auth listener
+    const unsubAuth = auth.onAuthStateChanged((fbUser) => {
+      if (fbUser) {
+        const isMasterEmail = fbUser.email === 'pontedostrolls@gmail.com';
+        const matched = users.find(
+          (u) => (fbUser.email && u.email && u.email.toLowerCase() === fbUser.email.toLowerCase()) || u.id === fbUser.uid
+        );
+        const userProfile: UserProfile = {
+          id: fbUser.uid,
+          nome: fbUser.displayName || matched?.nome || (isMasterEmail ? 'Mestre da Ponte' : 'Membro'),
+          email: fbUser.email || '',
+          telefone: fbUser.phoneNumber || matched?.telefone || '',
+          isMaster: isMasterEmail || Boolean(matched?.isMaster),
+          status: 'aprovado',
+        };
+        setCurrentUser(userProfile);
+        saveStoredCurrentUser(userProfile);
+        setEntryModalState('closed');
+      }
+    });
+
+    // Real-time synchronization from Firestore
+    let unsubItems: () => void = () => {};
+    let unsubPackages: () => void = () => {};
+    let unsubUsers: () => void = () => {};
+
+    try {
+      unsubItems = subscribeItems((cloudItems) => {
+        if (cloudItems && cloudItems.length > 0) {
+          setItems(cloudItems);
+        }
+      });
+
+      unsubPackages = subscribePackages((cloudPackages) => {
+        if (cloudPackages && cloudPackages.length > 0) {
+          setPackages(cloudPackages);
+        }
+      });
+
+      unsubUsers = subscribeUsers((cloudUsers) => {
+        if (cloudUsers && cloudUsers.length > 0) {
+          setUsers(cloudUsers);
+        }
+      });
+    } catch (err) {
+      console.warn('[Firebase] Subscriptions warning:', err);
+    }
+
+    return () => {
+      unsubAuth();
+      unsubItems();
+      unsubPackages();
+      unsubUsers();
     };
   }, []);
 
@@ -633,6 +708,8 @@ export default function App() {
           setItems((prev) => [res.item!, ...prev]);
           showToast('Sugestão enviada com sucesso!');
         }
+        // Sync to Firestore
+        saveItemToFirestore(res.item).catch((err) => console.warn('Firestore sync item notice:', err));
         setIsFormOpen(false);
         setItemToEdit(null);
         return;
@@ -651,6 +728,7 @@ export default function App() {
       const res = await apiToggleItemSupport(binId, itemId, currentUser);
       if (res && res.item) {
         setItems((prev) => prev.map((it) => (it.id === itemId ? res.item! : it)));
+        saveItemToFirestore(res.item).catch(() => {});
         const already = (targetItem.apoiadores || []).some((a) => a.id === currentUser.id);
         showToast(already ? `Você retirou seu apoio da sugestão "${targetItem.nome}".` : `Você apoiou "${targetItem.nome}"!`);
       }
@@ -664,6 +742,7 @@ export default function App() {
     try {
       await apiDeleteItem(binId, itemToDelete.id, adminPassword);
       setItems((prev) => prev.filter((it) => it.id !== itemToDelete.id));
+      deleteItemFromFirestore(itemToDelete.id).catch(() => {});
       showToast(`Item "${itemToDelete.nome}" excluído.`);
       setItemToDelete(null);
     } catch (err: any) {
@@ -685,6 +764,7 @@ export default function App() {
           setPackages((prev) => [res.package!, ...prev]);
           showToast('Novo pacote de financiamento criado!');
         }
+        savePackageToFirestore(res.package).catch((err) => console.warn('Firestore sync package notice:', err));
         setPackageToEdit(null);
       }
     } catch (err: any) {
@@ -850,6 +930,7 @@ export default function App() {
 
   const handleConfirmDeletePackage = () => {
     if (!packageToDelete) return;
+    deletePackageFromFirestore(packageToDelete.id).catch(() => {});
     const nextPackages = packages.filter((p) => p.id !== packageToDelete.id);
     setPackages(nextPackages);
     syncWithCloud(items, users, nextPackages);
