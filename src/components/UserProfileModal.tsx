@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { formatDateDisplay } from '../utils/helpers';
 import { getUserAcquiredPackages, getUserRank } from '../utils/ranksAndAcquisitions';
+import { RankBadgeIcon } from './RankBadge';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ interface UserProfileModalProps {
   onUpdateCurrentUser: (updatedUser: UserProfile) => void;
   onOpenMyAcervo: () => void;
   onToast: (msg: string) => void;
+  initialEditMode?: boolean;
 }
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({
@@ -45,11 +47,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onUpdateCurrentUser,
   onOpenMyAcervo,
   onToast,
+  initialEditMode = false,
 }) => {
   const [nome, setNome] = useState(currentUser.nome || '');
   const [phone, setPhone] = useState(currentUser.telefone || '');
   const [email, setEmail] = useState(currentUser.email || '');
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(initialEditMode);
   const [nameError, setNameError] = useState('');
 
   useEffect(() => {
@@ -57,10 +60,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setNome(currentUser.nome || '');
       setPhone(currentUser.telefone || '');
       setEmail(currentUser.email || '');
-      setIsEditing(false);
+      setIsEditing(initialEditMode);
       setNameError('');
     }
-  }, [isOpen, currentUser]);
+  }, [isOpen, currentUser, initialEditMode]);
 
   if (!isOpen) return null;
 

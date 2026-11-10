@@ -38,6 +38,7 @@ import { CandidateReviewModal } from './CandidateReviewModal';
 import { MemberAcervoModal } from './MemberAcervoModal';
 import { WelcomeMessageModal } from './WelcomeMessageModal';
 import { RulesConfig } from '../data/rulesAndQuestions';
+import { RankBadgeIcon } from './RankBadge';
 
 interface MembrosViewProps {
   users: UserProfile[];
@@ -552,7 +553,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nome ou contato..."
+            placeholder={isMaster ? "Buscar por nome ou contato..." : "Buscar membro por nome..."}
             className="w-full bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-9 pr-8 py-2.5 text-xs sm:text-sm text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F] shadow-sm"
           />
           {searchTerm && (
@@ -621,18 +622,67 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                   .toUpperCase()
               : '??';
 
+            const isThisMemberMaster = member.isMaster || member.nome.trim().toLowerCase() === 'ponte dos trolls';
+            const acquiredList = isThisMemberMaster ? [] : getUserAcquiredPackages(member, packages);
+            const rank = isThisMemberMaster
+              ? {
+                  level: 99,
+                  name: 'Mestre Guardião',
+                  colorClass: 'text-[#716016]',
+                  bgClass: 'bg-[#FAF4E6]',
+                  borderClass: 'border-[#C6AD78]',
+                  cardBorderClass: 'border-[#C6AD78]/80',
+                  currentCount: 0,
+                }
+              : getUserRank(acquiredList.length);
+
+            // ==================== VISUALIZAÇÃO SIMPLIFICADA PARA MEMBROS COMUNS ====================
+            // Exibe SOMENTE: Nome do membro, Nome do rank, Brasão correspondente.
+            // Oculta estritamente: contatos, e-mails, telefones, strikes, pendências, contagem de compras, financiamentos e acervo.
+            if (!isMaster) {
+              return (
+                <div
+                  key={member.id}
+                  className={`parchment-card p-4 sm:p-4.5 flex items-center justify-between gap-3.5 transition-all hover:shadow-md border ${rank.cardBorderClass}`}
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    {/* Brasão Oficial do Rank RPG */}
+                    <div className="shrink-0 relative">
+                      <RankBadgeIcon level={rank.level} size={44} />
+                    </div>
+
+                    {/* Nome do Membro e Selo com Nome do Rank Escrito */}
+                    <div className="min-w-0 space-y-1">
+                      <h3 className="font-rpg text-base font-bold text-[#302414] leading-tight truncate">
+                        {member.nome}
+                      </h3>
+
+                      <div>
+                        <span
+                          className={`px-2.5 py-0.5 rounded text-[11px] font-bold ${rank.bgClass} ${rank.colorClass} border ${rank.borderClass} inline-flex items-center gap-1.5 shadow-xs`}
+                        >
+                          <span>{rank.name}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // ==================== VISUALIZAÇÃO ADMINISTRATIVA COMPLETA DO MESTRE ====================
             return (
               <div
                 key={member.id}
-                className="parchment-card p-4 space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow"
+                className={`parchment-card p-4 space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow border ${rank.cardBorderClass}`}
               >
                 <div>
-                  {/* Linha Superior: Avatar de Iniciais + Nome + Badge + Strikes */}
+                  {/* Linha Superior: Brasão/Avatar + Nome + Badge + Strikes */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      {/* Avatar Círculo com Iniciais */}
-                      <div className="w-11 h-11 rounded-full bg-[#455222] border border-[#C6AD78] text-[#F8EDD5] font-rpg font-bold text-sm flex items-center justify-center shrink-0 shadow-sm">
-                        {initials}
+                      {/* Brasão Oficial do Rank */}
+                      <div className="shrink-0 relative">
+                        <RankBadgeIcon level={rank.level} size={42} />
                       </div>
 
                       {/* Nome e Rank Badge */}
@@ -641,31 +691,14 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                           {member.nome}
                         </h3>
 
-                        {/* Rank Badge com os 6 Níveis RPG Oficiais */}
+                        {/* Rank Badge com Nível Oficial */}
                         <div className="mt-1">
-                          {member.isMaster || member.nome.trim().toLowerCase() === 'ponte dos trolls' ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAF4E6] text-[#716016] border border-[#C6AD78] inline-flex items-center gap-1">
-                              <Shield className="w-3 h-3 text-[#48551F]" />
-                              <span>Mestre Guardião</span>
-                            </span>
-                          ) : (() => {
-                            const acquiredList = getUserAcquiredPackages(member, packages);
-                            const r = getUserRank(acquiredList.length);
-                            const IconC = r.iconName === 'BookOpen' ? BookOpen :
-                                          r.iconName === 'Compass' ? Compass :
-                                          r.iconName === 'Shield' ? Shield :
-                                          r.iconName === 'Crown' ? Crown :
-                                          r.iconName === 'Sparkles' ? Sparkles : Sun;
-                            return (
-                              <span
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${r.bgClass} ${r.colorClass} border ${r.borderClass} inline-flex items-center gap-1 shadow-xs`}
-                                title={`${r.name} - ${r.currentCount} pacotes adquiridos no Catálogo`}
-                              >
-                                <IconC className="w-3 h-3 shrink-0" />
-                                <span>{r.name} ({r.currentCount})</span>
-                              </span>
-                            );
-                          })()}
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${rank.bgClass} ${rank.colorClass} border ${rank.borderClass} inline-flex items-center gap-1 shadow-xs`}
+                            title={isThisMemberMaster ? 'Mestre da Ponte' : `${rank.name} - ${stats.catalogCount} pacotes adquiridos`}
+                          >
+                            <span>{rank.name} ({stats.catalogCount})</span>
+                          </span>
                         </div>
                       </div>
                     </div>

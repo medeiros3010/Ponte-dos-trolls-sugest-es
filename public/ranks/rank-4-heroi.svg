@@ -1,0 +1,21 @@
+<svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M16 46C11 41 9 32 10 24C10.5 20 12 17 14 15C13 19 13.5 24 16 28C17 23 18 19 20 16C19.5 21 21 26 23 29C21 34 19 40 16 46Z" fill="#D4A538" stroke="#8C6512" stroke-width="0.8"/>
+  <circle cx="11" cy="22" r="1.5" fill="#FFE58F"/>
+  <circle cx="13" cy="31" r="1.5" fill="#FFE58F"/>
+  <circle cx="16" cy="40" r="1.5" fill="#FFE58F"/>
+  <path d="M48 46C53 41 55 32 54 24C53.5 20 52 17 50 15C51 19 50.5 24 48 28C47 23 46 19 44 16C44.5 21 43 26 41 29C43 34 45 40 48 46Z" fill="#D4A538" stroke="#8C6512" stroke-width="0.8"/>
+  <circle cx="53" cy="22" r="1.5" fill="#FFE58F"/>
+  <circle cx="51" cy="31" r="1.5" fill="#FFE58F"/>
+  <circle cx="48" cy="40" r="1.5" fill="#FFE58F"/>
+  <path d="M32 7L16 15V33C16 45 23 54 32 58C41 54 48 45 48 33V15L32 7Z" fill="#6B4E0D" stroke="#E5B942" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M32 9.5L18.5 16.5V32.5C18.5 43 24.5 50.8 32 54.5C39.5 50.8 45.5 43 45.5 32.5V16.5L32 9.5Z" fill="#B88B1E"/>
+  <path d="M32 9.5L18.5 16.5V32.5C18.5 43 24.5 50.8 32 54.5V9.5Z" fill="#D4A538" opacity="0.4"/>
+  <path d="M32 13L21.5 18.5V32C21.5 40.5 26.5 47 32 50C37.5 47 42.5 40.5 42.5 32V18.5L32 13Z" stroke="#FFF1A8" stroke-width="1.2" fill="#8C6512"/>
+  <polygon points="32,20 38,26 36,36 32,41 28,36 26,26" fill="#A81424" stroke="#FFE58F" stroke-width="1"/>
+  <polygon points="32,20 38,26 32,28 26,26" fill="#DE2C3E"/>
+  <polygon points="26,26 32,28 32,41 28,36" fill="#8C0D1B"/>
+  <polygon points="38,26 32,28 32,41 36,36" fill="#BF1B2C"/>
+  <polygon points="29,24 33,22 32,26 28,26" fill="#FFA3AB" opacity="0.8"/>
+  <circle cx="31" cy="24" r="1" fill="#FFFFFF"/>
+  <path d="M26 49C29 48 35 48 38 49L37 53C34 52 30 52 27 53L26 49Z" fill="#D4A538" stroke="#6B4E0D" stroke-width="0.8"/>
+</svg>

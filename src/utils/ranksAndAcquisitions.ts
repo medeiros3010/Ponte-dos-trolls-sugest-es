@@ -13,6 +13,8 @@ export interface UserRankInfo {
   colorClass: string;
   bgClass: string;
   borderClass: string;
+  cardBorderClass: string;
+  badgeSvgPath: string;
   iconName: 'BookOpen' | 'Compass' | 'Shield' | 'Crown' | 'Sparkles' | 'Sun';
 }
 
@@ -26,6 +28,8 @@ export const RANKS_CONFIG = [
     colorClass: 'text-[#6d5b3d]',
     bgClass: 'bg-[#EDE2CA]',
     borderClass: 'border-[#C6AD78]',
+    cardBorderClass: 'border-[#C6AD78]/70 hover:border-[#8C6239]',
+    badgeSvgPath: '/ranks/rank-1-aprendiz.svg',
   },
   {
     level: 2,
@@ -36,6 +40,8 @@ export const RANKS_CONFIG = [
     colorClass: 'text-[#48551F]',
     bgClass: 'bg-[#E3E8D0]',
     borderClass: 'border-[#8F9F5B]',
+    cardBorderClass: 'border-[#8F9F5B]/70 hover:border-[#48551F]',
+    badgeSvgPath: '/ranks/rank-2-aventureiro.svg',
   },
   {
     level: 3,
@@ -43,9 +49,11 @@ export const RANKS_CONFIG = [
     min: 31,
     max: 50,
     iconName: 'Shield' as const,
-    colorClass: 'text-[#2D4521]',
-    bgClass: 'bg-[#D6E0CE]',
-    borderClass: 'border-[#6F8A5D]',
+    colorClass: 'text-[#204468]',
+    bgClass: 'bg-[#E2ECF7]',
+    borderClass: 'border-[#6A8CAE]',
+    cardBorderClass: 'border-[#6A8CAE]/70 hover:border-[#204468]',
+    badgeSvgPath: '/ranks/rank-3-veterano.svg',
   },
   {
     level: 4,
@@ -54,8 +62,10 @@ export const RANKS_CONFIG = [
     max: 70,
     iconName: 'Crown' as const,
     colorClass: 'text-[#875508]',
-    bgClass: 'bg-[#FAE8B4]',
+    bgClass: 'bg-[#FFF2CC]',
     borderClass: 'border-[#D9A74A]',
+    cardBorderClass: 'border-[#D9A74A]/80 hover:border-[#875508]',
+    badgeSvgPath: '/ranks/rank-4-heroi.svg',
   },
   {
     level: 5,
@@ -63,9 +73,11 @@ export const RANKS_CONFIG = [
     min: 71,
     max: 100,
     iconName: 'Sparkles' as const,
-    colorClass: 'text-[#7D3F12]',
-    bgClass: 'bg-[#F5DFC8]',
-    borderClass: 'border-[#CE874E]',
+    colorClass: 'text-[#5A2482]',
+    bgClass: 'bg-[#F3E8FC]',
+    borderClass: 'border-[#9D52D4]',
+    cardBorderClass: 'border-[#9D52D4]/80 hover:border-[#5A2482]',
+    badgeSvgPath: '/ranks/rank-5-lenda.svg',
   },
   {
     level: 6,
@@ -73,9 +85,11 @@ export const RANKS_CONFIG = [
     min: 101,
     max: null,
     iconName: 'Sun' as const,
-    colorClass: 'text-[#5C1D24]',
-    bgClass: 'bg-[#F2D7DA]',
-    borderClass: 'border-[#B85D67]',
+    colorClass: 'text-[#7A1D28]',
+    bgClass: 'bg-[#FFF8EA]',
+    borderClass: 'border-[#D4A538]',
+    cardBorderClass: 'border-[#D4A538] ring-1 ring-[#D4A538]/40 hover:border-[#B82834]',
+    badgeSvgPath: '/ranks/rank-6-guardiao.svg',
   },
 ];
 
@@ -142,6 +156,8 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       colorClass: config.colorClass,
       bgClass: config.bgClass,
       borderClass: config.borderClass,
+      cardBorderClass: config.cardBorderClass,
+      badgeSvgPath: config.badgeSvgPath,
       iconName: config.iconName,
     };
   }
@@ -162,6 +178,8 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       colorClass: config.colorClass,
       bgClass: config.bgClass,
       borderClass: config.borderClass,
+      cardBorderClass: config.cardBorderClass,
+      badgeSvgPath: config.badgeSvgPath,
       iconName: config.iconName,
     };
   }
@@ -182,6 +200,8 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       colorClass: config.colorClass,
       bgClass: config.bgClass,
       borderClass: config.borderClass,
+      cardBorderClass: config.cardBorderClass,
+      badgeSvgPath: config.badgeSvgPath,
       iconName: config.iconName,
     };
   }
@@ -202,6 +222,8 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       colorClass: config.colorClass,
       bgClass: config.bgClass,
       borderClass: config.borderClass,
+      cardBorderClass: config.cardBorderClass,
+      badgeSvgPath: config.badgeSvgPath,
       iconName: config.iconName,
     };
   }
@@ -222,6 +244,8 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       colorClass: config.colorClass,
       bgClass: config.bgClass,
       borderClass: config.borderClass,
+      cardBorderClass: config.cardBorderClass,
+      badgeSvgPath: config.badgeSvgPath,
       iconName: config.iconName,
     };
   }
@@ -241,6 +265,8 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
     colorClass: config.colorClass,
     bgClass: config.bgClass,
     borderClass: config.borderClass,
+    cardBorderClass: config.cardBorderClass,
+    badgeSvgPath: config.badgeSvgPath,
     iconName: config.iconName,
   };
 }

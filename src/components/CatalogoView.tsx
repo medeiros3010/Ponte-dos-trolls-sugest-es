@@ -262,6 +262,36 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     }
   };
 
+  const handleCancelMyRequest = async (pkgId: string) => {
+    if (!onRejectPackageAccess || !currentUser?.id) return;
+    const confirmed = typeof window !== 'undefined' && window.confirm
+      ? window.confirm('Deseja realmente cancelar sua solicitação de compra deste pacote?')
+      : true;
+    if (!confirmed) return;
+
+    try {
+      setIsBuyerSaving(true);
+      if (selectedPackageDetails && selectedPackageDetails.id === pkgId) {
+        const nextSolicitacoes = (selectedPackageDetails.solicitacoesAcesso || []).filter(
+          (s) => s.memberId !== currentUser.id && s.nome.toLowerCase() !== currentUser.nome.toLowerCase()
+        );
+        setSelectedPackageDetails({
+          ...selectedPackageDetails,
+          solicitacoesAcesso: nextSolicitacoes,
+        });
+      }
+
+      const ok = await onRejectPackageAccess(pkgId, currentUser.id);
+      if (ok) {
+        onToast('Sua solicitação de compra foi cancelada.');
+      }
+    } catch (e: any) {
+      onToast(e?.message || 'Erro ao cancelar solicitação');
+    } finally {
+      setIsBuyerSaving(false);
+    }
+  };
+
   const handleRemoveBuyer = async (pkgId: string, memberId: string) => {
     const pwd = prompt('Digite a Senha do Mestre para remover o acesso deste membro:');
     if (pwd === null) return;
@@ -935,14 +965,25 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                               <span>No seu acervo</span>
                             </button>
                           ) : isUserPending ? (
-                            <button
-                              type="button"
-                              disabled={true}
-                              className="px-3 py-1.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-xs font-bold shadow-none flex items-center gap-1.5 cursor-not-allowed opacity-90 select-none"
-                              title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
-                            >
-                              <span>⏳ Solicitação Pendente</span>
-                            </button>
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className="px-2.5 py-1.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-[11px] font-bold select-none"
+                                title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
+                              >
+                                ⏳ Pendente
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelMyRequest(pkg.id);
+                                }}
+                                className="px-2 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#fae5e5] text-[#8b261b] border border-[#d69696] text-[11px] font-bold cursor-pointer transition-colors"
+                                title="Cancelar minha solicitação pendente"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
                           ) : isInCart ? (
                             <button
                               type="button"
@@ -1135,17 +1176,20 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                         )
                       ) : isUserPending ? (
                         <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
-                          <button
-                            type="button"
-                            disabled={true}
-                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-xs font-bold shadow-none flex items-center justify-center gap-1.5 cursor-not-allowed opacity-90 select-none"
+                          <span
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-xs font-bold flex items-center justify-center gap-1.5 select-none"
                             title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
                           >
                             <span>⏳ Solicitação Pendente</span>
-                          </button>
-                          <span className="text-xs text-[#71634D] italic text-center sm:text-left">
-                            Aguardando aprovação do Mestre.
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCancelMyRequest(selectedPackageDetails.id)}
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#FAF4E6] hover:bg-[#fae5e5] text-[#8b261b] border border-[#d69696] text-xs font-bold cursor-pointer transition-colors"
+                            title="Cancelar minha solicitação de acesso a este pacote"
+                          >
+                            Cancelar solicitação
+                          </button>
                         </div>
                       ) : (
                         <div className="flex flex-wrap items-center gap-2">

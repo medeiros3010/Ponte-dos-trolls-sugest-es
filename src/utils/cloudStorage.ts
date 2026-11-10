@@ -358,7 +358,6 @@ function getAuthHeaders(additionalHeaders: Record<string, string> = {}): Record<
       const u = JSON.parse(raw);
       if (u?.email) headers['x-user-email'] = u.email;
       if (u?.id) headers['x-user-id'] = u.id;
-      if (u?.isMaster) headers['x-is-master'] = 'true';
     }
   } catch {}
   return headers;

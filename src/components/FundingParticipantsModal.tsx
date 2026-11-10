@@ -18,6 +18,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { getUserRank, getUserAcquiredPackages } from '../utils/ranksAndAcquisitions';
+import { RankBadgeIcon } from './RankBadge';
 
 interface FundingParticipantsModalProps {
   isOpen: boolean;
@@ -277,10 +278,10 @@ export const FundingParticipantsModal: React.FC<FundingParticipantsModalProps> =
 
                         {/* Badge de Rank RPG */}
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${p.rankInfo.bgClass} ${p.rankInfo.colorClass} ${p.rankInfo.borderClass}`}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1.5 ${p.rankInfo.bgClass} ${p.rankInfo.colorClass} ${p.rankInfo.borderClass}`}
                           title={`Rank ${p.rankInfo.name} (${p.rankInfo.currentCount} compras no Catálogo)`}
                         >
-                          {renderRankIcon(p.rankInfo.iconName)}
+                          <RankBadgeIcon level={p.rankInfo.level} size={15} />
                           <span>{p.rankInfo.name}</span>
                         </span>
                       </div>

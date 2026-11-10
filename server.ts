@@ -207,9 +207,6 @@ function createSession(userId: string, nome: string, isMaster: boolean, ip: stri
 function checkMasterPermission(req: Request, adminPassword?: string): boolean {
   const session = getSession(req);
   if (session?.isMaster) return true;
-  const userEmail = ((req.headers['x-user-email'] as string) || '').trim().toLowerCase();
-  if (userEmail === 'pontedostrolls@gmail.com') return true;
-  if (req.headers['x-is-master'] === 'true') return true;
   const pass = (req.headers['x-admin-password'] as string) || adminPassword || (req.body && req.body.adminPassword) || (req.query && req.query.adminPassword) || '';
   if (pass && (pass === SERVER_ADMIN_PASSWORD || pass === 'trol123' || pass === 'Ponte#dos#trolls')) return true;
   return false;
@@ -888,12 +885,11 @@ app.post('/api/bin/:binId/package/:packageId/pagamento', async (req: Request, re
     return res.status(400).json({ error: 'memberId é obrigatório' });
   }
 
-  const reqUserId = (req.headers['x-user-id'] as string) || '';
-  const effectiveUserId = session?.userId || reqUserId;
+  const effectiveUserId = session?.userId;
 
-  // Se não for Mestre, o usuário só pode declarar pagamento para sua própria conta se identificado
-  if (!isMaster && effectiveUserId && effectiveUserId !== memberId) {
-    return res.status(403).json({ error: 'Acesso negado: você só pode declarar pagamento para sua própria conta.' });
+  // Se não for Mestre, o usuário só pode declarar pagamento para sua própria conta autenticada
+  if (!isMaster && (!effectiveUserId || effectiveUserId !== memberId)) {
+    return res.status(403).json({ error: 'Acesso negado: você só pode declarar pagamento para sua própria conta autenticada.' });
   }
 
   await withBinLock(binId, async () => {
@@ -1200,7 +1196,7 @@ app.post('/api/bin/:binId/user/update-profile', async (req: Request, res: Respon
   }
 
   // Autorização: o usuário só pode editar o SEU próprio perfil (a menos que seja o Mestre)
-  const effectiveCaller = session?.userId || (req.headers['x-user-id'] as string);
+  const effectiveCaller = session?.userId;
   if (!isMaster) {
     if (!effectiveCaller || effectiveCaller !== userId) {
       return res.status(403).json({ error: 'Você não tem permissão para alterar o perfil de outro membro.' });
@@ -1637,9 +1633,15 @@ app.delete('/api/bin/:binId/package/:packageId/request-access/:memberId', async 
   const session = getSession(req);
   const adminPassword = (req.body && req.body.adminPassword) || (req.query && req.query.adminPassword);
   const isMaster = checkMasterPermission(req, adminPassword);
+  const isOwner = Boolean(
+    session && (
+      session.userId === memberId ||
+      (session.nome && session.nome.trim().toLowerCase() === memberId.trim().toLowerCase())
+    )
+  );
 
-  if (!isMaster) {
-    return res.status(403).json({ error: 'Apenas o Mestre pode gerenciar solicitações de acesso.' });
+  if (!isMaster && !isOwner) {
+    return res.status(403).json({ error: 'Apenas o Mestre ou o próprio solicitante podem cancelar solicitações de acesso.' });
   }
 
   await withBinLock(binId, async () => {
