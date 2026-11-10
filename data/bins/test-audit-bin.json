@@ -1,11 +1,11 @@
 {
   "id": "test-audit-bin",
   "name": "Banco Isolado de Auditoria e Testes",
-  "updatedAt": "2026-11-10T16:45:48.367Z",
+  "updatedAt": "2026-11-10T17:16:48.413Z",
   "usersVersion": "v2_125_oficial",
   "items": [
     {
-      "id": "item-1794329148156-ccfv",
+      "id": "item-1794331008219-hlv5",
       "data": "2026-11-10",
       "nome": "Módulo Foundry Teste Alfa",
       "produto": "Material para VTT",
@@ -22,7 +22,7 @@
         {
           "id": "usr-teste-alfa",
           "nome": "Membro Teste Alfa",
-          "data": "2026-11-10T16:45:48.156Z"
+          "data": "2026-11-10T17:16:48.220Z"
         }
       ]
     }
@@ -69,14 +69,14 @@
       "isMaster": false
     },
     {
-      "id": "usr-1794329148101-radu",
+      "id": "usr-1794331008170-vhd3",
       "nome": "Candidato Teste Delta",
       "telefone": "(11) 98888-5555",
       "email": "delta.teste@gmail.com",
       "dataEntrada": "2026-11-10",
       "status": "aprovado",
       "strikes": [],
-      "solicitacaoId": "sol-1794329148043-ujre"
+      "solicitacaoId": "sol-1794331008128-em9l"
     }
   ],
   "packages": [
@@ -125,41 +125,41 @@
         "usr-teste-alfa": {
           "memberId": "usr-teste-alfa",
           "informouPagamento": true,
-          "dataPagamentoInformado": "2026-11-10T16:45:48.273Z"
+          "dataPagamentoInformado": "2026-11-10T17:16:48.334Z"
         },
         "usr-teste-gama": {
           "memberId": "usr-teste-gama",
           "nome": "Membro Teste Gama",
           "informouPagamento": true,
-          "dataPagamentoInformado": "2026-11-10T16:45:48.367Z"
+          "dataPagamentoInformado": "2026-11-10T17:16:48.412Z"
         }
       },
       "apoiadores": [
         {
           "id": "usr-master",
           "nome": "Ponte dos Trolls",
-          "data": "2026-11-10T16:45:48.217Z"
+          "data": "2026-11-10T17:16:48.281Z"
         },
         {
           "id": "usr-teste-alfa",
           "nome": "Membro Teste Alfa",
-          "data": "2026-11-10T16:45:48.229Z",
+          "data": "2026-11-10T17:16:48.290Z",
           "pagamentoInformado": true,
-          "dataPagamentoInformado": "2026-11-10T16:45:48.273Z"
+          "dataPagamentoInformado": "2026-11-10T17:16:48.334Z"
         },
         {
           "id": "usr-teste-beta",
           "nome": "Membro Teste Beta",
-          "data": "2026-11-10T16:45:48.237Z"
+          "data": "2026-11-10T17:16:48.299Z"
         },
         {
           "id": "usr-teste-gama",
           "nome": "Membro Teste Gama",
           "telefone": "(11) 98888-3333",
           "email": "gama.teste@pontedostrolls.com",
-          "data": "2026-11-10T16:45:48.367Z",
+          "data": "2026-11-10T17:16:48.412Z",
           "pagamentoInformado": true,
-          "dataPagamentoInformado": "2026-11-10T16:45:48.367Z",
+          "dataPagamentoInformado": "2026-11-10T17:16:48.412Z",
           "isPosteriorBuyer": true
         }
       ],
@@ -5097,7 +5097,7 @@
   ],
   "solicitacoes": [
     {
-      "id": "sol-1794329148043-ujre",
+      "id": "sol-1794331008128-em9l",
       "nome": "Candidato Teste Delta",
       "email": "delta.teste@gmail.com",
       "telefone": "(11) 98888-5555",
@@ -5112,13 +5112,13 @@
       "regrasTextoAceito": "Texto das regras",
       "regrasVersao": "2.0.0",
       "aceitouTermos": true,
-      "aceitouEm": "2026-11-10T16:45:48.043Z",
-      "criadoEm": "2026-11-10T16:45:48.043Z",
+      "aceitouEm": "2026-11-10T17:16:48.128Z",
+      "criadoEm": "2026-11-10T17:16:48.128Z",
       "status": "aprovado",
-      "avaliadoEm": "2026-11-10T16:45:48.113Z",
+      "avaliadoEm": "2026-11-10T17:16:48.183Z",
       "avaliadoPor": "Ponte dos Trolls",
       "observacoesMestre": "Respostas claras e indicante verificado.",
-      "userId": "usr-1794329148101-radu"
+      "userId": "usr-1794331008170-vhd3"
     }
   ]
 }

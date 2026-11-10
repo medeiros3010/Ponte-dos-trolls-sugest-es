@@ -9,10 +9,124 @@ async function runAudit() {
 
   // 1. ISOLAMENTO DE DADOS
   console.log('\n[1. AMBIENTE E ISOLAMENTO]');
+  if (!fs.existsSync('data/bins/trolls-rpg-oficial.real.bak')) {
+    fs.copyFileSync('data/bins/trolls-rpg-oficial.json', 'data/bins/trolls-rpg-oficial.real.bak');
+  }
   const realFile = fs.readFileSync('data/bins/trolls-rpg-oficial.json', 'utf8');
   const backupFile = fs.readFileSync('data/bins/trolls-rpg-oficial.real.bak', 'utf8');
   assert.strictEqual(realFile, backupFile, 'ALERTA: Arquivo de produção foi alterado!');
   console.log('✔ Dados reais de produção preservados integralmente e idênticos ao backup.');
+
+  // Prepara o bin isolado para test-audit-suite
+  const suiteInitialState = {
+    id: TEST_BIN,
+    name: 'Banco Isolado de Testes Suite',
+    updatedAt: new Date().toISOString(),
+    usersVersion: 'v2_125_oficial',
+    items: [
+      {
+        id: 'item-audit-1',
+        nome: 'Item Teste 1',
+        produto: 'Material para VTT',
+        sistema: 'Foundry VTT Geral',
+        descricao: 'Item para teste de concorrência',
+        sugeridoPorId: 'usr-teste-a',
+        apoiadores: [],
+      },
+    ],
+    users: [
+      {
+        id: 'usr-master',
+        nome: 'Ponte dos Trolls',
+        telefone: '(19) 98151-2030',
+        email: 'pontedostrolls@gmail.com',
+        status: 'aprovado',
+        isMaster: true,
+      },
+      {
+        id: 'usr-teste-a',
+        nome: 'Membro Teste A',
+        telefone: '(11) 98888-1111',
+        email: 'membro.a@test.com',
+        status: 'aprovado',
+        isMaster: false,
+      },
+      {
+        id: 'usr-teste-b',
+        nome: 'Membro Teste B',
+        telefone: '(11) 98888-2222',
+        email: 'membro.b@test.com',
+        status: 'aprovado',
+        isMaster: false,
+      },
+      {
+        id: 'usr-teste-pendente',
+        nome: 'Candidato Pendente',
+        telefone: '(11) 98888-3333',
+        email: 'pendente@test.com',
+        status: 'pendente',
+        isMaster: false,
+      },
+      {
+        id: 'usr-teste-recusado',
+        nome: 'Candidato Recusado',
+        telefone: '(11) 98888-4444',
+        email: 'recusado@test.com',
+        status: 'recusado',
+        isMaster: false,
+      },
+    ],
+    packages: [
+      {
+        id: 'pack-audit-catalogo-secreto',
+        titulo: 'Pacote Secreto de Catálogo',
+        sistema: 'Foundry VTT Geral',
+        tipo: 'Material para VTT',
+        descricao: 'Apenas para quem comprou',
+        status: 'Catálogo',
+        linkDrive: 'https://drive.google.com/drive/folders/secret-drive-id',
+        apoiadores: [],
+      },
+      {
+        id: 'pack-audit-catalogo',
+        titulo: 'Pacote Adquirido por Membro A',
+        sistema: 'Foundry VTT Geral',
+        tipo: 'Material para VTT',
+        descricao: 'Membro A já comprou',
+        status: 'Catálogo',
+        linkDrive: 'https://drive.google.com/drive/folders/purchased-drive-id',
+        apoiadores: [
+          {
+            id: 'usr-teste-a',
+            nome: 'Membro Teste A',
+            isPosteriorBuyer: true,
+          },
+        ],
+      },
+      {
+        id: 'pack-audit-coleta',
+        titulo: 'Pacote em Coleta',
+        sistema: 'Foundry VTT Geral',
+        tipo: 'Material para VTT',
+        descricao: 'Fase de coleta',
+        status: 'Financiamento',
+        etapaFinanciamento: 'COLETA',
+        apoiadores: [],
+      },
+      {
+        id: 'pack-audit-pagamento',
+        titulo: 'Pacote em Pagamento',
+        sistema: 'Foundry VTT Geral',
+        tipo: 'Material para VTT',
+        descricao: 'Fase de pagamento',
+        status: 'Financiamento',
+        etapaFinanciamento: 'PAGAMENTO',
+        apoiadores: [],
+      },
+    ],
+    solicitacoes: [],
+  };
+  fs.writeFileSync(`data/bins/${TEST_BIN}.json`, JSON.stringify(suiteInitialState, null, 2), 'utf8');
 
   // 2. TENTATIVAS DE ACESSO INDEVIDO / AUTENTICAÇÃO MESTRE
   console.log('\n[2. TENTATIVAS DE ACESSO INDEVIDO AO MESTRE]');
