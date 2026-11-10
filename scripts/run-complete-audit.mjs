@@ -649,15 +649,15 @@ async function run() {
 
   const rank71 = getUserRank(71);
   assert.strictEqual(rank71.level, 5);
-  assert.strictEqual(rank71.name, 'Lenda');
+  assert.strictEqual(rank71.name, 'Paragon');
 
   const rank100 = getUserRank(100);
   assert.strictEqual(rank100.level, 5);
-  assert.strictEqual(rank100.name, 'Lenda');
+  assert.strictEqual(rank100.name, 'Paragon');
 
   const rank101 = getUserRank(101);
   assert.strictEqual(rank101.level, 6);
-  assert.strictEqual(rank101.name, 'Guardião Lendário');
+  assert.strictEqual(rank101.name, 'Divindade');
 
   testPass('Ranks', 'Todas as 5 fronteiras de rank (10/11, 30/31, 50/51, 70/71, 100/101) verificadas e 100% exatas.');
 

@@ -578,8 +578,18 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
       // Verificação de aquisição legítima para liberar linkDrive
       const hasPurchased = callerUserId && Array.isArray(pkg.apoiadores) && pkg.apoiadores.some((ap: any) => {
         const isSelf = ap.id === callerUserId || (session?.nome && ap.nome && ap.nome.trim().toLowerCase() === session.nome.trim().toLowerCase());
+        if (!isSelf) return false;
+
         const isPaid = Boolean(ap.pagamentoInformado || (pkg.pagamentos && pkg.pagamentos[ap.id]?.informouPagamento));
-        return isSelf && (pkg.status === 'Catálogo' || isPaid);
+        if (ap.isPosteriorBuyer) return true;
+
+        // Se o pacote tem registros de pagamento (veio de vaquinha), exige que o pagamento tenha sido informado
+        const hasPaymentRecords = (pkg.pagamentos && Object.keys(pkg.pagamentos).length > 0);
+        if (hasPaymentRecords) {
+          return isPaid;
+        }
+
+        return pkg.status === 'Catálogo' || isPaid;
       });
 
       // Proteção de dados: se não for Mestre nem comprador legítimo, remove o link do Google Drive da resposta
@@ -1251,6 +1261,10 @@ app.post('/api/bin/:binId/user/update-profile', async (req: Request, res: Respon
             pkg.pagamentos[userId].nome = trimmedNome;
           }
         });
+      }
+
+      if (session && session.userId === userId) {
+        session.nome = trimmedNome;
       }
 
       writeBinData(binId, data);

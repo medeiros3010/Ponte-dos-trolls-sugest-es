@@ -82,6 +82,7 @@ import { NewMemberApplicationModal, ApplicationDraft } from './components/NewMem
 import { AmbientMusicPlayer } from './components/AmbientMusicPlayer';
 import { Toast, ToastMessageItem } from './components/Toast';
 import { InviteFriendModal } from './components/InviteFriendModal';
+import { CompletedPurchaseNoticeModal } from './components/CompletedPurchaseNoticeModal';
 import { CheckCircle2 } from 'lucide-react';
 
 const STORAGE_KEY_ITEMS = 'ponte_trolls_clean_v5';
@@ -96,8 +97,22 @@ export default function App() {
   const [binId, setBinId] = useState<string>(() => getInitialBinId());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-  // Active View State: 'home' | 'sugestoes' | 'financiamento' | 'catalogo'
-  const [view, setView] = useState<AppView>('home');
+  // Active View State: 'home' | 'sugestoes' | 'financiamento' | 'catalogo' | 'membros' | 'meus-itens'
+  const [view, setView] = useState<AppView>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const viewParam = params.get('view') as AppView;
+        if (
+          viewParam &&
+          ['home', 'sugestoes', 'financiamento', 'catalogo', 'membros', 'meus-itens'].includes(viewParam)
+        ) {
+          return viewParam;
+        }
+      } catch (e) {}
+    }
+    return 'home';
+  });
 
   // Mandatory Identified User State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => getStoredCurrentUser());
@@ -206,6 +221,7 @@ export default function App() {
   const [packageToEdit, setPackageToEdit] = useState<FundingPackage | null>(null);
   const [packageToMove, setPackageToMove] = useState<FundingPackage | null>(null);
   const [packageToDelete, setPackageToDelete] = useState<FundingPackage | null>(null);
+  const [completedNoticePkg, setCompletedNoticePkg] = useState<FundingPackage | null>(null);
 
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -971,20 +987,26 @@ export default function App() {
   };
 
   const handleConfirmMoveToCatalog = (packageId: string, linkDrive: string, valorCatalogoBRL: number) => {
-    const nextPackages = packages.map((p) =>
-      p.id === packageId
-        ? {
-            ...p,
-            status: 'Catálogo' as const,
-            linkDrive,
-            valorCatalogoBRL,
-            finalizadoEm: new Date().toISOString().split('T')[0],
-          }
-        : p
-    );
+    let finalizedPkg: FundingPackage | null = null;
+    const nextPackages = packages.map((p) => {
+      if (p.id === packageId) {
+        finalizedPkg = {
+          ...p,
+          status: 'Catálogo' as const,
+          linkDrive,
+          valorCatalogoBRL,
+          finalizadoEm: new Date().toISOString().split('T')[0],
+        };
+        return finalizedPkg;
+      }
+      return p;
+    });
     setPackages(nextPackages);
     syncWithCloud(items, users, nextPackages);
     setPackageToMove(null);
+    if (finalizedPkg) {
+      setCompletedNoticePkg(finalizedPkg);
+    }
   };
 
   const handleDeletePackage = (pkg: FundingPackage) => {
@@ -1360,7 +1382,17 @@ export default function App() {
           isOpen={Boolean(packageToMove)}
           onClose={() => setPackageToMove(null)}
           packageItem={packageToMove}
+          allUsers={users}
           onConfirmMove={handleConfirmMoveToCatalog}
+          onToast={showToast}
+        />
+      )}
+
+      {Boolean(completedNoticePkg) && (
+        <CompletedPurchaseNoticeModal
+          isOpen={Boolean(completedNoticePkg)}
+          onClose={() => setCompletedNoticePkg(null)}
+          packageItem={completedNoticePkg}
           onToast={showToast}
         />
       )}

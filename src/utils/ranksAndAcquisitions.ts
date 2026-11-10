@@ -69,7 +69,7 @@ export const RANKS_CONFIG = [
   },
   {
     level: 5,
-    name: 'Lenda',
+    name: 'Paragon',
     min: 71,
     max: 100,
     iconName: 'Sparkles' as const,
@@ -77,11 +77,11 @@ export const RANKS_CONFIG = [
     bgClass: 'bg-[#F3E8FC]',
     borderClass: 'border-[#9D52D4]',
     cardBorderClass: 'border-[#9D52D4]/80 hover:border-[#5A2482]',
-    badgeSvgPath: '/ranks/rank-5-lenda.svg',
+    badgeSvgPath: '/ranks/rank-5-paragon.svg',
   },
   {
     level: 6,
-    name: 'Guardião Lendário',
+    name: 'Divindade',
     min: 101,
     max: null,
     iconName: 'Sun' as const,
@@ -89,7 +89,7 @@ export const RANKS_CONFIG = [
     bgClass: 'bg-[#FFF8EA]',
     borderClass: 'border-[#D4A538]',
     cardBorderClass: 'border-[#D4A538] ring-1 ring-[#D4A538]/40 hover:border-[#B82834]',
-    badgeSvgPath: '/ranks/rank-6-guardiao.svg',
+    badgeSvgPath: '/ranks/rank-6-divindade.svg',
   },
 ];
 
@@ -97,8 +97,8 @@ export const RANKS_CONFIG = [
  * Regra centralizada de aquisição de pacotes:
  * Um pacote está no acervo do usuário SE:
  * 1. O pacote está no status 'Catálogo'
- * 2. O usuário está na lista de apoiadores/cotistas que adquiriram (seja pelo rateio original concluído ou como comprador posterior confirmado pelo Mestre).
- * Exclui: simples apoios em financiamento aberto, compras pendentes de pagamento, carrinhos e mensagens de WhatsApp.
+ * 2. O usuário está na lista de apoiadores/cotistas confirmados (pagamento informado ou comprador posterior aprovado).
+ * Exclui: participantes com pagamento pendente, simples apoios em financiamento aberto, pedidos pendentes e carrinhos.
  */
 export function isPackageAcquired(
   pkg: FundingPackage,
@@ -111,9 +111,23 @@ export function isPackageAcquired(
   const userId = user.id.trim();
 
   return (pkg.apoiadores || []).some((ap) => {
-    if (ap.id && ap.id === userId) return true;
-    if (ap.nome && ap.nome.trim().toLowerCase() === userNorm) return true;
-    return false;
+    const isUserMatch = (ap.id && ap.id === userId) || (ap.nome && ap.nome.trim().toLowerCase() === userNorm);
+    if (!isUserMatch) return false;
+
+    // Se é comprador posterior aprovado pelo Mestre, acesso é confirmado
+    if (ap.isPosteriorBuyer) return true;
+
+    // Se o pacote tem registro de pagamentos (veio de financiamento), verifica se informou pagamento
+    const hasPaymentRecords = (pkg.pagamentos && Object.keys(pkg.pagamentos).length > 0);
+    if (hasPaymentRecords) {
+      const isPaid = Boolean(
+        ap.pagamentoInformado ||
+        (pkg.pagamentos && (pkg.pagamentos[ap.id]?.informouPagamento || pkg.pagamentos[userId]?.informouPagamento))
+      );
+      return isPaid;
+    }
+
+    return true;
   });
 }
 
@@ -215,7 +229,7 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       min: config.min,
       max: config.max,
       currentCount: count,
-      nextRankName: 'Lenda',
+      nextRankName: 'Paragon',
       neededForNext: 71 - count,
       progressPercent,
       isMaxRank: false,
@@ -237,7 +251,7 @@ export function getUserRank(acquiredCount: number): UserRankInfo {
       min: config.min,
       max: config.max,
       currentCount: count,
-      nextRankName: 'Guardião Lendário',
+      nextRankName: 'Divindade',
       neededForNext: 101 - count,
       progressPercent,
       isMaxRank: false,

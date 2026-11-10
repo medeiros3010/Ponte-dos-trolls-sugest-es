@@ -259,13 +259,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <Crown className="w-4 h-4 text-[#48551F]" />
                 <span>Classificação na Ponte dos Trolls</span>
               </span>
-              <div className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${rankInfo.bgClass} ${rankInfo.colorClass} ${rankInfo.borderClass}`}>
-                {rankInfo.iconName === 'BookOpen' && <BookOpen className="w-3.5 h-3.5" />}
-                {rankInfo.iconName === 'Compass' && <Compass className="w-3.5 h-3.5" />}
-                {rankInfo.iconName === 'Shield' && <ShieldIcon className="w-3.5 h-3.5" />}
-                {rankInfo.iconName === 'Crown' && <Crown className="w-3.5 h-3.5" />}
-                {rankInfo.iconName === 'Sparkles' && <Sparkles className="w-3.5 h-3.5" />}
-                {rankInfo.iconName === 'Sun' && <Sun className="w-3.5 h-3.5" />}
+              <div className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-2 ${rankInfo.bgClass} ${rankInfo.colorClass} ${rankInfo.borderClass} shadow-xs`}>
+                <RankBadgeIcon level={rankInfo.level} size={22} />
                 <span>{rankInfo.name}</span>
               </div>
             </div>

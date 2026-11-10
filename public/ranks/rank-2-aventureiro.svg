@@ -1,4 +1,5 @@
 <svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brasão Rank 2 - Aventureiro (11-30 aquisições) -->
   <path d="M32 4L8 13V33C8 47.5 18.5 57.5 32 61C45.5 57.5 56 47.5 56 33V13L32 4Z" fill="#262D11" stroke="#8F9F5B" stroke-width="2" stroke-linejoin="round"/>
   <path d="M32 7.5L11 15V32.5C11 44.8 20 53.5 32 56.5C44 53.5 53 44.8 53 32.5V15L32 7.5Z" fill="#48551F"/>
   <path d="M32 7.5L11 15V32.5C11 44.8 20 53.5 32 56.5V7.5Z" fill="#596A27" opacity="0.35"/>

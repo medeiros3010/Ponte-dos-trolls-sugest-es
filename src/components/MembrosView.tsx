@@ -500,35 +500,34 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             )}
           </div>
 
-      {/* CARDS DE ESTATÍSTICA (3 para o Mestre, 2 para membros comuns) */}
-      <div className={`grid grid-cols-1 ${isMaster ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mb-6`}>
-        
-        {/* Card 1: Total de Membros */}
-        <div className="parchment-card p-4 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
-            <Users className="w-5 h-5" />
+      {/* CARDS DE ESTATÍSTICA (Exclusivos para o Mestre) */}
+      {isMaster && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          {/* Card 1: Total de Membros */}
+          <div className="parchment-card p-4 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-rpg text-xl font-bold text-[#302414] block">
+                {groupStats.totalMembers} membros
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="font-rpg text-xl font-bold text-[#302414] block">
-              {groupStats.totalMembers} membros
-            </span>
-          </div>
-        </div>
 
-        {/* Card 2: Participantes Ativos */}
-        <div className="parchment-card p-4 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
-            <Calendar className="w-5 h-5" />
+          {/* Card 2: Participantes Ativos */}
+          <div className="parchment-card p-4 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-rpg text-xl font-bold text-[#302414] block">
+                {groupStats.activeParticipants} participantes ativos
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="font-rpg text-xl font-bold text-[#302414] block">
-              {groupStats.activeParticipants} participantes ativos
-            </span>
-          </div>
-        </div>
 
-        {/* Card 3: Com Pendências (Visível apenas para o Mestre) */}
-        {isMaster && (
+          {/* Card 3: Com Pendências */}
           <div className="parchment-card p-4 flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-[#EADBBE] border border-[#C6AD78] flex items-center justify-center text-[#716016] shrink-0">
               <AlertTriangle className="w-5 h-5" />
@@ -539,13 +538,11 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
               </span>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
-
-      {/* Barra de Filtros: Busca, Filtro de Tipo e Ordenação */}
+      {/* Barra de Filtros: Busca e Ordenação */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-        
         {/* Input de Busca */}
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-[#71634D] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -566,19 +563,21 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           )}
         </div>
 
-        {/* Dropdown Filtro */}
-        <div className="relative shrink-0">
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
-          >
-            <option value="todos">Todos os membros</option>
-            <option value="ativos">Participantes ativos</option>
-            {isMaster && <option value="pendencias">Com pendências</option>}
-          </select>
-          <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
+        {/* Dropdown Filtro (Apenas Mestre) */}
+        {isMaster && (
+          <div className="relative shrink-0">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
+            >
+              <option value="todos">Todos os membros</option>
+              <option value="ativos">Participantes ativos</option>
+              <option value="pendencias">Com pendências</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        )}
 
         {/* Dropdown Ordenação */}
         <div className="relative shrink-0">
@@ -589,12 +588,11 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           >
             <option value="nome-az">Nome A–Z</option>
             <option value="nome-za">Nome Z–A</option>
-            <option value="mais-ativos">Mais ativos</option>
+            {isMaster && <option value="mais-ativos">Mais ativos</option>}
             {isMaster && <option value="mais-strikes">Mais strikes</option>}
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
-
       </div>
 
       {/* GRADE DE 3 COLUNAS DE MEMBROS (Fiel ao Print 2) */}
@@ -643,27 +641,25 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
               return (
                 <div
                   key={member.id}
-                  className={`parchment-card p-4 sm:p-4.5 flex items-center justify-between gap-3.5 transition-all hover:shadow-md border ${rank.cardBorderClass}`}
+                  className={`parchment-card p-4 sm:p-4.5 flex items-center gap-4 transition-all hover:shadow-md border ${rank.cardBorderClass}`}
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    {/* Brasão Oficial do Rank RPG */}
-                    <div className="shrink-0 relative">
-                      <RankBadgeIcon level={rank.level} size={44} />
-                    </div>
+                  {/* Brasão Oficial do Rank RPG com Destaque Visual */}
+                  <div className="shrink-0 relative">
+                    <RankBadgeIcon level={rank.level} size={50} />
+                  </div>
 
-                    {/* Nome do Membro e Selo com Nome do Rank Escrito */}
-                    <div className="min-w-0 space-y-1">
-                      <h3 className="font-rpg text-base font-bold text-[#302414] leading-tight truncate">
-                        {member.nome}
-                      </h3>
+                  {/* Nome do Membro e Selo com Nome do Rank Escrito */}
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <h3 className="font-rpg text-base font-bold text-[#302414] leading-tight truncate">
+                      {member.nome}
+                    </h3>
 
-                      <div>
-                        <span
-                          className={`px-2.5 py-0.5 rounded text-[11px] font-bold ${rank.bgClass} ${rank.colorClass} border ${rank.borderClass} inline-flex items-center gap-1.5 shadow-xs`}
-                        >
-                          <span>{rank.name}</span>
-                        </span>
-                      </div>
+                    <div>
+                      <span
+                        className={`px-2.5 py-0.5 rounded text-[11px] font-bold ${rank.bgClass} ${rank.colorClass} border ${rank.borderClass} inline-flex items-center gap-1.5 shadow-xs`}
+                      >
+                        <span>{rank.name}</span>
+                      </span>
                     </div>
                   </div>
                 </div>

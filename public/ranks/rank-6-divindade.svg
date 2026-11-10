@@ -1,0 +1,25 @@
+<svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brasão Rank 6 - Divindade (101+ aquisições) -->
+  <!-- Asas do Dragão Ancestral abrindo-se no fundo -->
+  <path d="M32 14C23 6 12 8 4 17C10 24 13 32 14 40C19 32 25 24 32 22C39 24 45 32 50 40C51 32 54 24 60 17C52 8 41 6 32 14Z" fill="#521319" stroke="#D4A538" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M32 16C24 9 14 11 7 19C12 25 15 31 16 38C20 31 26 24 32 23C38 24 44 31 48 38C49 31 52 25 57 19C50 11 40 9 32 16Z" fill="#851D27"/>
+  <!-- Cabeça do Dragão Ancestral no topo com chifres dourados -->
+  <path d="M28 10C26 6 22 4 18 5C21 8 24 11 26 13" stroke="#F5D678" stroke-width="2" stroke-linecap="round"/>
+  <path d="M36 10C38 6 42 4 46 5C43 8 40 11 38 13" stroke="#F5D678" stroke-width="2" stroke-linecap="round"/>
+  <path d="M27 10L32 4L37 10L35 16L32 17L29 16L27 10Z" fill="#A32430" stroke="#F5D678" stroke-width="1"/>
+  <circle cx="30" cy="11" r="1.1" fill="#FFEB3B"/>
+  <circle cx="34" cy="11" r="1.1" fill="#FFEB3B"/>
+  <!-- Escudo em Marfim Nobre e Ouro Solar -->
+  <path d="M32 18C20 18 12 27 12 38C12 49 20 58 32 61C44 58 52 49 52 38C52 27 44 18 32 18Z" fill="#282215" stroke="#D4A538" stroke-width="2.5"/>
+  <path d="M32 20.5C21.5 20.5 14.5 28.5 14.5 38C14.5 47.5 21.5 55.5 32 58.5C42.5 55.5 49.5 47.5 49.5 38C49.5 28.5 42.5 20.5 32 20.5Z" fill="#FDFBF7"/>
+  <path d="M32 20.5C21.5 20.5 14.5 28.5 14.5 38C14.5 47.5 21.5 55.5 32 58.5V20.5Z" fill="#EFE8D6" opacity="0.6"/>
+  <path d="M32 23C23.5 23 17.5 29.5 17.5 38C17.5 45.5 23.5 52 32 54.5C40.5 52 46.5 45.5 46.5 38C46.5 29.5 40.5 23 32 23Z" stroke="#C6AD78" stroke-width="1.2" fill="none"/>
+  <!-- Ponte sob a proteção do dragão -->
+  <path d="M20 48C24 46.5 28 46 32 46C36 46 40 46.5 44 48C41 52.5 36.5 54.5 32 55C27.5 54.5 23 52.5 20 48Z" fill="#26384C"/>
+  <rect x="21" y="36" width="4.5" height="12" rx="1" fill="#C59B6D" stroke="#7A5208" stroke-width="0.8"/>
+  <rect x="38.5" y="36" width="4.5" height="12" rx="1" fill="#C59B6D" stroke="#7A5208" stroke-width="0.8"/>
+  <path d="M19 35C23 33.5 28 33 32 33C36 33 41 33.5 45 35V38H19V35Z" fill="#F5D678" stroke="#7A5208" stroke-width="1"/>
+  <path d="M25.5 48C25.5 41 28 38 32 38C36 38 38.5 41 38.5 48H35.5C35.5 43 34 40.5 32 40.5C30 40.5 28.5 43 28.5 48H25.5Z" fill="#FFF4BA" stroke="#8C6512" stroke-width="0.8"/>
+  <circle cx="32" cy="28" r="3.5" fill="#E65100" stroke="#FFE58F" stroke-width="1"/>
+  <polygon points="32,25 34.5,28 32,31 29.5,28" fill="#FFF176"/>
+</svg>

@@ -349,10 +349,10 @@ export const BrasaoHeroi: React.FC<{ size?: number | string; className?: string 
 );
 
 /**
- * Brasão Rank 5 - Lenda (71-100 aquisições)
- * Direção: Brasão violeta e dourado com coroa e runas.
+ * Brasão Rank 5 - Paragon (71-100 aquisições)
+ * Direção visual: Brasão violeta e dourado com coroa e runas.
  */
-export const BrasaoLenda: React.FC<{ size?: number | string; className?: string }> = ({
+export const BrasaoParagon: React.FC<{ size?: number | string; className?: string }> = ({
   size = 32,
   className = '',
 }) => (
@@ -363,7 +363,7 @@ export const BrasaoLenda: React.FC<{ size?: number | string; className?: string 
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={`shrink-0 drop-shadow-sm ${className}`}
-    aria-label="Brasão Lenda"
+    aria-label="Brasão Paragon"
   >
     {/* Coroa Soberana Imperial no topo */}
     <g>
@@ -419,7 +419,7 @@ export const BrasaoLenda: React.FC<{ size?: number | string; className?: string 
     {/* Runa Arcana Dourada no centro (Runa da Lenda e Ascensão) */}
     <g filter="drop-shadow(0 0 2px rgba(245,214,120,0.7))">
       <circle cx="32" cy="38" r="8" fill="#361153" stroke="#D4A538" strokeWidth="1.2" />
-      {/* Símbolo rúnico de infinito / sabedoria arcana */}
+      {/* Símbolo rúnico de sabedoria arcana */}
       <path
         d="M28 36C28 34 30 33 32 35C34 37 36 36 36 34M28 40C28 42 30 43 32 41C34 39 36 40 36 42"
         stroke="#FFE58F"
@@ -436,12 +436,13 @@ export const BrasaoLenda: React.FC<{ size?: number | string; className?: string 
     <circle cx="43" cy="42" r="1" fill="#FCE588" />
   </svg>
 );
+export const BrasaoLenda = BrasaoParagon;
 
 /**
- * Brasão Rank 6 - Guardião Lendário (101+ aquisições)
- * Direção: Brasão dourado e marfim com dragão protegendo uma ponte.
+ * Brasão Rank 6 - Divindade (101+ aquisições)
+ * Direção visual: Brasão dourado e marfim com dragão protegendo uma ponte.
  */
-export const BrasaoGuardiaoLendario: React.FC<{ size?: number | string; className?: string }> = ({
+export const BrasaoDivindade: React.FC<{ size?: number | string; className?: string }> = ({
   size = 32,
   className = '',
 }) => (
@@ -452,7 +453,7 @@ export const BrasaoGuardiaoLendario: React.FC<{ size?: number | string; classNam
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={`shrink-0 drop-shadow-md ${className}`}
-    aria-label="Brasão Guardião Lendário"
+    aria-label="Brasão Divindade"
   >
     {/* Asas do Dragão Ancestral abrindo-se no fundo */}
     <path
@@ -511,22 +512,18 @@ export const BrasaoGuardiaoLendario: React.FC<{ size?: number | string; classNam
     />
 
     {/* Ponte Monumental no centro sob a proteção do dragão */}
-    {/* Águas místicas na base */}
     <path
       d="M20 48C24 46.5 28 46 32 46C36 46 40 46.5 44 48C41 52.5 36.5 54.5 32 55C27.5 54.5 23 52.5 20 48Z"
       fill="#26384C"
     />
-    {/* Pilares da ponte em marfim e ouro */}
     <rect x="21" y="36" width="4.5" height="12" rx="1" fill="#C59B6D" stroke="#7A5208" strokeWidth="0.8" />
     <rect x="38.5" y="36" width="4.5" height="12" rx="1" fill="#C59B6D" stroke="#7A5208" strokeWidth="0.8" />
-    {/* Tabuleiro dourado */}
     <path
       d="M19 35C23 33.5 28 33 32 33C36 33 41 33.5 45 35V38H19V35Z"
       fill="#F5D678"
       stroke="#7A5208"
       strokeWidth="1"
     />
-    {/* Grande arco da ponte */}
     <path
       d="M25.5 48C25.5 41 28 38 32 38C36 38 38.5 41 38.5 48H35.5C35.5 43 34 40.5 32 40.5C30 40.5 28.5 43 28.5 48H25.5Z"
       fill="#FFF4BA"
@@ -539,6 +536,7 @@ export const BrasaoGuardiaoLendario: React.FC<{ size?: number | string; classNam
     <polygon points="32,25 34.5,28 32,31 29.5,28" fill="#FFF176" />
   </svg>
 );
+export const BrasaoGuardiaoLendario = BrasaoDivindade;
 
 /**
  * Componente Mestre Guardião (Admin Especial da Mesa)
@@ -603,9 +601,9 @@ export const RankBadgeIcon: React.FC<RankBadgeProps> = ({
     case 4:
       return <BrasaoHeroi size={size} className={className} />;
     case 5:
-      return <BrasaoLenda size={size} className={className} />;
+      return <BrasaoParagon size={size} className={className} />;
     case 6:
-      return <BrasaoGuardiaoLendario size={size} className={className} />;
+      return <BrasaoDivindade size={size} className={className} />;
     case 99: // Mestre
       return <BrasaoMestreAdmin size={size} className={className} />;
     default:

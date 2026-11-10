@@ -27,12 +27,15 @@ import {
   Loader2,
   MessageCircle,
   AlertTriangle,
+  Share2,
 } from 'lucide-react';
 import { formatDateDisplay, extractPaidMemberEmails } from '../utils/helpers';
 import { EditPackageImageModal } from './EditPackageImageModal';
 import { ConfigurePaymentModal } from './ConfigurePaymentModal';
 import { PaymentInstructionsModal } from './PaymentInstructionsModal';
 import { FundingParticipantsModal } from './FundingParticipantsModal';
+import { CompletedPurchaseNoticeModal } from './CompletedPurchaseNoticeModal';
+import { PaymentOpenNoticeModal } from './PaymentOpenNoticeModal';
 import { PageBanner } from './PageBanner';
 
 interface FinanciamentoViewProps {
@@ -115,6 +118,8 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
   const [undoPaymentPkg, setUndoPaymentPkg] = useState<FundingPackage | null>(null);
   const [isUndoingPayment, setIsUndoingPayment] = useState(false);
   const [undoLockedInfo, setUndoLockedInfo] = useState<{ pkg: FundingPackage; reason: string } | null>(null);
+  const [noticePaymentOpenPkg, setNoticePaymentOpenPkg] = useState<FundingPackage | null>(null);
+  const [noticeCompletedPurchasePkg, setNoticeCompletedPurchasePkg] = useState<FundingPackage | null>(null);
 
   const handleRequestUndoPayment = (pkg: FundingPackage) => {
     // Se o acesso já foi liberado no drive ou se o pacote foi para o Catálogo, orienta a falar com o Mestre
@@ -422,6 +427,30 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                               <span>Copiar E-mails Pagos</span>
                             </button>
 
+                            {!isColeta && (
+                              <button
+                                onClick={() => {
+                                  setActiveMenuId(null);
+                                  setNoticePaymentOpenPkg(pkg);
+                                }}
+                                className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                              >
+                                <Share2 className="w-3.5 h-3.5 text-[#716016]" />
+                                <span>Copiar aviso de pagamento aberto</span>
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setActiveMenuId(null);
+                                setNoticeCompletedPurchasePkg(pkg);
+                              }}
+                              className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                            >
+                              <Share2 className="w-3.5 h-3.5 text-[#48551F]" />
+                              <span>Copiar aviso de compra finalizada</span>
+                            </button>
+
                             <button
                               onClick={() => {
                                 setActiveMenuId(null);
@@ -714,6 +743,15 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                             <div className="flex flex-wrap items-center gap-2 shrink-0">
                               <button
                                 type="button"
+                                onClick={() => onMoveToCatalog(pkg)}
+                                className="px-3.5 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all"
+                                title="Finalizar este financiamento e transferir para o Catálogo de Produtos"
+                              >
+                                <FolderUp className="w-3.5 h-3.5 text-[#a8d363]" />
+                                <span>Finalizar e mover para o catálogo</span>
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => setConfigPaymentState({ pkg, isStartingStage: false })}
                                 className="px-3 py-2 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] border border-[#C6AD78] text-xs font-bold text-[#302414] flex items-center gap-1.5 cursor-pointer shadow-xs"
                                 title="Editar valor final por participante, chave Pix e instruções"
@@ -724,10 +762,10 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleCopyPaidEmails(pkg)}
-                                className="px-3 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                className="px-3 py-2 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
                                 title="Copiar e-mails de quem já pagou para liberar acesso no Google Drive"
                               >
-                                <Mail className="w-3.5 h-3.5" />
+                                <Mail className="w-3.5 h-3.5 text-[#716016]" />
                                 <span>Copiar E-mails Pagos</span>
                               </button>
                             </div>
@@ -848,18 +886,6 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                         <Users className="w-3.5 h-3.5 text-[#716016]" />
                         <span>Ver lista completa · Ranks</span>
                       </button>
-
-                      {!isColeta && (
-                        <button
-                          type="button"
-                          onClick={() => handleCopyPaidEmails(pkg)}
-                          className="px-3 py-1.5 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-[#302414] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                          title="Copiar lista de e-mails de quem já pagou para liberar acesso no Google Drive"
-                        >
-                          <Mail className="w-3.5 h-3.5 text-[#716016]" />
-                          <span>Copiar e-mails</span>
-                        </button>
-                      )}
                     </div>
                   </div>
 
@@ -1092,7 +1118,40 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
           packageItem={configPaymentState.pkg}
           isStartingStage={configPaymentState.isStartingStage}
           onClose={() => setConfigPaymentState(null)}
-          onSaveConfig={onConfigurePayment}
+          onSaveConfig={async (params) => {
+            await onConfigurePayment(params);
+            if (configPaymentState.isStartingStage) {
+              const updatedPkg = {
+                ...configPaymentState.pkg,
+                valorFinalPorParticipante: params.valorFinalPorParticipante,
+                dataPagamento: params.dataPagamento,
+                chavePix: params.chavePix,
+                instrucoesPix: params.instrucoesPix,
+                etapaFinanciamento: 'PAGAMENTO' as const,
+              };
+              setNoticePaymentOpenPkg(updatedPkg);
+            }
+          }}
+          onToast={onToast}
+        />
+      )}
+
+      {/* Modal de Aviso de Pagamento Aberto */}
+      {noticePaymentOpenPkg && (
+        <PaymentOpenNoticeModal
+          isOpen={Boolean(noticePaymentOpenPkg)}
+          packageItem={noticePaymentOpenPkg}
+          onClose={() => setNoticePaymentOpenPkg(null)}
+          onToast={onToast}
+        />
+      )}
+
+      {/* Modal de Aviso de Compra Finalizada */}
+      {noticeCompletedPurchasePkg && (
+        <CompletedPurchaseNoticeModal
+          isOpen={Boolean(noticeCompletedPurchasePkg)}
+          packageItem={noticeCompletedPurchasePkg}
+          onClose={() => setNoticeCompletedPurchasePkg(null)}
           onToast={onToast}
         />
       )}

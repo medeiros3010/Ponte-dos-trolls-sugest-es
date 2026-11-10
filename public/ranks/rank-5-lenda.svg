@@ -1,4 +1,5 @@
 <svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brasão Rank 5 - Paragon (71-100 aquisições) -->
   <path d="M20 18H44L42 22H22L20 18Z" fill="#D4A538" stroke="#5C3E08" stroke-width="1"/>
   <path d="M20 18L21 11L26 15L32 8L38 15L43 11L44 18H20Z" fill="#F5D678" stroke="#7A5208" stroke-width="1" stroke-linejoin="round"/>
   <circle cx="21" cy="11" r="1.5" fill="#9B26B6" stroke="#D4A538" stroke-width="0.6"/>

@@ -409,18 +409,16 @@ export const Header: React.FC<HeaderProps> = ({
                     </p>
                   </div>
 
-                  {!isMaster && (
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onOpenProfileModal();
-                      }}
-                      className="w-full px-3.5 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
-                    >
-                      <User className="w-3.5 h-3.5 text-[#48551F]" />
-                      <span>Meu Perfil & Acervo</span>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      onOpenProfileModal();
+                    }}
+                    className="w-full px-3.5 py-2 text-xs text-left font-medium flex items-center gap-2 text-[#302414] hover:bg-[#EFE3C8] transition-colors cursor-pointer font-semibold"
+                  >
+                    <User className="w-3.5 h-3.5 text-[#48551F]" />
+                    <span>Meu perfil / Editar meus dados</span>
+                  </button>
 
                   {isMaster && (
                     <button

@@ -1,0 +1,25 @@
+<svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brasão Rank 5 - Paragon (71-100 aquisições) -->
+  <!-- Coroa Soberana Imperial no topo com gemas violetas -->
+  <path d="M20 18H44L42 22H22L20 18Z" fill="#D4A538" stroke="#5C3E08" stroke-width="1"/>
+  <path d="M20 18L21 11L26 15L32 8L38 15L43 11L44 18H20Z" fill="#F5D678" stroke="#7A5208" stroke-width="1" stroke-linejoin="round"/>
+  <circle cx="21" cy="11" r="1.5" fill="#9B26B6" stroke="#D4A538" stroke-width="0.6"/>
+  <circle cx="26" cy="15" r="1.2" fill="#E53935"/>
+  <circle cx="32" cy="8" r="2" fill="#9B26B6" stroke="#D4A538" stroke-width="0.6"/>
+  <circle cx="38" cy="15" r="1.2" fill="#E53935"/>
+  <circle cx="43" cy="11" r="1.5" fill="#9B26B6" stroke="#D4A538" stroke-width="0.6"/>
+  <!-- Escudo Púrpura / Violeta e Dourado -->
+  <path d="M32 19L13 24V37C13 49 21.5 57.5 32 61C42.5 57.5 51 49 51 37V24L32 19Z" fill="#280D3D" stroke="#D4A538" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M32 21.5L15.5 26V36.5C15.5 47 23 54.8 32 58C41 54.8 48.5 47 48.5 36.5V26L32 21.5Z" fill="#4F1C75"/>
+  <path d="M32 21.5L15.5 26V36.5C15.5 47 23 54.8 32 58V21.5Z" fill="#6B289E" opacity="0.45"/>
+  <!-- Filigrana e Bordura Dourada Interna -->
+  <path d="M32 24.5L18.5 28.5V36C18.5 44.5 24.5 51 32 54C39.5 51 45.5 44.5 45.5 36V28.5L32 24.5Z" stroke="#F5D678" stroke-width="1.2" fill="none"/>
+  <!-- Runa Arcana Dourada no centro -->
+  <circle cx="32" cy="38" r="8" fill="#361153" stroke="#D4A538" stroke-width="1.2"/>
+  <path d="M28 36C28 34 30 33 32 35C34 37 36 36 36 34M28 40C28 42 30 43 32 41C34 39 36 40 36 42" stroke="#FFE58F" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="32" y1="31" x2="32" y2="45" stroke="#FFE58F" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="21" cy="31" r="1" fill="#FCE588"/>
+  <circle cx="43" cy="31" r="1" fill="#FCE588"/>
+  <circle cx="21" cy="42" r="1" fill="#FCE588"/>
+  <circle cx="43" cy="42" r="1" fill="#FCE588"/>
+</svg>

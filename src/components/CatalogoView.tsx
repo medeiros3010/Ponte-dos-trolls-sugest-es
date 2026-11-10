@@ -33,10 +33,12 @@ import {
   UserPlus,
   Calendar,
   Loader2,
+  Share2,
 } from 'lucide-react';
 import { generateCatalogBuyMessage, extractPaidMemberEmails, formatDateDisplay, formatAcquisitionDate } from '../utils/helpers';
 import { isPackageAcquired } from '../utils/ranksAndAcquisitions';
 import { EditPackageImageModal } from './EditPackageImageModal';
+import { CompletedPurchaseNoticeModal } from './CompletedPurchaseNoticeModal';
 import { PageBanner } from './PageBanner';
 
 interface CatalogoViewProps {
@@ -313,6 +315,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
 
   // Edit Cover Image Modal
   const [imageEditPkg, setImageEditPkg] = useState<FundingPackage | null>(null);
+  const [noticeCompletedPkg, setNoticeCompletedPkg] = useState<FundingPackage | null>(null);
 
   // Base list of packages in Catálogo
   const catalogPackages = useMemo(() => {
@@ -864,6 +867,17 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                                 >
                                   <Copy className="w-3.5 h-3.5 text-[#48551F]" />
                                   <span>Copiar E-mails Pagos</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    setNoticeCompletedPkg(pkg);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                                >
+                                  <Share2 className="w-3.5 h-3.5 text-[#716016]" />
+                                  <span>Copiar aviso de compra finalizada</span>
                                 </button>
 
                                 <div className="border-t border-[#D6C296] my-1" />
@@ -1546,6 +1560,16 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
           packageItem={imageEditPkg}
           onClose={() => setImageEditPkg(null)}
           onUpdateImage={onUpdatePackageImage}
+          onToast={onToast}
+        />
+      )}
+
+      {/* 5. Modal de Aviso de Compra Finalizada */}
+      {noticeCompletedPkg && (
+        <CompletedPurchaseNoticeModal
+          isOpen={Boolean(noticeCompletedPkg)}
+          packageItem={noticeCompletedPkg}
+          onClose={() => setNoticeCompletedPkg(null)}
           onToast={onToast}
         />
       )}
