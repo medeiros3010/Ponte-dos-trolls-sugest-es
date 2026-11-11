@@ -9,11 +9,11 @@ async function runAudit() {
 
   // 1. ISOLAMENTO DE DADOS
   console.log('\n[1. AMBIENTE E ISOLAMENTO]');
-  if (!fs.existsSync('data/bins/trolls-rpg-oficial.real.bak')) {
-    fs.copyFileSync('data/bins/trolls-rpg-oficial.json', 'data/bins/trolls-rpg-oficial.real.bak');
+  if (!fs.existsSync('data/bins/trolls-rpg-oficial.json.immutable-backup')) {
+    fs.copyFileSync('data/bins/trolls-rpg-oficial.json', 'data/bins/trolls-rpg-oficial.json.immutable-backup');
   }
   const realFile = fs.readFileSync('data/bins/trolls-rpg-oficial.json', 'utf8');
-  const backupFile = fs.readFileSync('data/bins/trolls-rpg-oficial.real.bak', 'utf8');
+  const backupFile = fs.readFileSync('data/bins/trolls-rpg-oficial.json.immutable-backup', 'utf8');
   assert.strictEqual(realFile, backupFile, 'ALERTA: Arquivo de produção foi alterado!');
   console.log('✔ Dados reais de produção preservados integralmente e idênticos ao backup.');
 

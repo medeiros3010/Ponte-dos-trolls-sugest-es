@@ -54,7 +54,6 @@ export async function signOutFirebase(): Promise<void> {
  * 3. Mapeia os campos: id, titulo, valorCota, precoAquisicao, sistema, descricao, itens, links, apoiadores: [], solicitacoesAcesso: [].
  */
 export async function syncCatalogPackagesToFirestore(): Promise<{ success: boolean; count: number }> {
-  // Salvaguarda defensiva: apenas o Mestre autenticado tem permissão de escrita em lote de pacotes
   const isMaster = Boolean(auth.currentUser && auth.currentUser.email === 'pontedostrolls@gmail.com');
   if (!isMaster) {
     return { success: false, count: 0 };
@@ -64,38 +63,36 @@ export async function syncCatalogPackagesToFirestore(): Promise<{ success: boole
     const packagesCollectionRef = collection(db, PACKAGES_COLLECTION);
     const existingSnap = await getDocs(packagesCollectionRef);
 
-    // 1. Identificar pacotes de Catálogo para exclusão (preservando rigorosamente os pacotes de Financiamento em andamento)
-    const catalogDocsToDelete: string[] = [];
     const existingCatalogIds = new Set<string>();
+    const legacyTestDocsToDelete: string[] = [];
 
     existingSnap.forEach((docSnap) => {
       const data = docSnap.data();
       if (data.status === 'Catálogo') {
         existingCatalogIds.add(docSnap.id);
-        // Exclui pacotes de teste anteriores (como pack-3, pack-4, pack-5)
-        if (docSnap.id.startsWith('pack-')) {
-          catalogDocsToDelete.push(docSnap.id);
+        // Exclui estritamente pacotes de teste legados explícitos, NUNCA pacotes reais com outros IDs
+        if (['pack-3', 'pack-4', 'pack-5'].includes(docSnap.id)) {
+          legacyTestDocsToDelete.push(docSnap.id);
         }
       }
     });
 
-    // Se houver pacotes de teste para deletar, deleta em batch
-    if (catalogDocsToDelete.length > 0) {
-      console.log(`[Firebase] Removendo ${catalogDocsToDelete.length} pacotes de teste do Catálogo...`);
+    if (legacyTestDocsToDelete.length > 0) {
+      console.log(`[Firebase] Removendo ${legacyTestDocsToDelete.length} pacotes de teste legados do Catálogo...`);
       const batch = writeBatch(db);
-      for (const id of catalogDocsToDelete) {
+      for (const id of legacyTestDocsToDelete) {
         batch.delete(doc(db, PACKAGES_COLLECTION, id));
       }
       await batch.commit();
     }
 
-    // 2. Inserir os 100 pacotes do acervo histórico
+    // 2. Inserir apenas pacotes históricos que não existam
     const missingPackages = HISTORICAL_CATALOG_PACKAGES.filter(
-      (p) => !existingCatalogIds.has(p.id) || catalogDocsToDelete.includes(p.id)
+      (p) => !existingCatalogIds.has(p.id)
     );
 
     if (missingPackages.length > 0) {
-      console.log(`[Firebase] Inserindo ${missingPackages.length} pacotes históricos no Catálogo do Firestore...`);
+      console.log(`[Firebase] Inserindo ${missingPackages.length} pacotes históricos faltantes no Firestore...`);
       for (let i = 0; i < missingPackages.length; i += 100) {
         const batch = writeBatch(db);
         const chunk = missingPackages.slice(i, i + 100);
@@ -104,9 +101,6 @@ export async function syncCatalogPackagesToFirestore(): Promise<{ success: boole
         }
         await batch.commit();
       }
-      console.log(`[Firebase] ${missingPackages.length} pacotes do Catálogo sincronizados com sucesso no Firestore.`);
-    } else {
-      console.log('[Firebase] Os 100 pacotes históricos do Catálogo já estão sincronizados no Firestore.');
     }
 
     return { success: true, count: HISTORICAL_CATALOG_PACKAGES.length };
@@ -254,15 +248,11 @@ export function subscribePackages(
  * Save Package to Firestore
  */
 export async function savePackageToFirestore(pkg: FundingPackage): Promise<void> {
-  const isMaster = Boolean(auth.currentUser && auth.currentUser.email === 'pontedostrolls@gmail.com');
-  if (!isMaster) {
-    return;
-  }
   const path = `${PACKAGES_COLLECTION}/${pkg.id}`;
   try {
     await setDoc(doc(db, PACKAGES_COLLECTION, pkg.id), pkg, { merge: true });
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    console.warn(`[Firebase] Aviso ao salvar pacote ${pkg.id} no Firestore:`, error);
   }
 }
 

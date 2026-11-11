@@ -39,6 +39,7 @@ import {
   apiToggleItemSupport,
   apiSavePackage,
   apiDeletePackage,
+  apiDeleteUser,
   setSessionToken,
   DEFAULT_BIN_ID,
   USERS_VERSION,
@@ -47,8 +48,6 @@ import { RulesConfig, INITIAL_RULES_CONFIG } from './data/rulesAndQuestions';
 import { isPackageAcquired, getUserAcquiredPackages } from './utils/ranksAndAcquisitions';
 import { testConnection, auth } from './firebase/config';
 import {
-  bootstrapFirestoreIfEmpty,
-  syncCatalogPackagesToFirestore,
   subscribeItems,
   subscribePackages,
   subscribeUsers,
@@ -285,18 +284,13 @@ export default function App() {
     // Test Firestore connection on boot (Skill Critical Constraint)
     testConnection();
 
-    // Bootstrap initial data if Firestore is empty
-    bootstrapFirestoreIfEmpty();
+    // Note: Automatic destructive seeds and catalog resets have been disabled
+    // to protect persistent user data and prevent unintended environment rollbacks.
 
     // Auth listener
     const unsubAuth = auth.onAuthStateChanged((fbUser) => {
       if (fbUser) {
         const isMasterEmail = fbUser.email === 'pontedostrolls@gmail.com';
-        if (isMasterEmail) {
-          syncCatalogPackagesToFirestore().catch((err) =>
-            console.warn('[Firebase] Aviso ao sincronizar acervo no login do Mestre:', err)
-          );
-        }
         const matched = users.find(
           (u) => (fbUser.email && u.email && u.email.toLowerCase() === fbUser.email.toLowerCase()) || u.id === fbUser.uid
         );
@@ -328,7 +322,7 @@ export default function App() {
 
       unsubPackages = subscribePackages((cloudPackages) => {
         if (cloudPackages && cloudPackages.length > 0) {
-          // Remove pacotes de teste do Catálogo (pack-3, pack-4, pack-5)
+          // Remove pacotes de teste do Catálogo (pack-3, pack-4, pack-5) se existirem
           const cleanCloud = cloudPackages.filter(
             (p) => !['pack-3', 'pack-4', 'pack-5'].includes(p.id)
           );
@@ -336,12 +330,13 @@ export default function App() {
           for (const p of cleanCloud) {
             cloudMap.set(p.id, p);
           }
-          // Garante que todos os 100 pacotes históricos do Catálogo estejam presentes
+          // Preserva todos os pacotes históricos do acervo e quaisquer pacotes criados ou financiamentos
+          const catalogIds = new Set(HISTORICAL_CATALOG_PACKAGES.map((hp) => hp.id));
+          const extraPackages = cleanCloud.filter((p) => !catalogIds.has(p.id));
           const mergedCatalog: FundingPackage[] = HISTORICAL_CATALOG_PACKAGES.map((hp) => {
             return cloudMap.get(hp.id) || hp;
           });
-          const otherPackages = cleanCloud.filter((p) => !p.id.startsWith('pkg-acervo-'));
-          setPackages([...otherPackages, ...mergedCatalog]);
+          setPackages([...extraPackages, ...mergedCatalog]);
         }
       });
 
@@ -456,10 +451,11 @@ export default function App() {
             for (const p of cleanPackages) {
               pkgMap.set(p.id, p);
             }
+            const catalogIds = new Set(HISTORICAL_CATALOG_PACKAGES.map((hp) => hp.id));
+            const otherPackages = cleanPackages.filter((p: any) => !catalogIds.has(p.id));
             const mergedCatalog: FundingPackage[] = HISTORICAL_CATALOG_PACKAGES.map((hp) => {
               return pkgMap.get(hp.id) || hp;
             });
-            const otherPackages = cleanPackages.filter((p: any) => !p.id.startsWith('pkg-acervo-'));
             setPackages([...otherPackages, ...mergedCatalog]);
           }
           if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
@@ -1002,11 +998,12 @@ export default function App() {
       return p;
     });
     setPackages(nextPackages);
-    syncWithCloud(items, users, nextPackages);
-    setPackageToMove(null);
     if (finalizedPkg) {
+      apiSavePackage(binId, finalizedPkg).catch((err) => console.warn('Erro ao salvar pacote no servidor:', err));
+      savePackageToFirestore(finalizedPkg).catch((err) => console.warn('Erro ao salvar pacote no Firestore:', err));
       setCompletedNoticePkg(finalizedPkg);
     }
+    setPackageToMove(null);
   };
 
   const handleDeletePackage = (pkg: FundingPackage) => {
@@ -1015,10 +1012,10 @@ export default function App() {
 
   const handleConfirmDeletePackage = () => {
     if (!packageToDelete) return;
-    deletePackageFromFirestore(packageToDelete.id).catch(() => {});
+    apiDeletePackage(binId, packageToDelete.id).catch((err) => console.warn('Erro ao excluir pacote no servidor:', err));
+    deletePackageFromFirestore(packageToDelete.id).catch((err) => console.warn('Erro ao excluir pacote no Firestore:', err));
     const nextPackages = packages.filter((p) => p.id !== packageToDelete.id);
     setPackages(nextPackages);
-    syncWithCloud(items, users, nextPackages);
     showToast(`Pacote "${packageToDelete.titulo}" excluído.`);
     setPackageToDelete(null);
   };
@@ -1031,33 +1028,44 @@ export default function App() {
     };
     const nextUsers = [...users, newUser];
     setUsers(nextUsers);
-    syncWithCloud(items, nextUsers, packages);
+    apiUpdateUserProfile(binId, {
+      userId: newUser.id,
+      nome: newUser.nome,
+      telefone: newUser.telefone,
+      email: newUser.email || '',
+    }).catch((err) => console.warn('Erro ao salvar membro:', err));
   };
 
   const handleDeleteUser = (userId: string) => {
     const nextUsers = users.filter((u) => u.id !== userId);
     setUsers(nextUsers);
-    syncWithCloud(items, nextUsers, packages);
+    apiDeleteUser(binId, userId).catch((err) => console.warn('Erro ao remover membro:', err));
   };
 
   const handleRestoreBackup = (backupData: any) => {
-    let nextItems = items;
-    let nextUsers = users;
-    let nextPackages = packages;
-
     if (backupData.items && Array.isArray(backupData.items)) {
-      nextItems = backupData.items;
-      setItems(nextItems);
+      setItems(backupData.items);
     }
     if (backupData.users && Array.isArray(backupData.users)) {
-      nextUsers = backupData.users;
-      setUsers(nextUsers);
+      setUsers(backupData.users);
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(backupData.users));
+      } catch (e) {}
     }
     if (backupData.packages && Array.isArray(backupData.packages)) {
-      nextPackages = backupData.packages;
-      setPackages(nextPackages);
+      setPackages(backupData.packages);
     }
-    syncWithCloud(nextItems, nextUsers, nextPackages);
+    if (backupData.solicitacoes && Array.isArray(backupData.solicitacoes)) {
+      setApplications(backupData.solicitacoes);
+    } else if (backupData.applications && Array.isArray(backupData.applications)) {
+      setApplications(backupData.applications);
+    }
+    if (backupData.regrasConfig) {
+      setRulesConfig(backupData.regrasConfig);
+    } else if (backupData.rulesConfig) {
+      setRulesConfig(backupData.rulesConfig);
+    }
+    showToast('Estado da aplicação atualizado com os dados restaurados!');
   };
 
   // Pending applications & users count for Master badge on "Membros" button (Requirement 3)
@@ -1434,7 +1442,7 @@ export default function App() {
           items={items}
           packages={packages}
           binId={binId}
-          onRestoreBackup={handleRestoreBackup}
+          onRestoreSuccess={handleRestoreBackup}
           onToast={showToast}
         />
       )}

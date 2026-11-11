@@ -1,28 +1,21 @@
 {
   "id": "test-audit-bin",
-  "name": "Banco Isolado de Auditoria e Testes",
-  "updatedAt": "2026-11-10T17:16:48.413Z",
+  "name": "Banco Isolado de Testes Suite",
+  "updatedAt": "2026-11-11T05:26:04.824Z",
   "usersVersion": "v2_125_oficial",
   "items": [
     {
-      "id": "item-1794331008219-hlv5",
-      "data": "2026-11-10",
-      "nome": "Módulo Foundry Teste Alfa",
+      "id": "item-audit-1",
+      "nome": "Item Teste 1",
       "produto": "Material para VTT",
-      "sistema": "D&D 5e",
-      "descricao": "Pacote incrível de mapas e criaturas animadas.",
-      "link": "https://patreon.com/teste-alfa",
-      "imageUrl": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23",
-      "sugeridoPorId": "usr-teste-alfa",
-      "sugeridoPorNome": "Membro Teste Alfa",
-      "moeda": "USD",
-      "valorNumerico": 15,
-      "status": "Sugestão",
+      "sistema": "Foundry VTT Geral",
+      "descricao": "Item para teste de concorrência",
+      "sugeridoPorId": "usr-teste-a",
       "apoiadores": [
         {
-          "id": "usr-teste-alfa",
-          "nome": "Membro Teste Alfa",
-          "data": "2026-11-10T17:16:48.220Z"
+          "id": "usr-teste-a",
+          "nome": "Membro Teste A",
+          "data": "2026-11-11T05:26:04.824Z"
         }
       ]
     }
@@ -37,135 +30,140 @@
       "isMaster": true
     },
     {
-      "id": "usr-teste-alfa",
-      "nome": "Membro Teste Alfa",
+      "id": "usr-teste-a",
+      "nome": "Membro Teste A",
       "telefone": "(11) 98888-1111",
-      "email": "alfa.teste@pontedostrolls.com",
+      "email": "membro.a@test.com",
       "status": "aprovado",
       "isMaster": false
     },
     {
-      "id": "usr-teste-beta",
-      "nome": "Membro Teste Beta",
+      "id": "usr-teste-b",
+      "nome": "Membro Teste B",
       "telefone": "(11) 98888-2222",
-      "email": "beta.teste@pontedostrolls.com",
+      "email": "membro.b@test.com",
       "status": "aprovado",
       "isMaster": false
     },
     {
-      "id": "usr-teste-gama",
-      "nome": "Membro Teste Gama",
+      "id": "usr-teste-pendente",
+      "nome": "Candidato Pendente",
       "telefone": "(11) 98888-3333",
-      "email": "gama.teste@pontedostrolls.com",
-      "status": "aprovado",
+      "email": "pendente@test.com",
+      "status": "pendente",
       "isMaster": false
     },
     {
       "id": "usr-teste-recusado",
-      "nome": "Candidato Recusado Teste",
+      "nome": "Candidato Recusado",
       "telefone": "(11) 98888-4444",
-      "email": "recusado.teste@pontedostrolls.com",
+      "email": "recusado@test.com",
       "status": "recusado",
       "isMaster": false
-    },
-    {
-      "id": "usr-1794331008170-vhd3",
-      "nome": "Candidato Teste Delta",
-      "telefone": "(11) 98888-5555",
-      "email": "delta.teste@gmail.com",
-      "dataEntrada": "2026-11-10",
-      "status": "aprovado",
-      "strikes": [],
-      "solicitacaoId": "sol-1794331008128-em9l"
     }
   ],
   "packages": [
     {
-      "id": "pack-teste-audit-1",
-      "titulo": "Mega Pacote Teste de Aventuras",
+      "id": "pack-audit-catalogo-secreto",
+      "titulo": "Pacote Secreto de Catálogo",
       "sistema": "Foundry VTT Geral",
       "tipo": "Material para VTT",
-      "descricao": "Compilado completo de módulos e mapas para VTT",
-      "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
-      "itens": [
-        {
-          "id": "sub-1",
-          "nome": "Mapas de Masmorra",
-          "sistema": "Foundry VTT Geral",
-          "tipo": "Material para VTT",
-          "link": "",
-          "precoBRL": 150
-        },
-        {
-          "id": "sub-2",
-          "nome": "Tokens Animados",
-          "sistema": "Foundry VTT Geral",
-          "tipo": "Material para VTT",
-          "link": "",
-          "precoBRL": 200
-        }
-      ],
-      "valorTotalBRL": 350,
-      "dataFinalizar": "2026-11-20",
-      "dataPagamento": "2026-11-25",
+      "descricao": "Apenas para quem comprou",
+      "itens": [],
+      "valorTotalBRL": 0,
+      "dataFinalizar": "",
+      "dataPagamento": "",
       "minimoParticipantes": 35,
       "valorMaximoPorPessoa": 0,
-      "valorCatalogoBRL": 45,
       "linkLoja": "",
-      "linkDrive": "https://drive.google.com/drive/folders/audit-drive-folder-teste-123",
+      "linkDrive": "https://drive.google.com/drive/folders/secret-drive-id",
       "links": [],
       "itensInclusos": [],
       "sugestoesIds": [],
       "status": "Catálogo",
-      "etapaFinanciamento": "PAGAMENTO",
-      "valorFinalPorParticipante": 10,
-      "chavePix": "pontedostrolls@pix.com",
-      "instrucoesPix": "Informe seu telefone na descrição do Pix",
-      "pagamentos": {
-        "usr-teste-alfa": {
-          "memberId": "usr-teste-alfa",
-          "informouPagamento": true,
-          "dataPagamentoInformado": "2026-11-10T17:16:48.334Z"
-        },
-        "usr-teste-gama": {
-          "memberId": "usr-teste-gama",
-          "nome": "Membro Teste Gama",
-          "informouPagamento": true,
-          "dataPagamentoInformado": "2026-11-10T17:16:48.412Z"
-        }
-      },
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [],
+      "solicitacoesAcesso": [],
+      "criadoEm": "2026-11-11"
+    },
+    {
+      "id": "pack-audit-catalogo",
+      "titulo": "Pacote Adquirido por Membro A",
+      "sistema": "Foundry VTT Geral",
+      "tipo": "Material para VTT",
+      "descricao": "Membro A já comprou",
+      "itens": [],
+      "valorTotalBRL": 0,
+      "dataFinalizar": "",
+      "dataPagamento": "",
+      "minimoParticipantes": 35,
+      "valorMaximoPorPessoa": 0,
+      "linkLoja": "",
+      "linkDrive": "https://drive.google.com/drive/folders/purchased-drive-id",
+      "links": [],
+      "itensInclusos": [],
+      "sugestoesIds": [],
+      "status": "Catálogo",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
       "apoiadores": [
         {
-          "id": "usr-master",
-          "nome": "Ponte dos Trolls",
-          "data": "2026-11-10T17:16:48.281Z"
-        },
-        {
-          "id": "usr-teste-alfa",
-          "nome": "Membro Teste Alfa",
-          "data": "2026-11-10T17:16:48.290Z",
-          "pagamentoInformado": true,
-          "dataPagamentoInformado": "2026-11-10T17:16:48.334Z"
-        },
-        {
-          "id": "usr-teste-beta",
-          "nome": "Membro Teste Beta",
-          "data": "2026-11-10T17:16:48.299Z"
-        },
-        {
-          "id": "usr-teste-gama",
-          "nome": "Membro Teste Gama",
-          "telefone": "(11) 98888-3333",
-          "email": "gama.teste@pontedostrolls.com",
-          "data": "2026-11-10T17:16:48.412Z",
-          "pagamentoInformado": true,
-          "dataPagamentoInformado": "2026-11-10T17:16:48.412Z",
+          "id": "usr-teste-a",
+          "nome": "Membro Teste A",
           "isPosteriorBuyer": true
         }
       ],
       "solicitacoesAcesso": [],
-      "criadoEm": "2026-11-10",
-      "finalizadoEm": "2026-11-25"
+      "criadoEm": "2026-11-11"
+    },
+    {
+      "id": "pack-audit-coleta",
+      "titulo": "Pacote em Coleta",
+      "sistema": "Foundry VTT Geral",
+      "tipo": "Material para VTT",
+      "descricao": "Fase de coleta",
+      "itens": [],
+      "valorTotalBRL": 0,
+      "dataFinalizar": "",
+      "dataPagamento": "",
+      "minimoParticipantes": 35,
+      "valorMaximoPorPessoa": 0,
+      "linkLoja": "",
+      "linkDrive": "",
+      "links": [],
+      "itensInclusos": [],
+      "sugestoesIds": [],
+      "status": "Financiamento",
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "apoiadores": [],
+      "solicitacoesAcesso": [],
+      "criadoEm": "2026-11-11"
+    },
+    {
+      "id": "pack-audit-pagamento",
+      "titulo": "Pacote em Pagamento",
+      "sistema": "Foundry VTT Geral",
+      "tipo": "Material para VTT",
+      "descricao": "Fase de pagamento",
+      "itens": [],
+      "valorTotalBRL": 0,
+      "dataFinalizar": "",
+      "dataPagamento": "",
+      "minimoParticipantes": 35,
+      "valorMaximoPorPessoa": 0,
+      "linkLoja": "",
+      "linkDrive": "",
+      "links": [],
+      "itensInclusos": [],
+      "sugestoesIds": [],
+      "status": "Financiamento",
+      "etapaFinanciamento": "PAGAMENTO",
+      "pagamentos": {},
+      "apoiadores": [],
+      "solicitacoesAcesso": [],
+      "criadoEm": "2026-11-11"
     },
     {
       "id": "pkg-acervo-001",
@@ -5095,30 +5093,5 @@
       "finalizadoEm": "2024-01-01"
     }
   ],
-  "solicitacoes": [
-    {
-      "id": "sol-1794331008128-em9l",
-      "nome": "Candidato Teste Delta",
-      "email": "delta.teste@gmail.com",
-      "telefone": "(11) 98888-5555",
-      "comoConheceu": "Indicação de um membro",
-      "indicadoPor": "Membro Teste Alfa",
-      "respostas": {
-        "1": "Concordo com a pontualidade e com os rateios justos.",
-        "2": "Pagamentos feitos via Pix com comprovante e identificação.",
-        "3": "Manter discrição e não repassar links para fora do grupo.",
-        "4": "Apenas materiais permitidos pela comunidade."
-      },
-      "regrasTextoAceito": "Texto das regras",
-      "regrasVersao": "2.0.0",
-      "aceitouTermos": true,
-      "aceitouEm": "2026-11-10T17:16:48.128Z",
-      "criadoEm": "2026-11-10T17:16:48.128Z",
-      "status": "aprovado",
-      "avaliadoEm": "2026-11-10T17:16:48.183Z",
-      "avaliadoPor": "Ponte dos Trolls",
-      "observacoesMestre": "Respostas claras e indicante verificado.",
-      "userId": "usr-1794331008170-vhd3"
-    }
-  ]
+  "solicitacoes": []
 }

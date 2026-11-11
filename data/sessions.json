@@ -1,0 +1,29 @@
+[
+  {
+    "id": "0e2ea3dd855cd80e575b19a4622f31b5c2f2016cea428f4605fb244e313db5a2",
+    "userId": "usr-master",
+    "nome": "Ponte dos Trolls",
+    "isMaster": true,
+    "createdAt": 1794373247653,
+    "expiresAt": 1794394847653,
+    "ip": "2804:814:4056:1600:2989:7ffb:d923:b2c4"
+  },
+  {
+    "id": "f7f4fe12229ee7ad28445d0b2155171668e660e0cc33e5d96671058e7844d706",
+    "userId": "usr-master",
+    "nome": "Ponte dos Trolls",
+    "isMaster": true,
+    "createdAt": 1794374713553,
+    "expiresAt": 1794396313553,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "f95fa08762fd8ee226d14105d197e2ba8a16239223d8f811f1ea4fb297613707",
+    "userId": "usr-master",
+    "nome": "Ponte dos Trolls",
+    "isMaster": true,
+    "createdAt": 1794374764734,
+    "expiresAt": 1794396364734,
+    "ip": "127.0.0.1"
+  }
+]

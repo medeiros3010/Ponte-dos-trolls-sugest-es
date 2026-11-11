@@ -59,19 +59,85 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 
 export const USERS_VERSION = 'v2_125_oficial';
 
-// Initialize default bin seed file only if it doesn't already exist on disk
+// Initialize default bin from immutable backup if missing, never from empty seeds
 const defaultBinPath = path.join(BINS_DIR, 'trolls-rpg-oficial.json');
+const immutableBakPath = path.join(BINS_DIR, 'trolls-rpg-oficial.json.immutable-backup');
+const realBakPath = path.join(BINS_DIR, 'trolls-rpg-oficial.real.bak');
+
 if (!fs.existsSync(defaultBinPath)) {
-  const initialDefaultPayload = {
-    id: 'trolls-rpg-oficial',
-    name: 'A Ponte dos Trolls - Rateios RPG',
-    updatedAt: new Date().toISOString(),
-    usersVersion: USERS_VERSION,
-    items: SEED_ITEMS,
-    users: SEED_USERS,
-    packages: SEED_PACKAGES,
-  };
-  fs.writeFileSync(defaultBinPath, JSON.stringify(initialDefaultPayload, null, 2), 'utf-8');
+  if (fs.existsSync(immutableBakPath)) {
+    fs.copyFileSync(immutableBakPath, defaultBinPath);
+    console.log('[Server] trolls-rpg-oficial.json restaurado a partir do backup imutável.');
+  } else if (fs.existsSync(realBakPath)) {
+    fs.copyFileSync(realBakPath, defaultBinPath);
+    console.log('[Server] trolls-rpg-oficial.json restaurado a partir de .real.bak.');
+  } else {
+    // Procura último backup em data/backups
+    const backupDir = path.resolve(process.cwd(), 'data', 'backups');
+    let restoredFromBackup = false;
+    if (fs.existsSync(backupDir)) {
+      const backupFiles = fs.readdirSync(backupDir).filter(f => f.endsWith('.json')).sort().reverse();
+      if (backupFiles.length > 0) {
+        try {
+          const raw = fs.readFileSync(path.join(backupDir, backupFiles[0]), 'utf-8');
+          const parsed = JSON.parse(raw);
+          const dataToRestore = parsed.localBinOfficial || parsed.data || parsed;
+          if (dataToRestore && dataToRestore.packages) {
+            fs.writeFileSync(defaultBinPath, JSON.stringify(dataToRestore, null, 2), 'utf-8');
+            console.log(`[Server] trolls-rpg-oficial.json restaurado a partir do backup ${backupFiles[0]}.`);
+            restoredFromBackup = true;
+          }
+        } catch (e) {
+          console.error('[Server] Falha ao restaurar de backup em disco:', e);
+        }
+      }
+    }
+    if (!restoredFromBackup) {
+      console.warn('[Server] Nenhum backup persistente encontrado. Criando arquivo base inicial.');
+      const initialDefaultPayload = {
+        id: 'trolls-rpg-oficial',
+        name: 'A Ponte dos Trolls - Rateios RPG',
+        updatedAt: new Date().toISOString(),
+        usersVersion: USERS_VERSION,
+        items: SEED_ITEMS,
+        users: SEED_USERS,
+        packages: SEED_PACKAGES,
+      };
+      fs.writeFileSync(defaultBinPath, JSON.stringify(initialDefaultPayload, null, 2), 'utf-8');
+    }
+  }
+}
+
+// Inicializar ambiente de desenvolvimento isolado ('trolls-rpg-dev.json') com dados mascarados
+const devBinPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
+if (!fs.existsSync(devBinPath)) {
+  try {
+    const baseData = fs.existsSync(defaultBinPath)
+      ? JSON.parse(fs.readFileSync(defaultBinPath, 'utf-8'))
+      : { items: SEED_ITEMS, users: SEED_USERS, packages: SEED_PACKAGES };
+
+    // Mascarar dados pessoais para o ambiente de testes/desenvolvimento
+    const maskedUsers = (baseData.users || SEED_USERS).map((u: any, idx: number) => ({
+      ...u,
+      telefone: u.isMaster ? '(19) 98151-2030' : `(11) 90000-${String(idx).padStart(4, '0')}`,
+      email: u.isMaster ? 'mestre@pontedostrolls.com' : `membro_${idx + 1}@teste-dev.local`,
+    }));
+
+    const devPayload = {
+      id: 'trolls-rpg-dev',
+      name: 'A Ponte dos Trolls - Ambiente de Desenvolvimento e Testes',
+      updatedAt: new Date().toISOString(),
+      usersVersion: USERS_VERSION,
+      items: baseData.items || SEED_ITEMS,
+      users: maskedUsers,
+      packages: baseData.packages || SEED_PACKAGES,
+      solicitacoes: [],
+    };
+    fs.writeFileSync(devBinPath, JSON.stringify(devPayload, null, 2), 'utf-8');
+    console.log('[Server] Ambiente isolado trolls-rpg-dev.json inicializado com dados mascarados.');
+  } catch (err) {
+    console.warn('[Server] Aviso ao inicializar trolls-rpg-dev.json:', err);
+  }
 }
 
 // Body parsing with 10mb limit for images/payloads
@@ -261,8 +327,24 @@ function withBinLock<T>(binId: string, fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
-function sanitizeBinId(id: string): string {
-  return id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 64) || 'trolls-rpg-oficial';
+export function isDevEnvironment(req?: Request): boolean {
+  if (process.env.NODE_ENV === 'development') return true;
+  if (req) {
+    const host = (req.headers.host || req.hostname || '').toLowerCase();
+    if (host.includes('localhost') || host.includes('127.0.0.1') || host.includes('ais-dev-')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function sanitizeBinId(id: string, req?: Request): string {
+  const clean = id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 64) || 'trolls-rpg-oficial';
+  // Isolamento estrito de ambiente: requisições em desenvolvimento/preview operam em trolls-rpg-dev
+  if (req && isDevEnvironment(req) && clean === 'trolls-rpg-oficial' && !req.query.forceProd) {
+    return 'trolls-rpg-dev';
+  }
+  return clean;
 }
 
 function sanitizeUrl(url: any): string {
@@ -280,10 +362,12 @@ function sanitizePackage(pkg: any): any {
 
   const itens = Array.isArray(pkg.itens) ? pkg.itens.map((it: any) => {
     const itemNorm = normalizeProductType(it.tipo || it.produto, it.sistema);
+    const cat = it.categoria || it.tipo || itemNorm.tipo || 'Não informada';
     return {
       id: it.id || `it-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       nome: String(it.nome || 'Item').trim(),
       sistema: it.sistema || norm.sistema || 'Foundry VTT Geral',
+      categoria: cat,
       tipo: it.tipo || itemNorm.tipo,
       link: sanitizeUrl(it.link),
       precoBRL: typeof it.precoBRL === 'number' ? it.precoBRL : (parseFloat(it.precoBRL) || 0),
@@ -333,29 +417,44 @@ function sanitizePackage(pkg: any): any {
   };
 }
 
-// Leitura segura do arquivo bin
+// Leitura segura do arquivo bin com restauração defensiva a partir de backups imutáveis
 function readBinData(binId: string): any {
   const filePath = path.join(BINS_DIR, `${binId}.json`);
   if (!fs.existsSync(filePath)) {
+    const backupPath = path.join(BINS_DIR, `${binId}.json.immutable-backup`);
+    const realBakPath = path.join(BINS_DIR, `${binId}.real.bak`);
+    if (fs.existsSync(backupPath)) {
+      try {
+        const restored = JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
+        fs.writeFileSync(filePath, JSON.stringify(restored, null, 2), 'utf-8');
+        return restored;
+      } catch (e) {}
+    } else if (fs.existsSync(realBakPath)) {
+      try {
+        const restored = JSON.parse(fs.readFileSync(realBakPath, 'utf-8'));
+        fs.writeFileSync(filePath, JSON.stringify(restored, null, 2), 'utf-8');
+        return restored;
+      } catch (e) {}
+    }
     return {
       id: binId,
       name: `A Ponte dos Trolls - ${binId}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      items: SEED_ITEMS,
-      users: SEED_USERS,
-      packages: SEED_PACKAGES.map(sanitizePackage),
+      items: [],
+      users: [],
+      packages: [],
       solicitacoes: [],
     };
   }
   const content = fs.readFileSync(filePath, 'utf-8');
   const data = JSON.parse(content);
-  if (!Array.isArray(data.users)) data.users = SEED_USERS;
-  if (!Array.isArray(data.packages)) data.packages = SEED_PACKAGES;
-  if (!Array.isArray(data.items)) data.items = SEED_ITEMS;
+  if (!Array.isArray(data.users)) data.users = [];
+  if (!Array.isArray(data.packages)) data.packages = [];
+  if (!Array.isArray(data.items)) data.items = [];
   if (!Array.isArray(data.solicitacoes)) data.solicitacoes = [];
   
-  // Remove pacotes de teste legados (pack-3, pack-4, pack-5) e garante todos os 100 pacotes do Catálogo
+  // Preserva pacotes existentes e incorpora itens históricos do catálogo apenas se não existirem
   const cleaned = (data.packages as any[]).filter((p: any) => !['pack-3', 'pack-4', 'pack-5'].includes(p?.id));
   const pkgMap = new Map<string, any>();
   for (const p of cleaned) {
@@ -395,7 +494,7 @@ app.post('/api/auth/master-login', (req: Request, res: Response) => {
     });
   }
 
-  const { password, masterName } = req.body;
+  const { password } = req.body;
   const provided = String(password || '');
 
   // Comparação flexível e segura da senha do servidor
@@ -408,7 +507,7 @@ app.post('/api/auth/master-login', (req: Request, res: Response) => {
 
   resetFailedAttempts(ip);
 
-  const { token, session } = createSession('usr-master', masterName || MASTER_ADMIN_NAME, true, ip);
+  const { token } = createSession('usr-master', MASTER_ADMIN_NAME, true, ip);
 
   // Cookie HttpOnly para segurança contra XSS
   const isProd = process.env.NODE_ENV === 'production';
@@ -425,7 +524,7 @@ app.post('/api/auth/master-login', (req: Request, res: Response) => {
     token,
     user: {
       id: 'usr-master',
-      nome: masterName || MASTER_ADMIN_NAME,
+      nome: MASTER_ADMIN_NAME,
       telefone: '(19) 98151-2030',
       email: 'mestre@pontedostrolls.com',
       isMaster: true,
@@ -783,6 +882,9 @@ app.post('/api/bin/:binId/item/:itemId/apoio', async (req: Request, res: Respons
   const session = getSession(req);
   if (!session) {
     return res.status(401).json({ error: 'Você precisa estar identificado para apoiar sugestões.' });
+  }
+  if (session.isMaster) {
+    return res.status(403).json({ error: 'O Mestre não apoia nem retira apoio de sugestões.' });
   }
 
   await withBinLock(binId, async () => {
@@ -1319,6 +1421,41 @@ app.post('/api/bin/:binId/user/update-profile', async (req: Request, res: Respon
     } catch (err: any) {
       console.error('Erro ao atualizar dados do usuário:', err);
       return res.status(500).json({ error: 'Erro ao atualizar dados do usuário', details: err.message });
+    }
+  });
+});
+
+// DELETE /api/bin/:binId/user/:userId - Remoção de membro pelo Mestre
+app.delete('/api/bin/:binId/user/:userId', async (req: Request, res: Response) => {
+  const binId = sanitizeBinId(req.params.binId, req);
+  const adminPassword = (req.headers['x-admin-password'] as string) || req.body?.adminPassword;
+  const isMaster = checkMasterPermission(req, adminPassword);
+
+  if (!isMaster) {
+    return res.status(403).json({ error: 'Acesso restrito ao Mestre da Ponte.' });
+  }
+
+  const userId = req.params.userId;
+  if (!userId) {
+    return res.status(400).json({ error: 'ID do usuário é obrigatório.' });
+  }
+
+  await withBinLock(binId, async () => {
+    try {
+      const data = readBinData(binId);
+      data.users = Array.isArray(data.users) ? data.users : [];
+      const initialCount = data.users.length;
+      data.users = data.users.filter((u: any) => u.id !== userId);
+
+      if (data.users.length === initialCount) {
+        return res.status(404).json({ error: 'Usuário não encontrado.' });
+      }
+
+      writeBinData(binId, data);
+      return res.json({ success: true, userId, users: data.users });
+    } catch (err: any) {
+      console.error('Erro ao excluir usuário:', err);
+      return res.status(500).json({ error: 'Erro ao excluir usuário', details: err.message });
     }
   });
 });
@@ -1917,6 +2054,340 @@ app.get('/api/admin/official-members', (req: Request, res: Response) => {
     }
   }
   return res.status(404).json({ error: 'Arquivo oficial não encontrado.' });
+});
+
+// ==================== ADMIN BACKUP & RESTORE API ====================
+
+// GET /api/admin/export-backup - Gera exportação de backup completa, consistente e auditada
+app.get('/api/admin/export-backup', (req: Request, res: Response) => {
+  const adminPassword = (req.headers['x-admin-password'] as string) || (req.query.adminPassword as string);
+  const isMaster = checkMasterPermission(req, adminPassword);
+
+  if (!isMaster) {
+    return res.status(403).json({ error: 'Apenas o Mestre Administrador pode exportar backups completos do sistema.' });
+  }
+
+  try {
+    const rawBinId = (req.query.binId as string) || 'trolls-rpg-oficial';
+    const binId = sanitizeBinId(rawBinId, req);
+    const data = readBinData(binId);
+
+    const exportPayload = {
+      formatVersion: '2.0.0',
+      exportedAt: new Date().toISOString(),
+      sourceEnvironment: isDevEnvironment(req) ? 'development' : 'production',
+      binId,
+      counts: {
+        users: Array.isArray(data.users) ? data.users.length : 0,
+        items: Array.isArray(data.items) ? data.items.length : 0,
+        packages: Array.isArray(data.packages) ? data.packages.length : 0,
+        solicitacoes: Array.isArray(data.solicitacoes) ? data.solicitacoes.length : 0,
+      },
+      disclaimer: {
+        images: 'URLs e referências de imagens são links externos e não contêm os arquivos binários originais.',
+        auth: 'Contas do Firebase Authentication não são geradas nem exportadas nesta estrutura JSON.',
+        security: 'Senhas, chaves de API, credenciais de serviço e tokens de sessão são estritamente omitidos por segurança.',
+      },
+      disclaimers: {
+        rawFilesNotIncluded: true,
+        firebaseAuthNotIncluded: true,
+        secretsNotIncluded: true,
+        explanation: 'Imagens são URLs externas; Contas Firebase Auth não estão incluídas; Credenciais e segredos são excluídos.'
+      },
+      users: data.users || [],
+      items: data.items || [],
+      packages: data.packages || [],
+      solicitacoes: data.solicitacoes || [],
+      regrasConfig: data.regrasConfig || null,
+      data: {
+        users: data.users || [],
+        items: data.items || [],
+        packages: data.packages || [],
+        solicitacoes: data.solicitacoes || [],
+        regrasConfig: data.regrasConfig || null,
+        usersVersion: data.usersVersion || USERS_VERSION,
+      },
+    };
+
+    return res.json(exportPayload);
+  } catch (err: any) {
+    console.error('Erro na exportação de backup:', err);
+    return res.status(500).json({ error: 'Erro ao gerar exportação do backup.', details: err.message });
+  }
+});
+
+// POST /api/admin/validate-backup - Inspeciona e valida a integridade do backup sem aplicar alterações
+app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
+  const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
+  const isMaster = checkMasterPermission(req, adminPassword);
+
+  if (!isMaster) {
+    return res.status(403).json({ error: 'Apenas o Mestre pode validar arquivos de backup.' });
+  }
+
+  try {
+    const backupData = req.body.backupData || req.body.payload;
+    if (!backupData || typeof backupData !== 'object') {
+      return res.status(400).json({ valid: false, errors: ['Arquivo inválido: o conteúdo deve ser um objeto JSON válido.'] });
+    }
+
+    const payload = backupData.data || backupData;
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    // Checagem de formato e versão
+    const formatVersion = backupData.formatVersion || '1.0.0 (legado)';
+    const sourceEnvironment = backupData.sourceEnvironment || 'desconhecido';
+    const exportedAt = backupData.exportedAt || backupData.updatedAt || 'não informada';
+
+    // 1. Validar Usuários
+    const users = Array.isArray(backupData.users) ? backupData.users : (Array.isArray(backupData.data?.users) ? backupData.data.users : []);
+    const userIds = new Set<string>();
+    const duplicateUserIds: string[] = [];
+
+    users.forEach((u: any, idx: number) => {
+      if (!u || typeof u !== 'object') {
+        errors.push(`Usuário no índice ${idx} é inválido.`);
+        return;
+      }
+      if (!u.id || !u.nome) {
+        errors.push(`Usuário no índice ${idx} não possui ID ou Nome obrigatório.`);
+      } else {
+        if (userIds.has(u.id)) {
+          duplicateUserIds.push(u.id);
+        }
+        userIds.add(u.id);
+      }
+      // Proteção de escalação de privilégio: não permite que usuários comuns venham com isMaster: true
+      if (u.isMaster && u.id !== 'usr-master' && u.email !== 'pontedostrolls@gmail.com') {
+        warnings.push(`Tentativa de elevação administrativa detectada e bloqueada: privilégio Mestre revogado para ${u.nome} (${u.id}).`);
+        u.isMaster = false;
+      }
+    });
+
+    if (duplicateUserIds.length > 0) {
+      warnings.push(`IDs de usuários duplicados encontrados: ${duplicateUserIds.slice(0, 5).join(', ')}...`);
+    }
+
+    // 2. Validar Itens / Sugestões
+    const items = Array.isArray(backupData.items) ? backupData.items : (Array.isArray(backupData.data?.items) ? backupData.data.items : []);
+    const itemIds = new Set<string>();
+    const duplicateItemIds: string[] = [];
+
+    items.forEach((it: any, idx: number) => {
+      if (!it || typeof it !== 'object') {
+        errors.push(`Sugestão no índice ${idx} é inválida.`);
+        return;
+      }
+      if (!it.id || !it.nome) {
+        errors.push(`Sugestão no índice ${idx} não possui ID ou Nome obrigatório.`);
+      } else {
+        if (itemIds.has(it.id)) {
+          duplicateItemIds.push(it.id);
+        }
+        itemIds.add(it.id);
+      }
+    });
+
+    if (duplicateItemIds.length > 0) {
+      warnings.push(`IDs de sugestões duplicadas encontrados: ${duplicateItemIds.slice(0, 5).join(', ')}...`);
+    }
+
+    // 3. Validar Pacotes
+    const packages = Array.isArray(backupData.packages) ? backupData.packages : (Array.isArray(backupData.data?.packages) ? backupData.data.packages : []);
+    const pkgIds = new Set<string>();
+    const duplicatePkgIds: string[] = [];
+
+    packages.forEach((pkg: any, idx: number) => {
+      if (!pkg || typeof pkg !== 'object') {
+        errors.push(`Pacote no índice ${idx} é inválido.`);
+        return;
+      }
+      if (!pkg.id || !pkg.titulo) {
+        errors.push(`Pacote no índice ${idx} não possui ID ou Título obrigatório.`);
+      } else {
+        if (pkgIds.has(pkg.id)) {
+          duplicatePkgIds.push(pkg.id);
+        }
+        pkgIds.add(pkg.id);
+      }
+    });
+
+    if (duplicatePkgIds.length > 0) {
+      errors.push(`IDs de pacotes duplicados encontrados: ${duplicatePkgIds.slice(0, 5).join(', ')}...`);
+    }
+
+    // 4. Validar Solicitações
+    const solicitacoes = Array.isArray(payload.solicitacoes) ? payload.solicitacoes : [];
+
+    const isValid = errors.length === 0;
+
+    return res.json({
+      valid: isValid,
+      formatVersion,
+      sourceEnvironment,
+      exportedAt,
+      counts: {
+        users: users.length,
+        items: items.length,
+        packages: packages.length,
+        solicitacoes: solicitacoes.length,
+      },
+      duplicateIds: [...duplicateUserIds, ...duplicateItemIds, ...duplicatePkgIds],
+      warnings,
+      errors,
+    });
+  } catch (err: any) {
+    console.error('Erro na validação do backup:', err);
+    return res.status(500).json({ valid: false, errors: [`Erro interno de validação: ${err.message}`] });
+  }
+});
+
+// POST /api/admin/restore-backup - Executa restauração atômica com backup prévio automático
+app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
+  const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
+  const isMaster = checkMasterPermission(req, adminPassword);
+
+  if (!isMaster) {
+    return res.status(403).json({ error: 'Apenas o Mestre autenticado pode restaurar backups.' });
+  }
+
+  const backupData = req.body.backupData || req.body.payload;
+  const mode = req.body.mode || 'replace';
+  if (!backupData || typeof backupData !== 'object') {
+    return res.status(400).json({ error: 'Dados do backup inválidos ou ausentes.' });
+  }
+
+  const rawBinId = (req.body.binId as string) || 'trolls-rpg-oficial';
+  const binId = sanitizeBinId(rawBinId, req);
+
+  await withBinLock(binId, async () => {
+    try {
+      const currentData = readBinData(binId);
+
+      // 1. Criar snapshot automático pré-restauração antes de modificar qualquer registro
+      const backupDir = path.resolve(process.cwd(), 'data', 'backups');
+      if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+      const autoBackupFile = `auto_pre_restore_${binId}_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      fs.writeFileSync(
+        path.join(backupDir, autoBackupFile),
+        JSON.stringify({
+          purpose: 'auto_pre_restore_safety_snapshot',
+          timestamp: new Date().toISOString(),
+          binId,
+          data: currentData,
+        }, null, 2),
+        'utf-8'
+      );
+
+      // 2. Extrair e sanitizar dados do backup
+      const payload = backupData.data || backupData;
+      let incomingUsers = Array.isArray(backupData.users) ? backupData.users : (Array.isArray(backupData.data?.users) ? backupData.data.users : []);
+      let incomingItems = Array.isArray(backupData.items) ? backupData.items : (Array.isArray(backupData.data?.items) ? backupData.data.items : []);
+      let incomingPackages = Array.isArray(backupData.packages) ? backupData.packages : (Array.isArray(backupData.data?.packages) ? backupData.data.packages : []);
+      let incomingSolicitacoes = Array.isArray(backupData.solicitacoes) ? backupData.solicitacoes : (Array.isArray(backupData.data?.solicitacoes) ? backupData.data.solicitacoes : []);
+
+      // Sanitizar pacotes
+      incomingPackages = incomingPackages.map(sanitizePackage);
+
+      // Prevenir elevação indevida de privilégios: apenas usr-master pode ser isMaster
+      incomingUsers = incomingUsers.map((u: any) => ({
+        ...u,
+        isMaster: u.id === 'usr-master' || (u.email && u.email.toLowerCase() === 'pontedostrolls@gmail.com'),
+      }));
+
+      // Garante que o Mestre oficial sempre existe e está ativo
+      if (!incomingUsers.some((u: any) => u.id === 'usr-master')) {
+        incomingUsers.unshift({
+          id: 'usr-master',
+          nome: MASTER_ADMIN_NAME,
+          telefone: '(19) 98151-2030',
+          email: 'pontedostrolls@gmail.com',
+          status: 'aprovado',
+          createdAt: '2026-01-01',
+          strikes: [],
+          isMaster: true,
+        });
+      }
+
+      let finalUsers = incomingUsers;
+      let finalItems = incomingItems;
+      let finalPackages = incomingPackages;
+      let finalSolicitacoes = incomingSolicitacoes;
+
+      // 3. Aplicar modo de mesclagem se solicitado
+      if (mode === 'merge') {
+        const userMap = new Map<string, any>();
+        (currentData.users || []).forEach((u: any) => { if (u && u.id) userMap.set(u.id, u); });
+        incomingUsers.forEach((u: any) => { if (u && u.id) userMap.set(u.id, { ...(userMap.get(u.id) || {}), ...u }); });
+        finalUsers = Array.from(userMap.values());
+
+        const itemMap = new Map<string, any>();
+        (currentData.items || []).forEach((it: any) => { if (it && it.id) itemMap.set(it.id, it); });
+        incomingItems.forEach((it: any) => { if (it && it.id) itemMap.set(it.id, { ...(itemMap.get(it.id) || {}), ...it }); });
+        finalItems = Array.from(itemMap.values());
+
+        const pkgMap = new Map<string, any>();
+        (currentData.packages || []).forEach((p: any) => { if (p && p.id) pkgMap.set(p.id, p); });
+        incomingPackages.forEach((p: any) => {
+          if (p && p.id) {
+            const existing = pkgMap.get(p.id);
+            if (existing) {
+              pkgMap.set(p.id, {
+                ...existing,
+                ...p,
+                apoiadores: p.apoiadores?.length ? p.apoiadores : existing.apoiadores,
+                pagamentos: Object.keys(p.pagamentos || {}).length ? p.pagamentos : existing.pagamentos,
+              });
+            } else {
+              pkgMap.set(p.id, p);
+            }
+          }
+        });
+        finalPackages = Array.from(pkgMap.values());
+
+        const solMap = new Map<string, any>();
+        (currentData.solicitacoes || []).forEach((s: any) => { if (s && s.id) solMap.set(s.id, s); });
+        incomingSolicitacoes.forEach((s: any) => { if (s && s.id) solMap.set(s.id, { ...(solMap.get(s.id) || {}), ...s }); });
+        finalSolicitacoes = Array.from(solMap.values());
+      }
+
+      // 4. Gravar atomicamente no arquivo bin
+      const newBinData = {
+        id: binId,
+        name: `A Ponte dos Trolls - ${binId}`,
+        updatedAt: new Date().toISOString(),
+        usersVersion: payload.usersVersion || currentData.usersVersion || USERS_VERSION,
+        items: finalItems,
+        users: finalUsers,
+        packages: finalPackages,
+        solicitacoes: finalSolicitacoes,
+        regrasConfig: payload.regrasConfig || currentData.regrasConfig,
+      };
+
+      writeBinData(binId, newBinData);
+
+      if (binId === 'trolls-rpg-oficial') {
+        fs.writeFileSync(path.join(BINS_DIR, 'trolls-rpg-oficial.json.immutable-backup'), JSON.stringify(newBinData, null, 2), 'utf-8');
+      }
+
+      return res.json({
+        success: true,
+        message: mode === 'merge' ? 'Backup mesclado com sucesso.' : 'Backup restaurado com sucesso.',
+        autoBackupFile,
+        counts: {
+          users: finalUsers.length,
+          items: finalItems.length,
+          packages: finalPackages.length,
+          solicitacoes: finalSolicitacoes.length,
+        },
+        data: newBinData,
+      });
+    } catch (err: any) {
+      console.error('Erro ao restaurar backup:', err);
+      return res.status(500).json({ error: 'Erro ao processar restauração do backup.', details: err.message });
+    }
+  });
 });
 
 // ==================== PUT /api/bin/:binId (SALVAMENTO COMPLETO - APENAS MESTRE) ====================

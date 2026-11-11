@@ -109,6 +109,7 @@ export interface PackageSubItem {
   id: string;
   nome: string;
   sistema: string;
+  categoria?: string;
   tipo?: ProductType;
   link: string;
   precoBRL: number;

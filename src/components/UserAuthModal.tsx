@@ -29,7 +29,6 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
   const [existingUserError, setExistingUserError] = useState('');
 
   // Tab 2: Master Admin Mode
-  const [masterName, setMasterName] = useState(MASTER_ADMIN_NAME);
   const [masterPassword, setMasterPassword] = useState('');
   const [masterError, setMasterError] = useState('');
 
@@ -403,20 +402,6 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-[#71634D] mb-1">
-                  Usuário de Administrador:
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={masterName}
-                  onChange={(e) => setMasterName(e.target.value)}
-                  placeholder="Ponte dos Trolls"
-                  className="w-full px-3 py-2.5 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-semibold focus:outline-none focus:border-[#48551F]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#71634D] mb-1">
                   Senha do Mestre:
                 </label>
                 <div className="relative">
@@ -448,7 +433,7 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
                 ) : (
                   <Shield className="w-4 h-4 stroke-[2.5]" />
                 )}
-                <span>{isLoggingIn ? 'Autenticando...' : 'Entrar como Mestre da Ponte'}</span>
+                <span>{isLoggingIn ? 'Autenticando...' : 'Entrar como Mestre'}</span>
               </button>
             </form>
           )}

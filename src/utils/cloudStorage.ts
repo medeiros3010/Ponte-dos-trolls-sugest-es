@@ -28,7 +28,17 @@ export function setSessionToken(token: string | null): void {
 // Fallback host if opened offline via file:// or outside Cloud Run
 export const FALLBACK_SERVER_URL = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
   ? window.location.origin
-  : 'https://ais-pre-4yygmmgjezaxwzwlfxcm7n-236036871357.us-east1.run.app';
+  : '';
+
+export function isDevelopmentEnvironment(): boolean {
+  if (typeof window === 'undefined') return process.env.NODE_ENV === 'development';
+  const hostname = (window.location.hostname || '').toLowerCase();
+  return hostname.includes('localhost') || hostname.includes('127.0.0.1') || hostname.includes('ais-dev-');
+}
+
+export function getDefaultBinId(): string {
+  return isDevelopmentEnvironment() ? 'trolls-rpg-dev' : DEFAULT_BIN_ID;
+}
 
 export function getInitialBinId(): string {
   try {
@@ -43,11 +53,18 @@ export function getInitialBinId(): string {
     }
 
     const stored = localStorage.getItem(CLOUD_BIN_KEY);
-    if (stored && stored.trim()) return stored.trim();
+    if (stored && stored.trim()) {
+      const clean = stored.trim();
+      const isDev = isDevelopmentEnvironment();
+      // Ensure environment alignment if user switched between dev and prod
+      if (!isDev && clean === 'trolls-rpg-dev') return DEFAULT_BIN_ID;
+      if (isDev && clean === DEFAULT_BIN_ID) return 'trolls-rpg-dev';
+      return clean;
+    }
   } catch (err) {
     console.warn('Error reading bin ID', err);
   }
-  return DEFAULT_BIN_ID;
+  return getDefaultBinId();
 }
 
 export function saveBinId(binId: string): void {
@@ -591,6 +608,32 @@ export async function apiDeletePackage(
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(data.error || 'Erro ao excluir pacote');
+  }
+  return data;
+}
+
+/**
+ * Exclui um membro de forma atômica pelo Mestre
+ */
+export async function apiDeleteUser(
+  binId: string,
+  userId: string,
+  adminPassword?: string
+): Promise<{ success: boolean; users?: UserProfile[] }> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/bin/${encodeURIComponent(binId)}/user/${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+    credentials: 'include',
+    body: JSON.stringify({ adminPassword }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao excluir usuário');
   }
   return data;
 }
@@ -1250,5 +1293,107 @@ export async function apiSyncOfficialMembers(adminPassword?: string): Promise<{
   }
   return json;
 }
+
+/**
+ * Exporta backup auditado e completo direto do servidor
+ */
+export async function apiExportBackup(binId?: string, adminPassword?: string): Promise<any> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const effectiveBin = binId || getDefaultBinId();
+  const url = `${base}/api/admin/export-backup?binId=${encodeURIComponent(effectiveBin)}`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: getAuthHeaders(adminPassword ? { 'x-admin-password': adminPassword } : {}),
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Erro ao exportar backup do servidor.');
+  }
+
+  return await res.json();
+}
+
+/**
+ * Valida integridade e estrutura do backup antes da restauração
+ */
+export async function apiValidateBackup(backupData: any, binId?: string, adminPassword?: string): Promise<{
+  valid: boolean;
+  formatVersion: string;
+  sourceEnvironment: string;
+  exportedAt: string;
+  counts: { users: number; items: number; packages: number; solicitacoes: number };
+  duplicateIds: string[];
+  warnings: string[];
+  errors: string[];
+}> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/admin/validate-backup`, {
+    method: 'POST',
+    headers: getAuthHeaders({
+      'Content-Type': 'application/json',
+      ...(adminPassword ? { 'x-admin-password': adminPassword } : {}),
+    }),
+    credentials: 'include',
+    body: JSON.stringify({ backupData, binId: binId || getDefaultBinId(), adminPassword }),
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(json.error || 'Erro ao validar backup.');
+  }
+
+  return json;
+}
+
+/**
+ * Executa a restauração segura no servidor com backup automático pré-restauração
+ */
+export async function apiRestoreBackup(
+  backupData: any,
+  mode: 'replace' | 'merge',
+  adminPassword?: string,
+  binId?: string
+): Promise<{
+  success: boolean;
+  message: string;
+  autoBackupFile: string;
+  counts: { users: number; items: number; packages: number; solicitacoes: number };
+  data: CloudPayloadData;
+}> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(`${base}/api/admin/restore-backup`, {
+    method: 'POST',
+    headers: getAuthHeaders({
+      'Content-Type': 'application/json',
+      ...(adminPassword ? { 'x-admin-password': adminPassword } : {}),
+    }),
+    credentials: 'include',
+    body: JSON.stringify({
+      backupData,
+      mode,
+      binId: binId || getDefaultBinId(),
+      adminPassword,
+    }),
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(json.error || 'Erro ao executar restauração.');
+  }
+
+  return json;
+}
+
 
 

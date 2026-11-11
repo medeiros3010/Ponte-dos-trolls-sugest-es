@@ -1,7 +1,7 @@
 {
   "id": "trolls-rpg-oficial",
   "name": "A Ponte dos Trolls - Rateios RPG",
-  "updatedAt": "2026-11-11T03:14:42.426Z",
+  "updatedAt": "2026-11-11T05:09:51.181Z",
   "usersVersion": "v2_125_oficial",
   "items": [
     {
@@ -6643,6 +6643,39 @@
       "solicitacoesAcesso": [],
       "criadoEm": "2024-01-01",
       "finalizadoEm": "2024-01-01"
+    },
+    {
+      "dataFinalizar": "2026-11-24",
+      "sistema": "Foundry VTT Geral",
+      "linkLoja": "",
+      "titulo": "sdvsv",
+      "status": "Financiamento",
+      "tipo": "Material para VTT",
+      "linkDrive": "https://www.testsprite.com/dashboard-v3/o/ponte-trollss-workspace-7333e746/create-test/new-project",
+      "valorTotalBRL": 50,
+      "itensInclusos": [],
+      "apoiadores": [],
+      "id": "pack-1794236767618-p972",
+      "minimoParticipantes": 35,
+      "valorCatalogoBRL": 50,
+      "solicitacoesAcesso": [],
+      "criadoEm": "2026-11-09",
+      "sugestoesIds": [],
+      "valorMaximoPorPessoa": 1.4285714285714286,
+      "etapaFinanciamento": "COLETA",
+      "pagamentos": {},
+      "dataPagamento": "2026-11-29",
+      "itens": [
+        {
+          "precoBRL": 50,
+          "sistema": "Foundry VTT Geral",
+          "tipo": "Material para VTT",
+          "link": "",
+          "id": "sub-1794236487782-xea",
+          "nome": "jtjy"
+        }
+      ],
+      "descricao": ""
     }
   ],
   "solicitacoes": [],
