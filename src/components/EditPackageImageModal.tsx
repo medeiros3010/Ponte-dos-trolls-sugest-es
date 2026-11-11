@@ -24,18 +24,16 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
 }) => {
   const currentPkg = packageItem || pkg;
   const [imageUrl, setImageUrl] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [saveError, setSaveError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (currentPkg && isOpen) {
       setImageUrl(currentPkg.imageUrl || '');
-      setAdminPassword('');
-      setPasswordError('');
       setUploadError('');
+      setSaveError('');
     }
   }, [currentPkg, isOpen]);
 
@@ -65,15 +63,16 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
 
     try {
       setIsSaving(true);
+      setSaveError('');
       if (onSave) {
-        await onSave(currentPkg.id, imageUrl.trim(), adminPassword.trim());
+        await onSave(currentPkg.id, imageUrl.trim());
       } else if (onUpdateImage) {
-        await onUpdateImage(currentPkg.id, imageUrl.trim(), adminPassword.trim());
+        await onUpdateImage(currentPkg.id, imageUrl.trim());
       }
       onToast('Capa do pacote atualizada com sucesso!');
       onClose();
     } catch (err: any) {
-      setPasswordError(err.message || 'Erro ao salvar capa do pacote');
+      setSaveError(err.message || 'Erro ao salvar capa do pacote');
     } finally {
       setIsSaving(false);
     }
@@ -167,29 +166,10 @@ export const EditPackageImageModal: React.FC<EditPackageImageModalProps> = ({
             {uploadError && <p className="text-[10px] text-[#8b261b]">{uploadError}</p>}
           </div>
 
-          {/* Senha do Mestre */}
-          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-1.5">
-            <label className="block text-xs font-semibold text-[#302414] flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-[#716016]" />
-              <span>Senha do Mestre para Salvar *</span>
-            </label>
-            <input
-              type="password"
-              required
-              placeholder="Digite a senha de administrador..."
-              value={adminPassword}
-              onChange={(e) => {
-                setAdminPassword(e.target.value);
-                if (passwordError) setPasswordError('');
-              }}
-              className="w-full bg-[#FAF4E6] border border-[#C6AD78] focus:border-[#48551F] rounded-lg px-3 py-2 text-xs text-[#302414] font-mono focus:outline-none"
-            />
-          </div>
-
-          {passwordError && (
+          {saveError && (
             <div className="p-2.5 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 text-[#DC2626]" />
-              <span>{passwordError}</span>
+              <span>{saveError}</span>
             </div>
           )}
 

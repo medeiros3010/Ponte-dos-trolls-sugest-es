@@ -51,8 +51,8 @@ interface MembrosViewProps {
   onAddUser: (newUser: Omit<UserProfile, 'id'>) => void;
   onUpdateUser: (user: UserProfile) => void;
   onDeleteUser: (userId: string) => void;
-  onApproveApplication?: (applicationId: string, adminPassword: string) => Promise<boolean>;
-  onRejectApplication?: (applicationId: string, observacoes: string, adminPassword: string) => Promise<boolean>;
+  onApproveApplication?: (applicationId: string, adminPassword?: string) => Promise<boolean>;
+  onRejectApplication?: (applicationId: string, observacoes: string, adminPassword?: string) => Promise<boolean>;
   onOpenSyncOfficialModal?: () => void;
   onToast: (msg: string) => void;
 }
@@ -107,7 +107,6 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
 
   // Exclusão de membro
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
-  const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
 
   // Active Menu Dropdown for card
@@ -388,20 +387,14 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     });
   };
 
-  // Exclusão com senha
+  // Exclusão de membro
   const handleConfirmDelete = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!deletePassword.trim()) {
-      setDeleteError('A senha do Mestre é necessária para confirmar a exclusão.');
-      return;
-    }
-
     if (!userToDelete) return;
 
     onDeleteUser(userToDelete.id);
     onToast(`Membro ${userToDelete.nome} removido do grupo.`);
     setUserToDelete(null);
-    setDeletePassword('');
     setDeleteError('');
   };
 
@@ -863,7 +856,6 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                               onClick={() => {
                                 setActiveMemberMenuId(null);
                                 setUserToDelete(member);
-                                setDeletePassword('');
                                 setDeleteError('');
                               }}
                               className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 text-[#8b261b] hover:bg-[#EFE3C8] transition-colors cursor-pointer"
@@ -1103,9 +1095,9 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           isOpen={Boolean(selectedApplication)}
           application={selectedApplication}
           rulesConfig={rulesConfig}
-          onApprove={async (appId, adminPassword) => {
+          onApprove={async (appId) => {
             if (onApproveApplication) {
-              const ok = await onApproveApplication(appId, adminPassword);
+              const ok = await onApproveApplication(appId);
               if (ok) {
                 setSelectedApplication(null);
               }
@@ -1116,9 +1108,9 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           onApproveSuccess={(app) => {
             setWelcomeMember({ nome: app.nome, telefone: app.telefone });
           }}
-          onReject={async (appId, obs, adminPassword) => {
+          onReject={async (appId, obs) => {
             if (onRejectApplication) {
-              const ok = await onRejectApplication(appId, obs, adminPassword);
+              const ok = await onRejectApplication(appId, obs);
               if (ok) {
                 setSelectedApplication(null);
               }
@@ -1306,17 +1298,6 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
               Tem certeza que deseja excluir o cadastro de <strong>"{userToDelete.nome}"</strong>? Esta ação é irreversível.
             </p>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#302414]">Senha do Mestre:</label>
-              <input
-                type="password"
-                required
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Digite a senha de administrador"
-                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
-              />
-            </div>
 
             {deleteError && (
               <p className="text-xs text-[#8b261b] font-medium">{deleteError}</p>

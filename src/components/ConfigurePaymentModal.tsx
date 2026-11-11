@@ -16,7 +16,7 @@ interface ConfigurePaymentModalProps {
     chavePix: string;
     instrucoesPix?: string;
     iniciarEtapaPagamento: boolean;
-    adminPassword: string;
+    adminPassword?: string;
   }) => Promise<void>;
   onConfirm?: (params: {
     valorFinalPorParticipante: number;
@@ -24,7 +24,7 @@ interface ConfigurePaymentModalProps {
     chavePix: string;
     instrucoesPix?: string;
     iniciarEtapaPagamento: boolean;
-    adminPassword: string;
+    adminPassword?: string;
   }) => Promise<void>;
   onToast: (msg: string) => void;
 }
@@ -44,7 +44,6 @@ export const ConfigurePaymentModal: React.FC<ConfigurePaymentModalProps> = ({
   const [dataPagamento, setDataPagamento] = useState<string>('');
   const [chavePix, setChavePix] = useState<string>('');
   const [instrucoesPix, setInstrucoesPix] = useState<string>('');
-  const [adminPassword, setAdminPassword] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,7 +52,6 @@ export const ConfigurePaymentModal: React.FC<ConfigurePaymentModalProps> = ({
   useEffect(() => {
     if (currentPkg && isOpen) {
       setErrorMsg('');
-      setAdminPassword('');
 
       const cotistasCount = currentPkg.apoiadores?.length || 0;
       const divisor = cotistasCount > 0 ? cotistasCount : (currentPkg.minimoParticipantes || 35);
@@ -109,7 +107,6 @@ export const ConfigurePaymentModal: React.FC<ConfigurePaymentModalProps> = ({
           chavePix: cleanPix,
           instrucoesPix: instrucoesPix.trim() || undefined,
           iniciarEtapaPagamento: isStartingStage,
-          adminPassword,
         });
       } else if (onConfirm) {
         await onConfirm({
@@ -118,7 +115,6 @@ export const ConfigurePaymentModal: React.FC<ConfigurePaymentModalProps> = ({
           chavePix: cleanPix,
           instrucoesPix: instrucoesPix.trim() || undefined,
           iniciarEtapaPagamento: isStartingStage,
-          adminPassword,
         });
       }
 
@@ -244,24 +240,7 @@ export const ConfigurePaymentModal: React.FC<ConfigurePaymentModalProps> = ({
             />
           </div>
 
-          {/* Senha do Mestre */}
-          <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-1.5">
-            <label className="block text-xs font-semibold text-[#302414] flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-[#716016]" />
-              <span>Senha do Mestre para confirmar *</span>
-            </label>
-            <input
-              type="password"
-              required
-              placeholder="Digite a senha de administrador..."
-              value={adminPassword}
-              onChange={(e) => {
-                setAdminPassword(e.target.value);
-                if (errorMsg) setErrorMsg('');
-              }}
-              className="w-full bg-[#FAF4E6] border border-[#C6AD78] focus:border-[#48551F] rounded-lg px-3 py-2 text-xs text-[#302414] font-mono focus:outline-none"
-            />
-          </div>
+
 
           {errorMsg && (
             <div className="p-2.5 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-semibold flex items-center gap-2">

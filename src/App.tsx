@@ -721,7 +721,7 @@ export default function App() {
 
   const handleApproveApplication = async (
     appId: string,
-    adminPassword: string
+    adminPassword?: string
   ): Promise<boolean> => {
     try {
       const res = await apiApproveApplication(appId, adminPassword, undefined, binId);
@@ -747,7 +747,7 @@ export default function App() {
   const handleRejectApplication = async (
     appId: string,
     observacoes: string,
-    adminPassword: string
+    adminPassword?: string
   ): Promise<boolean> => {
     try {
       const res = await apiRejectApplication(appId, adminPassword, observacoes, binId);
@@ -949,7 +949,7 @@ export default function App() {
     chavePix: string;
     instrucoesPix?: string;
     iniciarEtapaPagamento: boolean;
-    adminPassword: string;
+    adminPassword?: string;
   }) => {
     try {
       await apiConfigurePayment(binId, params.packageId, params);

@@ -48,6 +48,7 @@ const HOST = getHost();
 const app = express();
 const BINS_DIR = path.resolve(process.cwd(), 'data', 'bins');
 const UPLOADS_DIR = path.resolve(process.cwd(), 'data', 'uploads');
+const SESSIONS_FILE = path.resolve(process.cwd(), 'data', 'sessions.json');
 
 if (!fs.existsSync(BINS_DIR)) {
   fs.mkdirSync(BINS_DIR, { recursive: true });
@@ -124,6 +125,37 @@ export interface ServerSession {
 
 const sessions = new Map<string, ServerSession>();
 
+function loadSessions(): void {
+  try {
+    if (fs.existsSync(SESSIONS_FILE)) {
+      const raw = fs.readFileSync(SESSIONS_FILE, 'utf-8');
+      const data = JSON.parse(raw);
+      if (Array.isArray(data)) {
+        const now = Date.now();
+        for (const s of data) {
+          if (s && s.id && s.expiresAt > now) {
+            sessions.set(s.id, s);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[Session] Could not load persisted sessions:', e);
+  }
+}
+
+function saveSessions(): void {
+  try {
+    const list = Array.from(sessions.values()).filter((s) => s.expiresAt > Date.now());
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('[Session] Could not persist sessions:', e);
+  }
+}
+
+// Inicializar sessões persistidas do disco
+loadSessions();
+
 // Rate limit para tentativas de login: máx 5 falhas por IP a cada 5 minutos
 const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();
 
@@ -164,10 +196,15 @@ function resetFailedAttempts(ip: string): void {
 // Limpeza periódica de sessões expiradas a cada 15 minutos
 setInterval(() => {
   const now = Date.now();
+  let changed = false;
   for (const [token, sess] of sessions.entries()) {
     if (sess.expiresAt < now) {
       sessions.delete(token);
+      changed = true;
     }
+  }
+  if (changed) {
+    saveSessions();
   }
 }, 15 * 60 * 1000);
 
@@ -182,6 +219,7 @@ function getSession(req: Request): ServerSession | null {
   if (!sess) return null;
   if (Date.now() > sess.expiresAt) {
     sessions.delete(token);
+    saveSessions();
     return null;
   }
   return sess;
@@ -202,6 +240,7 @@ function createSession(userId: string, nome: string, isMaster: boolean, ip: stri
     ip,
   };
   sessions.set(token, session);
+  saveSessions();
   return { token, session };
 }
 
@@ -499,6 +538,7 @@ app.post('/api/auth/logout', (req: Request, res: Response) => {
 
   if (token) {
     sessions.delete(token);
+    saveSessions();
   }
   res.clearCookie('ponte_session', { path: '/' });
   return res.json({ success: true, message: 'Sessão encerrada com sucesso.' });

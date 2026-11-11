@@ -120,13 +120,11 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   // Drive Link Quick Edit Modal
   const [driveEditPkg, setDriveEditPkg] = useState<FundingPackage | null>(null);
   const [editDriveUrl, setEditDriveUrl] = useState('');
-  const [driveAdminPassword, setDriveAdminPassword] = useState('');
   const [driveEditError, setDriveEditError] = useState('');
   const [isSavingDrive, setIsSavingDrive] = useState(false);
 
   // Posterior Buyer Management (Mestre)
   const [newBuyerId, setNewBuyerId] = useState<string>('');
-  const [buyerPassword, setBuyerPassword] = useState<string>('');
   const [isBuyerSaving, setIsBuyerSaving] = useState<boolean>(false);
   const [processingSolId, setProcessingSolId] = useState<string | null>(null);
 
@@ -149,7 +147,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
 
     try {
       setIsBuyerSaving(true);
-      const ok = await onAddPosteriorBuyer(pkgId, newBuyerId, buyerPassword.trim());
+      const ok = await onAddPosteriorBuyer(pkgId, newBuyerId);
       if (ok) {
         onToast('Acesso de comprador posterior liberado com sucesso!');
         setNewBuyerId('');
@@ -295,12 +293,10 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   };
 
   const handleRemoveBuyer = async (pkgId: string, memberId: string) => {
-    const pwd = prompt('Digite a Senha do Mestre para remover o acesso deste membro:');
-    if (pwd === null) return;
     if (!onRemovePosteriorBuyer) return;
 
     try {
-      const ok = await onRemovePosteriorBuyer(pkgId, memberId, pwd.trim());
+      const ok = await onRemovePosteriorBuyer(pkgId, memberId);
       if (ok) {
         onToast('Acesso removido com sucesso.');
         if (selectedPackageDetails && selectedPackageDetails.id === pkgId) {
@@ -480,7 +476,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     if (e) e.stopPropagation();
     setDriveEditPkg(pkg);
     setEditDriveUrl(pkg.linkDrive || '');
-    setDriveAdminPassword('');
     setDriveEditError('');
   };
 
@@ -491,7 +486,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     try {
       setIsSavingDrive(true);
       if (onUpdateDriveLink) {
-        await onUpdateDriveLink(driveEditPkg.id, editDriveUrl.trim(), driveAdminPassword.trim());
+        await onUpdateDriveLink(driveEditPkg.id, editDriveUrl.trim());
       }
       if (selectedPackageDetails && selectedPackageDetails.id === driveEditPkg.id) {
         setSelectedPackageDetails({ ...selectedPackageDetails, linkDrive: editDriveUrl.trim() });
@@ -1380,14 +1375,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           ))}
                       </select>
 
-                      <input
-                        type="password"
-                        value={buyerPassword}
-                        onChange={(e) => setBuyerPassword(e.target.value)}
-                        placeholder="Senha Mestre"
-                        className="w-full sm:w-28 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-2.5 py-1.5 text-xs text-[#302414] focus:outline-none focus:ring-1 focus:ring-[#48551F]"
-                      />
-
                       <button
                         type="button"
                         disabled={isBuyerSaving || !newBuyerId}
@@ -1517,17 +1504,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#302414]">Senha do Mestre:</label>
-              <input
-                type="password"
-                required
-                value={driveAdminPassword}
-                onChange={(e) => setDriveAdminPassword(e.target.value)}
-                placeholder="Digite a senha de administrador"
-                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
-              />
-            </div>
 
             {driveEditError && (
               <p className="text-xs text-[#8b261b] font-medium">{driveEditError}</p>

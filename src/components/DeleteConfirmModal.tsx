@@ -5,7 +5,7 @@ import { AlertTriangle, Trash2, X, Lock, AlertCircle } from 'lucide-react';
 interface DeleteConfirmModalProps {
   isOpen: boolean;
   item: ItemRPG | null;
-  onConfirm: (adminPassword?: string) => void;
+  onConfirm: () => void;
   onCancel: () => void;
 }
 
@@ -15,22 +15,8 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  useEffect(() => {
-    if (isOpen) {
-      setPassword('');
-      setErrorMessage('');
-    }
-  }, [isOpen, item]);
-
   const handleConfirm = () => {
-    if (!password.trim()) {
-      setErrorMessage('Digite a senha de administrador.');
-      return;
-    }
-    onConfirm(password.trim());
+    onConfirm();
   };
 
   if (!isOpen || !item) return null;
@@ -75,36 +61,6 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             </div>
           </div>
 
-          {/* Admin Password Input */}
-          <div className="pt-1">
-            <label className="block text-xs font-semibold text-[#302414] mb-1.5 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-[#8b261b]" />
-              <span>Digite a senha de administrador para excluir:</span>
-            </label>
-            <input
-              type="password"
-              placeholder="Senha do admin..."
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (errorMessage) setErrorMessage('');
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleConfirm();
-                }
-              }}
-              className="w-full bg-[#FAF4E6] border border-[#C6AD78] focus:border-[#8b261b] rounded-xl px-3 py-2 text-xs text-[#302414] font-mono focus:outline-none"
-              autoFocus
-            />
-            {errorMessage && (
-              <div className="mt-1.5 text-xs text-[#8b261b] font-semibold flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-          </div>
 
           <p className="text-[11px] text-[#8b261b]">
             Esta ação não poderá ser desfeita e removerá o item da lista e da nuvem imediatamente.

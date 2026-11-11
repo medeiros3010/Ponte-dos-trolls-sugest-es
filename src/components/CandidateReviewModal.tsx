@@ -21,8 +21,8 @@ interface CandidateReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   application: MembershipApplication | null;
-  onApprove: (applicationId: string, adminPassword: string) => Promise<boolean>;
-  onReject: (applicationId: string, observacoes: string, adminPassword: string) => Promise<boolean>;
+  onApprove: (applicationId: string, adminPassword?: string) => Promise<boolean>;
+  onReject: (applicationId: string, observacoes: string, adminPassword?: string) => Promise<boolean>;
   onToast: (msg: string) => void;
   rulesConfig?: RulesConfig;
   onApproveSuccess?: (application: MembershipApplication) => void;
@@ -38,7 +38,6 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
   rulesConfig,
   onApproveSuccess,
 }) => {
-  const [adminPassword, setAdminPassword] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [isRejectingOpen, setIsRejectingOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -56,7 +55,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
     try {
       setIsProcessing(true);
-      const ok = await onApprove(application.id, adminPassword.trim());
+      const ok = await onApprove(application.id);
       if (ok) {
         onToast(`Membro "${application.nome}" aprovado com sucesso!`);
         onClose();
@@ -76,7 +75,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
     try {
       setIsProcessing(true);
-      const ok = await onReject(application.id, rejectNotes.trim(), adminPassword.trim());
+      const ok = await onReject(application.id, rejectNotes.trim());
       if (ok) {
         onToast(`Solicitação de "${application.nome}" foi recusada.`);
         onClose();
@@ -271,16 +270,6 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             {!isRejectingOpen ? (
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <KeyRound className="w-4 h-4 text-[#71634D] absolute left-2.5 top-2.5" />
-                    <input
-                      type="password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      placeholder="Senha do Mestre"
-                      className="bg-[#FAF4E6] border border-[#C6AD78] rounded-xl pl-8 pr-3 py-1.5 text-xs text-[#302414] focus:outline-none focus:ring-1 focus:ring-[#48551F]"
-                    />
-                  </div>
                   <button
                     type="button"
                     onClick={() => setIsRejectingOpen(true)}

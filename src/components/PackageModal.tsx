@@ -42,7 +42,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   const [minimoParticipantes, setMinimoParticipantes] = useState<number>(35);
   const [valorCatalogoBRL, setValorCatalogoBRL] = useState<string>('');
 
-  const [adminPassword, setAdminPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,7 +51,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   const subNomeInputRef = useRef<HTMLInputElement>(null);
   const subPrecoInputRef = useRef<HTMLInputElement>(null);
   const minimoParticipantesInputRef = useRef<HTMLInputElement>(null);
-  const passwordInputRef = useRef<HTMLInputElement>(null);
   const itemsSectionRef = useRef<HTMLDivElement>(null);
 
   // Auto-calculated total price from items
@@ -115,7 +113,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     setSubLink('');
     setSubPreco('');
     setSubImageUrl('');
-    setAdminPassword('');
     setErrorMsg('');
     setFieldErrors({});
     setIsSubmitting(false);
@@ -235,11 +232,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       errors.minimoParticipantes = 'O mínimo de cotistas deve ser pelo menos 1 participante.';
     }
 
-    // 4. Validação da Senha do Mestre
-    if (!adminPassword.trim()) {
-      errors.adminPassword = 'A senha do Mestre é necessária para confirmar a operação.';
-    }
-
     // Se houver algum erro, foca o primeiro campo inválido com scroll suave
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -258,9 +250,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       } else if (errors.minimoParticipantes) {
         minimoParticipantesInputRef.current?.focus();
         minimoParticipantesInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else if (errors.adminPassword) {
-        passwordInputRef.current?.focus();
-        passwordInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       return;
     }
@@ -297,7 +286,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         valorFinalPorParticipante: existingPackage?.valorFinalPorParticipante,
         chavePix: existingPackage?.chavePix,
         instrucoesPix: existingPackage?.instrucoesPix,
-        adminPassword: adminPassword.trim(),
       });
 
       onToast(existingPackage ? 'Pacote atualizado com sucesso!' : 'Novo pacote de financiamento criado com sucesso!');
@@ -678,39 +666,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
               </div>
             </div>
 
-            {/* Senha do Mestre */}
-            <div className={`p-3.5 bg-[#FBF4E4] border rounded-xl space-y-1.5 transition-colors ${
-              fieldErrors.adminPassword ? 'border-[#8b261b] bg-[#FFF5F5]' : 'border-[#D6C296]'
-            }`}>
-              <label className="block text-xs font-bold text-[#302414] flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5 text-[#716016]" />
-                <span>Senha do Mestre para Salvar <span className="text-[#8b261b] font-bold">*</span></span>
-              </label>
-              <input
-                ref={passwordInputRef}
-                type="password"
-                placeholder="Digite a senha de administrador da Ponte..."
-                value={adminPassword}
-                onChange={(e) => {
-                  setAdminPassword(e.target.value);
-                  if (fieldErrors.adminPassword) {
-                    setFieldErrors((prev) => ({ ...prev, adminPassword: '' }));
-                  }
-                  if (errorMsg) setErrorMsg('');
-                }}
-                className={`w-full bg-[#FAF4E6] border rounded-lg px-3 py-2 text-xs text-[#302414] font-mono focus:outline-none ${
-                  fieldErrors.adminPassword
-                    ? 'border-[#8b261b] ring-1 ring-[#8b261b]'
-                    : 'border-[#C6AD78] focus:border-[#48551F]'
-                }`}
-              />
-              {fieldErrors.adminPassword && (
-                <p className="text-[11px] text-[#8b261b] font-bold flex items-center gap-1 pt-0.5">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>{fieldErrors.adminPassword}</span>
-                </p>
-              )}
-            </div>
 
           </div>
 

@@ -37,9 +37,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const [status, setStatus] = useState<ItemStatus>('Sugestão');
   
   // Admin password state (only required when editing)
-  const [adminPassword, setAdminPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
   // Fixed Author details (Read-only)
   const authorName = isEditing
     ? itemToEdit?.sugeridoPorNome || 'Membro da Ponte'
@@ -54,8 +51,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     : currentUser?.id || '';
 
   useEffect(() => {
-    setAdminPassword('');
-    setPasswordError('');
     setUrlFormatError('');
     setImageLoadError(false);
     if (itemToEdit) {
@@ -159,7 +154,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       observacaoValor: observacaoValor.trim(),
       status: isEditing ? status : 'Sugestão',
       data: itemToEdit?.data || getTodayISODate(),
-      adminPassword: adminPassword.trim(),
     });
 
     onClose();
@@ -461,31 +455,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             />
           </div>
 
-          {/* Trava de Segurança: Senha de Admin Obrigatória no Modo Edição */}
-          {isEditing && (
-            <div className="p-3 bg-[#FBF4E4] border border-[#D6C296] rounded-xl space-y-1.5">
-              <label className="block text-xs font-semibold text-[#302414] flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#716016]" />
-                <span>Senha do Admin para salvar / mudar status *</span>
-              </label>
-              <input
-                type="password"
-                placeholder="Digite a senha de administrador..."
-                value={adminPassword}
-                onChange={(e) => {
-                  setAdminPassword(e.target.value);
-                  if (passwordError) setPasswordError('');
-                }}
-                className="w-full bg-[#FAF4E6] border border-[#C6AD78] focus:border-[#48551F] rounded-lg px-3 py-2 text-xs text-[#302414] font-mono focus:outline-none"
-              />
-              {passwordError && (
-                <div className="text-xs text-[#8b261b] font-semibold flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{passwordError}</span>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Footer Actions */}
           <div className="pt-3 border-t border-[#D6C296] flex items-center justify-end gap-2">

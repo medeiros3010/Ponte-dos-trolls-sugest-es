@@ -56,7 +56,7 @@ interface FinanciamentoViewProps {
     chavePix: string;
     instrucoesPix?: string;
     iniciarEtapaPagamento: boolean;
-    adminPassword: string;
+    adminPassword?: string;
   }) => Promise<void>;
   onUpdatePackageImage: (packageId: string, newImageUrl: string, adminPassword?: string) => Promise<void>;
   onUpdatePayment: (packageId: string, memberId: string, informouPagamento: boolean) => Promise<void>;
@@ -92,7 +92,6 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
 
   // Stage Switcher Modal state (for Reopening Coleta)
   const [reopenColetaPkg, setReopenColetaPkg] = useState<FundingPackage | null>(null);
-  const [stageAdminPassword, setStageAdminPassword] = useState('');
   const [stageError, setStageError] = useState('');
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
 
@@ -214,7 +213,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
 
     try {
       setIsUpdatingStage(true);
-      await onUpdateStage(reopenColetaPkg.id, 'COLETA', stageAdminPassword.trim());
+      await onUpdateStage(reopenColetaPkg.id, 'COLETA');
       onToast('Coleta de membros reaberta! A lista de participantes voltou a ficar liberada.');
       setReopenColetaPkg(null);
     } catch (err: any) {
@@ -395,7 +394,6 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                                 onClick={() => {
                                   setActiveMenuId(null);
                                   setReopenColetaPkg(pkg);
-                                  setStageAdminPassword('');
                                   setStageError('');
                                 }}
                                 className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
@@ -1041,17 +1039,6 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
               Tem certeza que deseja reabrir a fase de coleta para o pacote <strong>"{reopenColetaPkg.titulo}"</strong>? A lista de participantes voltará a aceitar novas adesões e desistências.
             </p>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#302414]">Senha do Mestre:</label>
-              <input
-                type="password"
-                required
-                value={stageAdminPassword}
-                onChange={(e) => setStageAdminPassword(e.target.value)}
-                placeholder="Digite a senha de administrador"
-                className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
-              />
-            </div>
 
             {stageError && (
               <p className="text-xs text-[#8b261b] font-medium">{stageError}</p>

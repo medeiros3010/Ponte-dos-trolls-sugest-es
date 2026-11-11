@@ -22,7 +22,6 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
 }) => {
   const [linkDrive, setLinkDrive] = useState(packageItem?.linkDrive || '');
   const [valorCatalogo, setValorCatalogo] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmPendingCheckbox, setConfirmPendingCheckbox] = useState(false);
@@ -32,7 +31,6 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
       setLinkDrive(packageItem.linkDrive || '');
       const suggestedCatalogVal = packageItem.valorCatalogoBRL || (packageItem.valorTotalBRL * 1.25);
       setValorCatalogo(suggestedCatalogVal.toFixed(2));
-      setAdminPassword('');
       setErrorMsg('');
       setIsSubmitting(false);
       setConfirmPendingCheckbox(false);
@@ -77,11 +75,6 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-
-    if (!adminPassword.trim()) {
-      setErrorMsg('A senha do Mestre é necessária para confirmar a operação.');
-      return;
-    }
 
     const valorParsed = parseFloat(valorCatalogo.replace(',', '.'));
     if (isNaN(valorParsed) || valorParsed <= 0) {
@@ -268,22 +261,6 @@ export const MoveToCatalogModal: React.FC<MoveToCatalogModalProps> = ({
             </p>
           </div>
 
-          {/* Senha do Mestre */}
-          <div>
-            <label className="block font-semibold text-[#302414] mb-1 flex items-center gap-1">
-              <KeyRound className="w-3.5 h-3.5 text-[#716016]" />
-              <span>Senha do Mestre para Confirmar *:</span>
-            </label>
-            <input
-              type="password"
-              required
-              disabled={isSubmitting}
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              placeholder="Digite a senha de administrador..."
-              className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F] disabled:opacity-50"
-            />
-          </div>
 
           {errorMsg && (
             <div className="p-2.5 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-semibold flex items-center gap-2">

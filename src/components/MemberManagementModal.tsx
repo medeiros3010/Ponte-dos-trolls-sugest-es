@@ -33,7 +33,6 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
 
   // Delete confirmation state
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
-  const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
 
   const activeMembers = useMemo(() => {
@@ -115,15 +114,9 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
     e.preventDefault();
     if (!userToDelete) return;
 
-    if (!deletePassword.trim()) {
-      setDeleteError('A senha do Mestre é necessária para confirmar a exclusão.');
-      return;
-    }
-
     onDeleteUser(userToDelete.id);
     onToast(`Membro "${userToDelete.nome}" removido da mesa.`);
     setUserToDelete(null);
-    setDeletePassword('');
     setDeleteError('');
   };
 
@@ -367,7 +360,6 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                         type="button"
                         onClick={() => {
                           setUserToDelete(u);
-                          setDeletePassword('');
                           setDeleteError('');
                         }}
                         className="p-1.5 rounded-lg text-[#71634D] hover:text-[#8b261b] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
@@ -384,7 +376,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
 
         </div>
 
-        {/* Modal Confirmação de Exclusão com Senha */}
+        {/* Modal Confirmação de Exclusão */}
         {userToDelete && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#282D13]/70 backdrop-blur-sm">
             <div className="parchment-card border-2 border-[#8b261b]/60 rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl">
@@ -396,20 +388,6 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                 Tem certeza que deseja remover <strong className="text-[#302414]">{userToDelete.nome}</strong> da lista?
               </p>
               <form onSubmit={handleConfirmDelete} className="space-y-3 pt-1">
-                <div>
-                  <label className="block text-[11px] text-[#71634D] mb-1">
-                    Senha do Mestre para confirmar:
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={deletePassword}
-                    onChange={(e) => setDeletePassword(e.target.value)}
-                    placeholder="Ponte#dos#trolls"
-                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#8b261b]"
-                    autoFocus
-                  />
-                </div>
                 {deleteError && (
                   <p className="text-xs text-[#8b261b]">{deleteError}</p>
                 )}
