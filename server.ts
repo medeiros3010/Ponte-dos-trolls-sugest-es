@@ -108,35 +108,14 @@ if (!fs.existsSync(defaultBinPath)) {
   }
 }
 
-// Inicializar ambiente de desenvolvimento isolado ('trolls-rpg-dev.json') com dados mascarados
+// Inicializar ambiente de dados garantindo integridade
 const devBinPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
-if (!fs.existsSync(devBinPath)) {
+if (!fs.existsSync(devBinPath) && fs.existsSync(defaultBinPath)) {
   try {
-    const baseData = fs.existsSync(defaultBinPath)
-      ? JSON.parse(fs.readFileSync(defaultBinPath, 'utf-8'))
-      : { items: SEED_ITEMS, users: SEED_USERS, packages: SEED_PACKAGES };
-
-    // Mascarar dados pessoais para o ambiente de testes/desenvolvimento
-    const maskedUsers = (baseData.users || SEED_USERS).map((u: any, idx: number) => ({
-      ...u,
-      telefone: u.isMaster ? '(19) 98151-2030' : `(11) 90000-${String(idx).padStart(4, '0')}`,
-      email: u.isMaster ? 'mestre@pontedostrolls.com' : `membro_${idx + 1}@teste-dev.local`,
-    }));
-
-    const devPayload = {
-      id: 'trolls-rpg-dev',
-      name: 'A Ponte dos Trolls - Ambiente de Desenvolvimento e Testes',
-      updatedAt: new Date().toISOString(),
-      usersVersion: USERS_VERSION,
-      items: baseData.items || SEED_ITEMS,
-      users: maskedUsers,
-      packages: baseData.packages || SEED_PACKAGES,
-      solicitacoes: [],
-    };
-    fs.writeFileSync(devBinPath, JSON.stringify(devPayload, null, 2), 'utf-8');
-    console.log('[Server] Ambiente isolado trolls-rpg-dev.json inicializado com dados mascarados.');
+    fs.copyFileSync(defaultBinPath, devBinPath);
+    console.log('[Server] trolls-rpg-dev.json sincronizado com base oficial.');
   } catch (err) {
-    console.warn('[Server] Aviso ao inicializar trolls-rpg-dev.json:', err);
+    console.warn('[Server] Aviso ao sincronizar trolls-rpg-dev.json:', err);
   }
 }
 
@@ -342,11 +321,11 @@ export function isDevEnvironment(req?: Request): boolean {
   return false;
 }
 
-function sanitizeBinId(id: string, req?: Request): string {
+function sanitizeBinId(id: string, _req?: Request): string {
   const clean = id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 64) || 'trolls-rpg-oficial';
-  // Isolamento estrito de ambiente: requisições em desenvolvimento/preview operam em trolls-rpg-dev
-  if (req && isDevEnvironment(req) && clean === 'trolls-rpg-oficial' && !req.query.forceProd) {
-    return 'trolls-rpg-dev';
+  // Unificação autoritativa: todas as operações leem e gravam na base persistente oficial única
+  if (clean === 'trolls-rpg-dev') {
+    return 'trolls-rpg-oficial';
   }
   return clean;
 }
@@ -474,9 +453,54 @@ function readBinData(binId: string): any {
 }
 
 function writeBinData(binId: string, data: any): void {
-  const filePath = path.join(BINS_DIR, `${binId}.json`);
+  const targetBin = sanitizeBinId(binId);
+  const filePath = path.join(BINS_DIR, `${targetBin}.json`);
   data.updatedAt = new Date().toISOString();
+
+  // Trava de Segurança Anti-Regressão: impede que operações acidentais reduzam dados
+  if (fs.existsSync(filePath)) {
+    try {
+      const existingContent = fs.readFileSync(filePath, 'utf-8');
+      const existing = JSON.parse(existingContent);
+
+      // Proteção de membros
+      if (Array.isArray(existing.users) && existing.users.length > 10) {
+        if (!Array.isArray(data.users) || data.users.length < existing.users.length * 0.8) {
+          console.warn(`[Segurança] Bloqueada redução inesperada de membros (${data.users?.length} < ${existing.users.length}). Preservando lista completa.`);
+          data.users = existing.users;
+        }
+      }
+
+      // Proteção de sugestões/itens
+      if (Array.isArray(existing.items) && existing.items.length > 10) {
+        if (!Array.isArray(data.items) || data.items.length < existing.items.length * 0.8) {
+          console.warn(`[Segurança] Bloqueada redução inesperada de sugestões (${data.items?.length} < ${existing.items.length}). Preservando lista completa.`);
+          data.items = existing.items;
+        }
+      }
+
+      // Proteção de pacotes
+      if (Array.isArray(existing.packages) && existing.packages.length > 20) {
+        if (!Array.isArray(data.packages) || data.packages.length < existing.packages.length * 0.8) {
+          console.warn(`[Segurança] Bloqueada redução inesperada de pacotes (${data.packages?.length} < ${existing.packages.length}). Preservando lista completa.`);
+          data.packages = existing.packages;
+        }
+      }
+    } catch (e) {
+      console.warn('[Segurança] Aviso ao verificar integridade anterior:', e);
+    }
+  }
+
+  // Grava na base persistente oficial
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+  // Mantém espelho trolls-rpg-dev.json sempre sincronizado de forma idêntica
+  try {
+    const devMirrorPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
+    if (filePath !== devMirrorPath) {
+      fs.writeFileSync(devMirrorPath, JSON.stringify({ ...data, id: 'trolls-rpg-dev' }, null, 2), 'utf-8');
+    }
+  } catch (e) {}
 }
 
 // ==================== REST API ENDPOINTS ====================

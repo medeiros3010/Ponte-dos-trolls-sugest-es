@@ -48,12 +48,8 @@ import { RulesConfig, INITIAL_RULES_CONFIG } from './data/rulesAndQuestions';
 import { isPackageAcquired, getUserAcquiredPackages } from './utils/ranksAndAcquisitions';
 import { testConnection, auth } from './firebase/config';
 import {
-  subscribeItems,
-  subscribePackages,
-  subscribeUsers,
   saveItemToFirestore,
   deleteItemFromFirestore,
-  savePackageToFirestore,
   deletePackageFromFirestore,
 } from './firebase/firestoreService';
 
@@ -308,52 +304,8 @@ export default function App() {
       }
     });
 
-    // Real-time synchronization from Firestore
-    let unsubItems: () => void = () => {};
-    let unsubPackages: () => void = () => {};
-    let unsubUsers: () => void = () => {};
-
-    try {
-      unsubItems = subscribeItems((cloudItems) => {
-        if (cloudItems && cloudItems.length > 0) {
-          setItems(cloudItems);
-        }
-      });
-
-      unsubPackages = subscribePackages((cloudPackages) => {
-        if (cloudPackages && cloudPackages.length > 0) {
-          // Remove pacotes de teste do Catálogo (pack-3, pack-4, pack-5) se existirem
-          const cleanCloud = cloudPackages.filter(
-            (p) => !['pack-3', 'pack-4', 'pack-5'].includes(p.id)
-          );
-          const cloudMap = new Map<string, FundingPackage>();
-          for (const p of cleanCloud) {
-            cloudMap.set(p.id, p);
-          }
-          // Preserva todos os pacotes históricos do acervo e quaisquer pacotes criados ou financiamentos
-          const catalogIds = new Set(HISTORICAL_CATALOG_PACKAGES.map((hp) => hp.id));
-          const extraPackages = cleanCloud.filter((p) => !catalogIds.has(p.id));
-          const mergedCatalog: FundingPackage[] = HISTORICAL_CATALOG_PACKAGES.map((hp) => {
-            return cloudMap.get(hp.id) || hp;
-          });
-          setPackages([...extraPackages, ...mergedCatalog]);
-        }
-      });
-
-      unsubUsers = subscribeUsers((cloudUsers) => {
-        if (cloudUsers && cloudUsers.length > 0) {
-          setUsers(cloudUsers);
-        }
-      });
-    } catch (err) {
-      console.warn('[Firebase] Subscriptions warning:', err);
-    }
-
     return () => {
       unsubAuth();
-      unsubItems();
-      unsubPackages();
-      unsubUsers();
     };
   }, []);
 
@@ -443,20 +395,20 @@ export default function App() {
           if (Array.isArray(cloudData.items)) {
             setItems(cloudData.items);
           }
-          if (Array.isArray(cloudData.packages)) {
+          if (Array.isArray(cloudData.packages) && cloudData.packages.length > 0) {
             const cleanPackages = cloudData.packages.filter(
-              (p: any) => !['pack-3', 'pack-4', 'pack-5'].includes(p?.id)
+              (p: any) => p && !['pack-3', 'pack-4', 'pack-5'].includes(p?.id)
             );
             const pkgMap = new Map<string, FundingPackage>();
             for (const p of cleanPackages) {
               pkgMap.set(p.id, p);
             }
-            const catalogIds = new Set(HISTORICAL_CATALOG_PACKAGES.map((hp) => hp.id));
-            const otherPackages = cleanPackages.filter((p: any) => !catalogIds.has(p.id));
-            const mergedCatalog: FundingPackage[] = HISTORICAL_CATALOG_PACKAGES.map((hp) => {
-              return pkgMap.get(hp.id) || hp;
-            });
-            setPackages([...otherPackages, ...mergedCatalog]);
+            for (const hp of HISTORICAL_CATALOG_PACKAGES) {
+              if (!pkgMap.has(hp.id)) {
+                pkgMap.set(hp.id, hp);
+              }
+            }
+            setPackages(Array.from(pkgMap.values()));
           }
           if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
             setUsers(cloudData.users);
@@ -832,7 +784,6 @@ export default function App() {
           setPackages((prev) => [res.package!, ...prev]);
           showToast('Novo pacote de financiamento criado!');
         }
-        savePackageToFirestore(res.package).catch((err) => console.warn('Firestore sync package notice:', err));
         setPackageToEdit(null);
       }
     } catch (err: any) {
@@ -880,7 +831,6 @@ export default function App() {
       const res = await apiUpdatePackagePayment(binId, packageId, memberId, informouPagamento, adminPassword);
       if (res && res.package) {
         setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
-        savePackageToFirestore(res.package).catch((err) => console.warn('Firestore sync package notice:', err));
       } else {
         setPackages((prev) =>
           prev.map((p) => {
@@ -901,9 +851,7 @@ export default function App() {
               }
               return a;
             });
-            const updated = { ...p, pagamentos, apoiadores };
-            savePackageToFirestore(updated).catch((err) => console.warn('Firestore sync package notice:', err));
-            return updated;
+            return { ...p, pagamentos, apoiadores };
           })
         );
       }
@@ -1002,7 +950,6 @@ export default function App() {
     setPackages(nextPackages);
     if (finalizedPkg) {
       apiSavePackage(binId, finalizedPkg).catch((err) => console.warn('Erro ao salvar pacote no servidor:', err));
-      savePackageToFirestore(finalizedPkg).catch((err) => console.warn('Erro ao salvar pacote no Firestore:', err));
       setCompletedNoticePkg(finalizedPkg);
     }
     setPackageToMove(null);
@@ -1287,7 +1234,6 @@ export default function App() {
                     const res = await apiAddPosteriorBuyer(binId, packageId, member, adminPassword);
                     if (res && res.package) {
                       setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
-                      savePackageToFirestore(res.package).catch((e) => console.warn('Firestore package update:', e));
                       showToast(`Acesso liberado para ${member.nome}!`);
                       return true;
                     }
@@ -1301,7 +1247,6 @@ export default function App() {
                     const res = await apiRemovePosteriorBuyer(binId, packageId, memberId, adminPassword);
                     if (res && res.package) {
                       setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
-                      savePackageToFirestore(res.package).catch((e) => console.warn('Firestore package update:', e));
                       showToast('Acesso removido.');
                       return true;
                     }
@@ -1315,7 +1260,6 @@ export default function App() {
                     const res = await apiRejectPackageAccess(binId, packageId, memberId, adminPassword);
                     if (res && res.package) {
                       setPackages((prev) => prev.map((p) => (p.id === packageId ? res.package! : p)));
-                      savePackageToFirestore(res.package).catch((e) => console.warn('Firestore package update:', e));
                       showToast('Solicitação de acesso recusada.');
                       return true;
                     }
