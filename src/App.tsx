@@ -433,7 +433,7 @@ export default function App() {
     };
   }, [binId, currentUser?.id, currentUser?.isMaster]);
 
-  // Push to cloud helper
+  // Push to cloud helper (apenas Mestre possui permissão para salvamento monolítico da base inteira)
   const syncWithCloud = useCallback(
     async (
       newItems: ItemRPG[] = items,
@@ -443,6 +443,10 @@ export default function App() {
       newRulesConfig: RulesConfig = rulesConfig
     ): Promise<boolean> => {
       if (!binId) return true;
+      const isMaster = Boolean(currentUser?.isMaster || currentUser?.id === 'usr-master');
+      if (!isMaster) {
+        return true;
+      }
       try {
         setIsSyncing(true);
         await pushCloudData(binId, newItems, newUsers, newPackages, newApplications, newRulesConfig, USERS_VERSION);
@@ -455,7 +459,7 @@ export default function App() {
         setIsSyncing(false);
       }
     },
-    [binId, items, users, packages, applications, rulesConfig, showToast]
+    [binId, currentUser?.isMaster, currentUser?.id, items, users, packages, applications, rulesConfig, showToast]
   );
 
   // User Identification Handlers
@@ -489,7 +493,12 @@ export default function App() {
     if (hasChanges) {
       const nextUsers = users.map((u) => (u.id === user.id ? updatedUser : u));
       setUsers(nextUsers);
-      syncWithCloud(items, nextUsers, packages);
+      apiUpdateUserProfile(binId, {
+        userId: updatedUser.id,
+        nome: updatedUser.nome,
+        telefone: updatedUser.telefone,
+        email: updatedUser.email,
+      }).catch((err) => console.warn('Aviso ao sincronizar perfil:', err));
     }
 
     showToast(`Bem-vindo, ${updatedUser.nome}!`);

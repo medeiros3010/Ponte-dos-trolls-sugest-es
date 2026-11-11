@@ -252,14 +252,12 @@ export async function pushCloudData(
       payload.regrasConfig = regrasConfig;
     }
 
-    const token = getSessionToken();
-    const headers: Record<string, string> = {
+    const headers = getAuthHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-      headers['x-session-token'] = token;
+    });
+    if (headers['x-admin-password']) {
+      payload.adminPassword = headers['x-admin-password'];
     }
 
     const res = await fetch(url, {
