@@ -20,6 +20,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 }) => {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [sistema, setSistema] = useState('Foundry VTT Geral');
   const [tipo, setTipo] = useState<ProductType>('Material para VTT');
   const [imageUrl, setImageUrl] = useState('');
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -68,17 +69,23 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     if (existingPackage) {
       setTitulo(existingPackage.titulo || '');
       setDescricao(existingPackage.descricao || '');
+      setSistema(existingPackage.sistema || (existingPackage.itens && existingPackage.itens[0]?.sistema) || 'Foundry VTT Geral');
       setTipo(existingPackage.tipo || 'Material para VTT');
       setImageUrl(existingPackage.imageUrl || '');
       setLinkDrive(existingPackage.linkDrive || '');
       setItens(
         existingPackage.itens && existingPackage.itens.length > 0
-          ? existingPackage.itens
+          ? existingPackage.itens.map((it) => ({
+              ...it,
+              categoria: it.categoria || it.tipo || 'Material para VTT',
+              tipo: it.tipo || (it.categoria as ProductType) || 'Material para VTT',
+            }))
           : (existingPackage.itensInclusos || []).map((nome, idx) => ({
               id: `item-${idx}`,
               nome,
               sistema: existingPackage.sistema || 'Foundry VTT Geral',
               tipo: existingPackage.tipo || 'Material para VTT',
+              categoria: existingPackage.tipo || 'Material para VTT',
               link: existingPackage.linkLoja || '',
               precoBRL: existingPackage.valorTotalBRL / ((existingPackage.itensInclusos || []).length || 1),
             }))
@@ -94,6 +101,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     } else {
       setTitulo('');
       setDescricao('');
+      setSistema('Foundry VTT Geral');
       setTipo('Material para VTT');
       setImageUrl('');
       setLinkDrive('');
@@ -160,6 +168,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       nome: subNome.trim(),
       sistema: subSistema,
       tipo: subTipo,
+      categoria: subTipo,
       link: subLink.trim(),
       precoBRL: preco,
       imageUrl: subImageUrl.trim() || undefined,
@@ -207,6 +216,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
           nome: subNome.trim(),
           sistema: subSistema,
           tipo: subTipo,
+          categoria: subTipo,
           link: subLink.trim(),
           precoBRL: parsedSubPreco,
           imageUrl: subImageUrl.trim() || undefined,
@@ -262,7 +272,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         ? parseFloat(valorCatalogoBRL.replace(',', '.'))
         : valorTotalBRL;
 
-      const principalSistema = finalItens[0]?.sistema || 'Foundry VTT Geral';
+      const principalSistema = sistema || finalItens[0]?.sistema || 'Foundry VTT Geral';
 
       await onSave({
         id: existingPackage?.id,
@@ -376,8 +386,25 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 )}
               </div>
 
-              {/* Tipo de Produto Oficial */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Sistema, Tipo de Produto & Link Drive */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#71634D] mb-1">
+                    Sistema do Pacote <span className="text-[#8b261b] font-bold">*</span>
+                  </label>
+                  <select
+                    value={sistema}
+                    onChange={(e) => setSistema(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                  >
+                    {SISTEMAS_PADRAO.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-[#71634D] mb-1">
                     Tipo de Produto <span className="text-[#8b261b] font-bold">*</span>
@@ -399,7 +426,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 <div>
                   <label className="block text-xs font-semibold text-[#71634D] mb-1 flex items-center gap-1">
                     <FolderCheck className="w-3.5 h-3.5 text-[#48551F]" />
-                    <span>Link da Pasta no Google Drive (Acervo)</span>
+                    <span>Link da Pasta no Google Drive</span>
                   </label>
                   <input
                     type="url"
@@ -506,9 +533,12 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 <div className="space-y-1.5 max-h-44 overflow-y-auto divide-y divide-[#E3D1AC] pr-1">
                   {itens.map((it) => (
                     <div key={it.id} className="pt-1.5 flex items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-2 truncate">
+                      <div className="flex items-center gap-1.5 truncate">
                         <span className="px-1.5 py-0.5 rounded bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
                           {it.sistema}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
+                          {it.categoria || it.tipo || 'Material para VTT'}
                         </span>
                         <span className="font-medium text-[#302414] truncate">{it.nome}</span>
                       </div>
@@ -547,22 +577,33 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                   </p>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                   <input
                     ref={subNomeInputRef}
                     type="text"
                     placeholder="Nome do item/módulo *"
                     value={subNome}
                     onChange={(e) => setSubNome(e.target.value)}
-                    className="sm:col-span-2 px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                    className="sm:col-span-5 px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                   />
                   <select
                     value={subSistema}
                     onChange={(e) => setSubSistema(e.target.value)}
-                    className="px-2 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                    className="sm:col-span-3 px-2 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                    title="Sistema do item"
                   >
                     {SISTEMAS_PADRAO.map((s) => (
                       <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={subTipo}
+                    onChange={(e) => setSubTipo(e.target.value as ProductType)}
+                    className="sm:col-span-2 px-2 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                    title="Categoria / Tipo do item"
+                  >
+                    {OFFICIAL_PRODUCT_TYPES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
                   <input
@@ -573,7 +614,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                     placeholder="Preço R$ *"
                     value={subPreco}
                     onChange={(e) => setSubPreco(e.target.value)}
-                    className="px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
+                    className="sm:col-span-2 px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
                   />
                 </div>
 

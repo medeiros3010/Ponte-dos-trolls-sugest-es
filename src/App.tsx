@@ -1272,6 +1272,7 @@ export default function App() {
                   setIsPackageModalOpen(true);
                 }}
                 onDeletePackage={handleDeletePackage}
+                onSavePackage={handleSavePackage}
                 onUpdateDriveLink={handleUpdateDriveLink}
                 onUpdatePackageImage={handleUpdatePackageImage}
                 cartPackageIds={cart}

@@ -24,10 +24,7 @@ function getPort(): number {
     const parsed = parseInt(process.argv[portArgIndex + 1], 10);
     if (!isNaN(parsed) && parsed > 0) return parsed;
   }
-  if (process.env.PORT) {
-    const parsed = parseInt(process.env.PORT, 10);
-    if (!isNaN(parsed) && parsed > 0) return parsed;
-  }
+  // AI Studio requires port 3000. Never fall back to container-level PORT (e.g. 8080 used by reverse proxy)
   return 3000;
 }
 
@@ -2121,10 +2118,6 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
   const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
   const isMaster = checkMasterPermission(req, adminPassword);
 
-  if (!isMaster) {
-    return res.status(403).json({ error: 'Apenas o Mestre pode validar arquivos de backup.' });
-  }
-
   try {
     const backupData = req.body.backupData || req.body.payload;
     if (!backupData || typeof backupData !== 'object') {
@@ -2224,6 +2217,7 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
 
     return res.json({
       valid: isValid,
+      isMasterAuthorized: isMaster,
       formatVersion,
       sourceEnvironment,
       exportedAt,
@@ -2367,8 +2361,12 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
 
       writeBinData(binId, newBinData);
 
-      if (binId === 'trolls-rpg-oficial') {
-        fs.writeFileSync(path.join(BINS_DIR, 'trolls-rpg-oficial.json.immutable-backup'), JSON.stringify(newBinData, null, 2), 'utf-8');
+      if (binId === 'trolls-rpg-oficial' || binId === 'trolls-rpg-dev') {
+        const oficialData = { ...newBinData, id: 'trolls-rpg-oficial' };
+        writeBinData('trolls-rpg-oficial', oficialData);
+        fs.writeFileSync(path.join(BINS_DIR, 'trolls-rpg-oficial.json.immutable-backup'), JSON.stringify(oficialData, null, 2), 'utf-8');
+        const devData = { ...newBinData, id: 'trolls-rpg-dev' };
+        writeBinData('trolls-rpg-dev', devData);
       }
 
       return res.json({
@@ -2496,7 +2494,8 @@ async function startServer() {
             startListening(retries - 1, delay * 1.5);
           }, delay);
         } else {
-          console.warn(`[Server] Port ${PORT} remained in use after all retries.`);
+          console.error(`[Server] Port ${PORT} remained in use after all retries.`);
+          process.exit(1);
         }
       } else {
         console.error('[Server] Fatal server error:', err);

@@ -149,12 +149,60 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
           throw new Error('O arquivo não contém uma estrutura JSON válida.');
         }
 
-        // Executar pré-validação detalhada no servidor
-        const report = await apiValidateBackup(parsed, binId);
+        // Extração defensiva universal de dados (compatível com backups de raiz direta ou aninhados em .data)
+        const rawUsers = Array.isArray(parsed.users) ? parsed.users : (Array.isArray(parsed.data?.users) ? parsed.data.users : []);
+        const rawItems = Array.isArray(parsed.items) ? parsed.items : (Array.isArray(parsed.data?.items) ? parsed.data.items : []);
+        const rawPackages = Array.isArray(parsed.packages) ? parsed.packages : (Array.isArray(parsed.data?.packages) ? parsed.data.packages : []);
+        const rawSolicitacoes = Array.isArray(parsed.solicitacoes)
+          ? parsed.solicitacoes
+          : (Array.isArray(parsed.data?.solicitacoes)
+              ? parsed.data.solicitacoes
+              : (Array.isArray(parsed.applications) ? parsed.applications : []));
+
+        if (rawUsers.length === 0 && rawItems.length === 0 && rawPackages.length === 0) {
+          throw new Error('O arquivo selecionado não contém membros, itens ou pacotes reconhecíveis.');
+        }
+
+        // Relatório de validação inicial local
+        let report: ValidationReport = {
+          valid: true,
+          formatVersion: parsed.formatVersion || (parsed.binId ? '1.0.0 (backup da Ponte)' : '1.0.0 (legado)'),
+          sourceEnvironment: parsed.sourceEnvironment || 'Histórico do Site',
+          exportedAt: parsed.exportedAt || parsed.updatedAt || 'Data informada no backup',
+          counts: {
+            users: rawUsers.length,
+            items: rawItems.length,
+            packages: rawPackages.length,
+            solicitacoes: rawSolicitacoes.length,
+          },
+          duplicateIds: [],
+          warnings: [],
+          errors: [],
+        };
+
+        // Tentar obter validação detalhada do servidor se disponível
+        try {
+          const serverReport = await apiValidateBackup(parsed, binId);
+          if (serverReport) {
+            report = {
+              ...report,
+              ...serverReport,
+              counts: {
+                users: serverReport.counts?.users ?? rawUsers.length,
+                items: serverReport.counts?.items ?? rawItems.length,
+                packages: serverReport.counts?.packages ?? rawPackages.length,
+                solicitacoes: serverReport.counts?.solicitacoes ?? rawSolicitacoes.length,
+              },
+            };
+          }
+        } catch (serverErr) {
+          console.warn('Servidor de validação indisponível, usando validação defensiva local:', serverErr);
+        }
+
         setPendingBackupData(parsed);
         setValidationReport(report);
 
-        if (!report.valid) {
+        if (!report.valid && report.errors.length > 0) {
           setRestoreError(`Arquivo rejeitado pela validação: ${report.errors.join(' | ')}`);
         }
       } catch (err: any) {

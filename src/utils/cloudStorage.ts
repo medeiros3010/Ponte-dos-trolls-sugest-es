@@ -1184,6 +1184,7 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
             nome: it.nome || 'Item',
             sistema: it.sistema || pkg.sistema || 'Foundry VTT Geral',
             tipo: it.tipo || itemNorm.tipo,
+            categoria: it.categoria || it.tipo || itemNorm.tipo,
             link: it.link || pkg.linkLoja || '',
             precoBRL: typeof it.precoBRL === 'number' ? it.precoBRL : (parseFloat(it.precoBRL) || 0),
             imageUrl: it.imageUrl || undefined,
