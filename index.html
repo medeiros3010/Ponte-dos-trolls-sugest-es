@@ -3,6 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Suprime avisos benignos de desconexão de WebSocket do HMR desativado no ambiente de preview
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event && (event.reason || event);
+        var msg = (reason && reason.message) || String(reason || '');
+        if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1) {
+          event.preventDefault();
+        }
+      });
+      window.addEventListener('error', function(event) {
+        var msg = (event && event.message) || '';
+        if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('[vite] failed to connect') !== -1) {
+          event.preventDefault();
+        }
+      });
+    </script>
     <title>Central de Compras Coletivas RPG</title>
     <meta name="description" content="Central de vaquinhas, rateios e financiamentos coletivos de materiais digitais e módulos Foundry VTT para grupos de RPG." />
     <meta property="og:title" content="Central de Compras Coletivas RPG" />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FundingPackage, PackageSubItem, ProductType, OFFICIAL_PRODUCT_TYPES, SISTEMAS_PADRAO } from '../types';
-import { X, Layers, Plus, Trash2, KeyRound, DollarSign, Calendar, Users, ExternalLink, Image as ImageIcon, Upload, FolderCheck, AlertCircle, AlertTriangle } from 'lucide-react';
+import { X, Layers, Plus, Trash2, KeyRound, DollarSign, Calendar, Users, ExternalLink, Image as ImageIcon, Upload, FolderCheck, AlertCircle, AlertTriangle, Edit2, Check } from 'lucide-react';
 import { uploadImageFile } from '../utils/cloudStorage';
 
 interface PackageModalProps {
@@ -20,7 +20,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 }) => {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [sistema, setSistema] = useState('Foundry VTT Geral');
   const [tipo, setTipo] = useState<ProductType>('Material para VTT');
   const [imageUrl, setImageUrl] = useState('');
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -31,10 +30,12 @@ export const PackageModal: React.FC<PackageModalProps> = ({
   // Item builder fields
   const [subNome, setSubNome] = useState('');
   const [subSistema, setSubSistema] = useState('Foundry VTT Geral');
+  const [subCategoria, setSubCategoria] = useState<string>('Material para VTT');
   const [subTipo, setSubTipo] = useState<ProductType>('Material para VTT');
   const [subLink, setSubLink] = useState('');
   const [subPreco, setSubPreco] = useState('');
   const [subImageUrl, setSubImageUrl] = useState('');
+  const [editingSubItemId, setEditingSubItemId] = useState<string | null>(null);
   const [isUploadingSubImage, setIsUploadingSubImage] = useState(false);
 
   // Rules and dates
@@ -69,7 +70,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     if (existingPackage) {
       setTitulo(existingPackage.titulo || '');
       setDescricao(existingPackage.descricao || '');
-      setSistema(existingPackage.sistema || (existingPackage.itens && existingPackage.itens[0]?.sistema) || 'Foundry VTT Geral');
       setTipo(existingPackage.tipo || 'Material para VTT');
       setImageUrl(existingPackage.imageUrl || '');
       setLinkDrive(existingPackage.linkDrive || '');
@@ -77,15 +77,16 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         existingPackage.itens && existingPackage.itens.length > 0
           ? existingPackage.itens.map((it) => ({
               ...it,
-              categoria: it.categoria || it.tipo || 'Material para VTT',
+              sistema: it.sistema || existingPackage.sistema || 'Foundry VTT Geral',
+              categoria: it.categoria || it.tipo || 'Não informada',
               tipo: it.tipo || (it.categoria as ProductType) || 'Material para VTT',
             }))
           : (existingPackage.itensInclusos || []).map((nome, idx) => ({
               id: `item-${idx}`,
               nome,
               sistema: existingPackage.sistema || 'Foundry VTT Geral',
+              categoria: 'Não informada',
               tipo: existingPackage.tipo || 'Material para VTT',
-              categoria: existingPackage.tipo || 'Material para VTT',
               link: existingPackage.linkLoja || '',
               precoBRL: existingPackage.valorTotalBRL / ((existingPackage.itensInclusos || []).length || 1),
             }))
@@ -101,7 +102,6 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     } else {
       setTitulo('');
       setDescricao('');
-      setSistema('Foundry VTT Geral');
       setTipo('Material para VTT');
       setImageUrl('');
       setLinkDrive('');
@@ -117,10 +117,12 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     }
     setSubNome('');
     setSubSistema('Foundry VTT Geral');
+    setSubCategoria('Material para VTT');
     setSubTipo('Material para VTT');
     setSubLink('');
     setSubPreco('');
     setSubImageUrl('');
+    setEditingSubItemId(null);
     setErrorMsg('');
     setFieldErrors({});
     setIsSubmitting(false);
@@ -145,6 +147,29 @@ export const PackageModal: React.FC<PackageModalProps> = ({
     }
   };
 
+  const handleStartEditSubItem = (item: PackageSubItem) => {
+    setEditingSubItemId(item.id);
+    setSubNome(item.nome);
+    setSubSistema(item.sistema || 'Foundry VTT Geral');
+    setSubCategoria(item.categoria || item.tipo || 'Material para VTT');
+    setSubPreco(item.precoBRL !== undefined ? String(item.precoBRL) : '');
+    setSubLink(item.link || '');
+    setSubImageUrl(item.imageUrl || '');
+    setFieldErrors((prev) => ({ ...prev, subItem: '', itens: '' }));
+    subNomeInputRef.current?.focus();
+  };
+
+  const handleCancelEditSubItem = () => {
+    setEditingSubItemId(null);
+    setSubNome('');
+    setSubSistema('Foundry VTT Geral');
+    setSubCategoria('Material para VTT');
+    setSubPreco('');
+    setSubLink('');
+    setSubImageUrl('');
+    setFieldErrors((prev) => ({ ...prev, subItem: '' }));
+  };
+
   const handleAddSubItem = (e: React.FormEvent) => {
     e.preventDefault();
     setFieldErrors((prev) => ({ ...prev, subItem: '', itens: '' }));
@@ -163,19 +188,43 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       return;
     }
 
-    const newItem: PackageSubItem = {
-      id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
-      nome: subNome.trim(),
-      sistema: subSistema,
-      tipo: subTipo,
-      categoria: subTipo,
-      link: subLink.trim(),
-      precoBRL: preco,
-      imageUrl: subImageUrl.trim() || undefined,
-    };
+    if (editingSubItemId) {
+      setItens((prev) =>
+        prev.map((it) =>
+          it.id === editingSubItemId
+            ? {
+                ...it,
+                nome: subNome.trim(),
+                sistema: subSistema,
+                categoria: subCategoria,
+                tipo: (subCategoria as ProductType) || it.tipo || 'Material para VTT',
+                link: subLink.trim(),
+                precoBRL: preco,
+                imageUrl: subImageUrl.trim() || undefined,
+              }
+            : it
+        )
+      );
+      onToast(`Item "${subNome.trim()}" atualizado.`);
+      setEditingSubItemId(null);
+    } else {
+      const newItem: PackageSubItem = {
+        id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+        nome: subNome.trim(),
+        sistema: subSistema,
+        categoria: subCategoria,
+        tipo: (subCategoria as ProductType) || 'Material para VTT',
+        link: subLink.trim(),
+        precoBRL: preco,
+        imageUrl: subImageUrl.trim() || undefined,
+      };
+      setItens((prev) => [...prev, newItem]);
+      onToast(`Item "${newItem.nome}" adicionado à lista.`);
+    }
 
-    setItens((prev) => [...prev, newItem]);
     setSubNome('');
+    setSubSistema('Foundry VTT Geral');
+    setSubCategoria('Material para VTT');
     setSubLink('');
     setSubPreco('');
     setSubImageUrl('');
@@ -186,11 +235,13 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       delete next.subItem;
       return next;
     });
-    onToast(`Item "${newItem.nome}" adicionado à lista.`);
   };
 
   const handleRemoveSubItem = (id: string) => {
     setItens((prev) => prev.filter((it) => it.id !== id));
+    if (editingSubItemId === id) {
+      handleCancelEditSubItem();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -211,18 +262,36 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       const cleanSubPreco = subPreco.replace(',', '.').trim();
       const parsedSubPreco = parseFloat(cleanSubPreco);
       if (!isNaN(parsedSubPreco) && parsedSubPreco >= 0) {
-        const autoItem: PackageSubItem = {
-          id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
-          nome: subNome.trim(),
-          sistema: subSistema,
-          tipo: subTipo,
-          categoria: subTipo,
-          link: subLink.trim(),
-          precoBRL: parsedSubPreco,
-          imageUrl: subImageUrl.trim() || undefined,
-        };
-        finalItens = [...finalItens, autoItem];
+        if (editingSubItemId) {
+          finalItens = finalItens.map((it) =>
+            it.id === editingSubItemId
+              ? {
+                  ...it,
+                  nome: subNome.trim(),
+                  sistema: subSistema,
+                  categoria: subCategoria,
+                  tipo: (subCategoria as ProductType) || it.tipo || 'Material para VTT',
+                  link: subLink.trim(),
+                  precoBRL: parsedSubPreco,
+                  imageUrl: subImageUrl.trim() || undefined,
+                }
+              : it
+          );
+        } else {
+          const autoItem: PackageSubItem = {
+            id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+            nome: subNome.trim(),
+            sistema: subSistema,
+            categoria: subCategoria,
+            tipo: (subCategoria as ProductType) || 'Material para VTT',
+            link: subLink.trim(),
+            precoBRL: parsedSubPreco,
+            imageUrl: subImageUrl.trim() || undefined,
+          };
+          finalItens = [...finalItens, autoItem];
+        }
         setItens(finalItens);
+        setEditingSubItemId(null);
         setSubNome('');
         setSubPreco('');
         setSubLink('');
@@ -272,7 +341,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         ? parseFloat(valorCatalogoBRL.replace(',', '.'))
         : valorTotalBRL;
 
-      const principalSistema = sistema || finalItens[0]?.sistema || 'Foundry VTT Geral';
+      const principalSistema = finalItens[0]?.sistema || 'Foundry VTT Geral';
 
       await onSave({
         id: existingPackage?.id,
@@ -386,25 +455,8 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 )}
               </div>
 
-              {/* Sistema, Tipo de Produto & Link Drive */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-[#71634D] mb-1">
-                    Sistema do Pacote <span className="text-[#8b261b] font-bold">*</span>
-                  </label>
-                  <select
-                    value={sistema}
-                    onChange={(e) => setSistema(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
-                  >
-                    {SISTEMAS_PADRAO.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+              {/* Tipo de Produto Oficial */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#71634D] mb-1">
                     Tipo de Produto <span className="text-[#8b261b] font-bold">*</span>
@@ -426,7 +478,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 <div>
                   <label className="block text-xs font-semibold text-[#71634D] mb-1 flex items-center gap-1">
                     <FolderCheck className="w-3.5 h-3.5 text-[#48551F]" />
-                    <span>Link da Pasta no Google Drive</span>
+                    <span>Link da Pasta no Google Drive (Acervo)</span>
                   </label>
                   <input
                     type="url"
@@ -530,34 +582,45 @@ export const PackageModal: React.FC<PackageModalProps> = ({
 
               {/* Lista dos Itens já adicionados */}
               {itens.length > 0 ? (
-                <div className="space-y-1.5 max-h-44 overflow-y-auto divide-y divide-[#E3D1AC] pr-1">
-                  {itens.map((it) => (
-                    <div key={it.id} className="pt-1.5 flex items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className="px-1.5 py-0.5 rounded bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
-                          {it.sistema}
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
-                          {it.categoria || it.tipo || 'Material para VTT'}
-                        </span>
-                        <span className="font-medium text-[#302414] truncate">{it.nome}</span>
-                      </div>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto divide-y divide-[#E3D1AC] pr-1">
+                  {itens.map((it) => {
+                    const cat = it.categoria || it.tipo || 'Não informada';
+                    return (
+                      <div key={it.id} className="pt-2 pb-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                          <span className="px-2 py-0.5 rounded bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
+                            {it.sistema || 'Foundry VTT Geral'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
+                            {cat}
+                          </span>
+                          <span className="font-medium text-[#302414] truncate">{it.nome}</span>
+                        </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="font-mono font-bold text-[#302414]">
-                          R$ {it.precoBRL.toFixed(2).replace('.', ',')}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSubItem(it.id)}
-                          className="p-1 text-[#8b261b] hover:bg-[#FEE2E2] rounded cursor-pointer transition-colors"
-                          title="Remover item"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="font-mono font-bold text-[#302414]">
+                            R$ {(it.precoBRL || 0).toFixed(2).replace('.', ',')}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditSubItem(it)}
+                            className="p-1 text-[#48551F] hover:bg-[#E3E8D0] rounded cursor-pointer transition-colors"
+                            title="Editar item"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSubItem(it.id)}
+                            className="p-1 text-[#8b261b] hover:bg-[#FEE2E2] rounded cursor-pointer transition-colors"
+                            title="Remover item"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="p-3 rounded-xl bg-[#FAF4E6] border border-dashed border-[#C6AD78] text-center text-[11px] text-[#71634D]">
@@ -565,11 +628,22 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 </div>
               )}
 
-              {/* Formulário Interno para Adicionar Novo Sub-Item */}
-              <div className="p-3 bg-[#FAF4E6] rounded-xl border border-[#C6AD78] space-y-2">
-                <span className="text-[11px] font-bold text-[#302414] block">
-                  + Adicionar Item ao Pacote:
-                </span>
+              {/* Formulário Interno para Cadastrar / Editar Sub-Item */}
+              <div className="p-3.5 bg-[#FAF4E6] rounded-xl border border-[#C6AD78] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#302414] block">
+                    {editingSubItemId ? '✏️ Editar Item do Pacote:' : '+ Adicionar Item ao Pacote:'}
+                  </span>
+                  {editingSubItemId && (
+                    <button
+                      type="button"
+                      onClick={handleCancelEditSubItem}
+                      className="text-[11px] text-[#8b261b] hover:underline cursor-pointer"
+                    >
+                      Cancelar edição
+                    </button>
+                  )}
+                </div>
                 
                 {fieldErrors.subItem && (
                   <p className="text-[11px] text-[#8b261b] font-bold">
@@ -577,55 +651,92 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                   </p>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
-                  <input
-                    ref={subNomeInputRef}
-                    type="text"
-                    placeholder="Nome do item/módulo *"
-                    value={subNome}
-                    onChange={(e) => setSubNome(e.target.value)}
-                    className="sm:col-span-5 px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
-                  />
-                  <select
-                    value={subSistema}
-                    onChange={(e) => setSubSistema(e.target.value)}
-                    className="sm:col-span-3 px-2 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
-                    title="Sistema do item"
-                  >
-                    {SISTEMAS_PADRAO.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={subTipo}
-                    onChange={(e) => setSubTipo(e.target.value as ProductType)}
-                    className="sm:col-span-2 px-2 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
-                    title="Categoria / Tipo do item"
-                  >
-                    {OFFICIAL_PRODUCT_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                  <input
-                    ref={subPrecoInputRef}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Preço R$ *"
-                    value={subPreco}
-                    onChange={(e) => setSubPreco(e.target.value)}
-                    className="sm:col-span-2 px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
-                  />
+                {/* 1. Nome do Material e Preço */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
+                      Nome do Material / Item <span className="text-[#8b261b] font-bold">*</span>
+                    </label>
+                    <input
+                      ref={subNomeInputRef}
+                      type="text"
+                      placeholder="Ex: Módulo Foundry & Mapas de Batalha"
+                      value={subNome}
+                      onChange={(e) => setSubNome(e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
+                      Preço R$ <span className="text-[#8b261b] font-bold">*</span>
+                    </label>
+                    <input
+                      ref={subPrecoInputRef}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={subPreco}
+                      onChange={(e) => setSubPreco(e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] font-mono focus:outline-none focus:border-[#48551F]"
+                    />
+                  </div>
                 </div>
 
-                <div className="flex justify-end pt-1">
+                {/* 2. Sistema de RPG e Categoria, nessa ordem */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
+                      1. Sistema de RPG <span className="text-[#8b261b] font-bold">*</span>
+                    </label>
+                    <select
+                      value={subSistema}
+                      onChange={(e) => setSubSistema(e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                    >
+                      {SISTEMAS_PADRAO.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
+                      2. Categoria <span className="text-[#8b261b] font-bold">*</span>
+                    </label>
+                    <select
+                      value={subCategoria}
+                      onChange={(e) => setSubCategoria(e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
+                    >
+                      {OFFICIAL_PRODUCT_TYPES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-[#71634D]">
+                    Mostra Sistema de RPG e Categoria de forma independente por item.
+                  </span>
                   <button
                     type="button"
                     onClick={handleAddSubItem}
                     className="px-3.5 py-1.5 rounded-lg bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] font-bold text-xs flex items-center gap-1 cursor-pointer shadow-sm transition-all"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Adicionar Item</span>
+                    {editingSubItemId ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Salvar Alterações do Item</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Adicionar Item</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

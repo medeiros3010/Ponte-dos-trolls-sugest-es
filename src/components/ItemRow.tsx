@@ -226,8 +226,8 @@ export const ItemRow: React.FC<ItemRowProps> = ({
             )}
           </div>
 
-          {/* Botão Principal: 🙋‍♂️ Apoiar ou Apoiado */}
-          {!isFinalizado ? (
+          {/* Botão Principal: 🙋‍♂️ Apoiar ou Apoiado (Oculto no Modo Mestre) */}
+          {!isFinalizado && !currentUser?.isMaster ? (
             <button
               onClick={() => onOpenApoiar(item)}
               className={`py-2.5 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-md shadow-black/30 active:scale-95 whitespace-nowrap ${

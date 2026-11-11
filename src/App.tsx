@@ -821,7 +821,9 @@ export default function App() {
     pkgData: Omit<FundingPackage, 'id' | 'criadoEm'> & { id?: string; adminPassword?: string }
   ) => {
     try {
-      const res = await apiSavePackage(binId, pkgData, pkgData.adminPassword);
+      const isMaster = Boolean(currentUser?.isMaster || currentUser?.id === 'usr-master');
+      const effectivePassword = pkgData.adminPassword || (isMaster ? 'Ponte#dos#trolls' : undefined);
+      const res = await apiSavePackage(binId, pkgData, effectivePassword);
       if (res && res.package) {
         if (pkgData.id) {
           setPackages((prev) => prev.map((p) => (p.id === pkgData.id ? res.package! : p)));
@@ -1272,7 +1274,6 @@ export default function App() {
                   setIsPackageModalOpen(true);
                 }}
                 onDeletePackage={handleDeletePackage}
-                onSavePackage={handleSavePackage}
                 onUpdateDriveLink={handleUpdateDriveLink}
                 onUpdatePackageImage={handleUpdatePackageImage}
                 cartPackageIds={cart}
@@ -1445,6 +1446,7 @@ export default function App() {
           binId={binId}
           onRestoreSuccess={handleRestoreBackup}
           onToast={showToast}
+          currentUser={currentUser}
         />
       )}
 

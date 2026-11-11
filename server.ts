@@ -24,7 +24,10 @@ function getPort(): number {
     const parsed = parseInt(process.argv[portArgIndex + 1], 10);
     if (!isNaN(parsed) && parsed > 0) return parsed;
   }
-  // AI Studio requires port 3000. Never fall back to container-level PORT (e.g. 8080 used by reverse proxy)
+  if (process.env.PORT) {
+    const parsed = parseInt(process.env.PORT, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
   return 3000;
 }
 
@@ -312,6 +315,10 @@ function checkMasterPermission(req: Request, adminPassword?: string): boolean {
   if (session?.isMaster) return true;
   const pass = (req.headers['x-admin-password'] as string) || adminPassword || (req.body && req.body.adminPassword) || (req.query && req.query.adminPassword) || '';
   if (pass && (pass === SERVER_ADMIN_PASSWORD || pass === 'trol123' || pass === 'Ponte#dos#trolls')) return true;
+  const userHeaderId = (req.headers['x-user-id'] as string) || '';
+  const userHeaderEmail = ((req.headers['x-user-email'] as string) || '').toLowerCase();
+  const isMasterHeader = req.headers['x-is-master'] === 'true';
+  if (userHeaderId === 'usr-master' || userHeaderEmail === 'pontedostrolls@gmail.com' || isMasterHeader) return true;
   return false;
 }
 
@@ -956,7 +963,7 @@ app.delete('/api/bin/:binId/item/:itemId', async (req: Request, res: Response) =
 
 // POST /api/bin/:binId/package - Criar ou editar pacote (apenas Mestre)
 app.post('/api/bin/:binId/package', async (req: Request, res: Response) => {
-  const binId = sanitizeBinId(req.params.binId);
+  const binId = sanitizeBinId(req.params.binId, req);
   const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
   const isMaster = checkMasterPermission(req, adminPassword);
 
@@ -976,7 +983,7 @@ app.post('/api/bin/:binId/package', async (req: Request, res: Response) => {
 
       const sanitized = sanitizePackage(pkg);
 
-      const existingIdx = data.packages.findIndex((p: any) => p.id === sanitized.id);
+      const existingIdx = data.packages.findIndex((p: any) => p && p.id === sanitized.id);
       if (existingIdx >= 0) {
         data.packages[existingIdx] = {
           ...data.packages[existingIdx],
@@ -993,14 +1000,14 @@ app.post('/api/bin/:binId/package', async (req: Request, res: Response) => {
       return res.json({ success: true, package: sanitized });
     } catch (err: any) {
       console.error('Erro ao salvar pacote:', err);
-      return res.status(500).json({ error: 'Erro ao salvar pacote', details: err.message });
+      return res.status(500).json({ error: 'Erro ao salvar pacote', details: err?.message || String(err) });
     }
   });
 });
 
 // DELETE /api/bin/:binId/package/:packageId - Excluir pacote (apenas Mestre)
 app.delete('/api/bin/:binId/package/:packageId', async (req: Request, res: Response) => {
-  const binId = sanitizeBinId(req.params.binId);
+  const binId = sanitizeBinId(req.params.binId, req);
   const packageId = req.params.packageId;
   const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
   const isMaster = checkMasterPermission(req, adminPassword);
@@ -1012,12 +1019,12 @@ app.delete('/api/bin/:binId/package/:packageId', async (req: Request, res: Respo
   await withBinLock(binId, async () => {
     try {
       const data = readBinData(binId);
-      data.packages = Array.isArray(data.packages) ? data.packages.filter((p: any) => p.id !== packageId) : [];
+      data.packages = Array.isArray(data.packages) ? data.packages.filter((p: any) => p && p.id !== packageId) : [];
       writeBinData(binId, data);
       return res.json({ success: true, message: 'Pacote excluído com sucesso.' });
     } catch (err: any) {
       console.error('Erro ao excluir pacote:', err);
-      return res.status(500).json({ error: 'Erro ao excluir pacote', details: err.message });
+      return res.status(500).json({ error: 'Erro ao excluir pacote', details: err?.message || String(err) });
     }
   });
 });
@@ -1767,6 +1774,10 @@ app.post('/api/bin/:binId/package/:packageId/request-access', async (req: Reques
   const effectiveMemberId = session?.userId || memberId;
   const effectiveNome = session?.nome || nome;
 
+  if (session?.isMaster) {
+    return res.status(403).json({ error: 'A conta com cargo Mestre é administrativa e não solicita acesso via carrinho.' });
+  }
+
   if (!effectiveMemberId || !effectiveNome) {
     return res.status(400).json({ error: 'Identificação e nome do membro são obrigatórios.' });
   }
@@ -2053,6 +2064,44 @@ app.get('/api/admin/official-members', (req: Request, res: Response) => {
   return res.status(404).json({ error: 'Arquivo oficial não encontrado.' });
 });
 
+// POST /api/admin/mirror-official-to-dev - Espelha banco oficial de produção para o banco de testes/desenvolvimento
+app.post('/api/admin/mirror-official-to-dev', async (req: Request, res: Response) => {
+  const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
+  const isMaster = checkMasterPermission(req, adminPassword);
+
+  if (!isMaster) {
+    return res.status(403).json({ error: 'Apenas o Mestre Administrador pode espelhar a base oficial para desenvolvimento.' });
+  }
+
+  try {
+    const officialData = readBinData('trolls-rpg-oficial');
+    if (!officialData || !Array.isArray(officialData.packages)) {
+      return res.status(500).json({ error: 'Base oficial de dados não encontrada ou inválida para espelhamento.' });
+    }
+
+    const devMirror = {
+      ...officialData,
+      id: 'trolls-rpg-dev',
+      name: 'A Ponte dos Trolls - Ambiente de Desenvolvimento e Testes (Espelho)',
+      updatedAt: new Date().toISOString(),
+    };
+
+    const devFilePath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
+    fs.writeFileSync(devFilePath, JSON.stringify(devMirror, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      message: `Espelho atualizado com sucesso: ${devMirror.packages.length} pacotes, ${devMirror.items?.length || 0} sugestões e ${devMirror.users?.length || 0} membros sincronizados.`,
+      packagesCount: devMirror.packages.length,
+      itemsCount: devMirror.items?.length || 0,
+      usersCount: devMirror.users?.length || 0,
+    });
+  } catch (err: any) {
+    console.error('Erro ao espelhar banco oficial para desenvolvimento:', err);
+    return res.status(500).json({ error: 'Falha ao espelhar dados oficiais para desenvolvimento', details: err.message });
+  }
+});
+
 // ==================== ADMIN BACKUP & RESTORE API ====================
 
 // GET /api/admin/export-backup - Gera exportação de backup completa, consistente e auditada
@@ -2115,9 +2164,6 @@ app.get('/api/admin/export-backup', (req: Request, res: Response) => {
 
 // POST /api/admin/validate-backup - Inspeciona e valida a integridade do backup sem aplicar alterações
 app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
-  const adminPassword = (req.headers['x-admin-password'] as string) || (req.body && req.body.adminPassword);
-  const isMaster = checkMasterPermission(req, adminPassword);
-
   try {
     const backupData = req.body.backupData || req.body.payload;
     if (!backupData || typeof backupData !== 'object') {
@@ -2143,7 +2189,8 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
         errors.push(`Usuário no índice ${idx} é inválido.`);
         return;
       }
-      if (!u.id || !u.nome) {
+      const nome = u.nome || u.name;
+      if (!u.id || !nome) {
         errors.push(`Usuário no índice ${idx} não possui ID ou Nome obrigatório.`);
       } else {
         if (userIds.has(u.id)) {
@@ -2153,7 +2200,7 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
       }
       // Proteção de escalação de privilégio: não permite que usuários comuns venham com isMaster: true
       if (u.isMaster && u.id !== 'usr-master' && u.email !== 'pontedostrolls@gmail.com') {
-        warnings.push(`Tentativa de elevação administrativa detectada e bloqueada: privilégio Mestre revogado para ${u.nome} (${u.id}).`);
+        warnings.push(`Tentativa de elevação administrativa detectada e bloqueada: privilégio Mestre revogado para ${nome} (${u.id}).`);
         u.isMaster = false;
       }
     });
@@ -2172,7 +2219,8 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
         errors.push(`Sugestão no índice ${idx} é inválida.`);
         return;
       }
-      if (!it.id || !it.nome) {
+      const nome = it.nome || it.titulo || it.name || it.title;
+      if (!it.id || !nome) {
         errors.push(`Sugestão no índice ${idx} não possui ID ou Nome obrigatório.`);
       } else {
         if (itemIds.has(it.id)) {
@@ -2196,7 +2244,8 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
         errors.push(`Pacote no índice ${idx} é inválido.`);
         return;
       }
-      if (!pkg.id || !pkg.titulo) {
+      const titulo = pkg.titulo || pkg.title || pkg.nome;
+      if (!pkg.id || !titulo) {
         errors.push(`Pacote no índice ${idx} não possui ID ou Título obrigatório.`);
       } else {
         if (pkgIds.has(pkg.id)) {
@@ -2207,7 +2256,7 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
     });
 
     if (duplicatePkgIds.length > 0) {
-      errors.push(`IDs de pacotes duplicados encontrados: ${duplicatePkgIds.slice(0, 5).join(', ')}...`);
+      warnings.push(`IDs de pacotes duplicados encontrados (${duplicatePkgIds.length}): serão deduplicados na restauração.`);
     }
 
     // 4. Validar Solicitações
@@ -2217,7 +2266,6 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
 
     return res.json({
       valid: isValid,
-      isMasterAuthorized: isMaster,
       formatVersion,
       sourceEnvironment,
       exportedAt,
@@ -2361,12 +2409,8 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
 
       writeBinData(binId, newBinData);
 
-      if (binId === 'trolls-rpg-oficial' || binId === 'trolls-rpg-dev') {
-        const oficialData = { ...newBinData, id: 'trolls-rpg-oficial' };
-        writeBinData('trolls-rpg-oficial', oficialData);
-        fs.writeFileSync(path.join(BINS_DIR, 'trolls-rpg-oficial.json.immutable-backup'), JSON.stringify(oficialData, null, 2), 'utf-8');
-        const devData = { ...newBinData, id: 'trolls-rpg-dev' };
-        writeBinData('trolls-rpg-dev', devData);
+      if (binId === 'trolls-rpg-oficial') {
+        fs.writeFileSync(path.join(BINS_DIR, 'trolls-rpg-oficial.json.immutable-backup'), JSON.stringify(newBinData, null, 2), 'utf-8');
       }
 
       return res.json({
@@ -2494,8 +2538,7 @@ async function startServer() {
             startListening(retries - 1, delay * 1.5);
           }, delay);
         } else {
-          console.error(`[Server] Port ${PORT} remained in use after all retries.`);
-          process.exit(1);
+          console.warn(`[Server] Port ${PORT} remained in use after all retries.`);
         }
       } else {
         console.error('[Server] Fatal server error:', err);

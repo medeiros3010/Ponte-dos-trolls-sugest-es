@@ -228,8 +228,8 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Area: Cart + Tools Menu + User Account */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Carrinho do Catálogo - Mais Visível e Destacado */}
-            {onOpenCart && (
+            {/* Carrinho do Catálogo - Apenas para Membros (Oculto no Modo Mestre) */}
+            {onOpenCart && !isMaster && (
               <button
                 type="button"
                 onClick={onOpenCart}

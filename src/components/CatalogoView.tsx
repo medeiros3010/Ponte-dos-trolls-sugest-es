@@ -50,7 +50,6 @@ interface CatalogoViewProps {
   onGoHome: () => void;
   onEditPackage: (pkg: FundingPackage) => void;
   onDeletePackage: (pkg: FundingPackage) => void;
-  onSavePackage?: (pkgData: Omit<FundingPackage, 'id' | 'criadoEm'> & { id?: string; adminPassword?: string }) => Promise<any> | void;
   onUpdateDriveLink?: (packageId: string, linkDrive: string, adminPassword?: string) => Promise<void>;
   onUpdatePackageImage?: (packageId: string, newImageUrl: string, adminPassword?: string) => Promise<void>;
   cartPackageIds?: string[];
@@ -78,7 +77,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   onGoHome,
   onEditPackage,
   onDeletePackage,
-  onSavePackage,
   onUpdateDriveLink,
   onUpdatePackageImage,
   cartPackageIds = [],
@@ -124,14 +122,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   const [editDriveUrl, setEditDriveUrl] = useState('');
   const [driveEditError, setDriveEditError] = useState('');
   const [isSavingDrive, setIsSavingDrive] = useState(false);
-
-  // Tags (Sistema e Categoria) Quick Edit Modal (Mestre)
-  const [tagsEditPkg, setTagsEditPkg] = useState<FundingPackage | null>(null);
-  const [editSistema, setEditSistema] = useState<string>('Foundry VTT Geral');
-  const [editCategoria, setEditCategoria] = useState<ProductType>('Material para VTT');
-  const [applyToSubitems, setApplyToSubitems] = useState<boolean>(true);
-  const [isSavingTags, setIsSavingTags] = useState<boolean>(false);
-  const [tagsError, setTagsError] = useState<string>('');
 
   // Posterior Buyer Management (Mestre)
   const [newBuyerId, setNewBuyerId] = useState<string>('');
@@ -357,24 +347,46 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
               (it) =>
                 it.nome.toLowerCase().includes(q) ||
                 it.sistema.toLowerCase().includes(q) ||
-                (it.tipo && it.tipo.toLowerCase().includes(q)) ||
-                (it.categoria && it.categoria.toLowerCase().includes(q))
+                (it.tipo && it.tipo.toLowerCase().includes(q))
             )
         ) ||
         Boolean(pkg.itensInclusos && pkg.itensInclusos.some((item) => item.toLowerCase().includes(q))) ||
         (pkg.apoiadores || []).some((ap) => ap.nome.toLowerCase().includes(q));
 
-      // 2. Sistema Filter
-      const matchSistema =
-        selectedSistema === 'Todos' ||
-        pkg.sistema === selectedSistema ||
-        (pkg.itens && pkg.itens.some((it) => it.sistema === selectedSistema));
+      // 2 & 3. Filtros de Sistema e Categoria (Economia: reaproveita itens carregados em memória)
+      const hasSistemaFilter = selectedSistema !== 'Todos';
+      const hasCategoryFilter = selectedCategories.length > 0;
 
-      // 3. Categories (multi-checkbox)
-      const matchCategory =
-        selectedCategories.length === 0 ||
-        (pkg.tipo && selectedCategories.includes(pkg.tipo)) ||
-        (pkg.itens && pkg.itens.some((it) => (it.tipo && selectedCategories.includes(it.tipo)) || (it.categoria && selectedCategories.includes(it.categoria as any))));
+      let matchSistemaAndCategory = true;
+
+      if (hasSistemaFilter && hasCategoryFilter) {
+        // "Quando houver filtro de sistema e categoria juntos, o mesmo material deve corresponder aos dois."
+        const pkgMatchesBoth =
+          pkg.sistema === selectedSistema &&
+          Boolean(pkg.tipo && selectedCategories.includes(pkg.tipo));
+
+        const itemMatchesBoth = Array.isArray(pkg.itens) && pkg.itens.some((it) => {
+          const itSis = it.sistema || pkg.sistema || 'Foundry VTT Geral';
+          const itCat = it.categoria || it.tipo || 'Não informada';
+          return itSis === selectedSistema && selectedCategories.includes(itCat);
+        });
+
+        matchSistemaAndCategory = pkgMatchesBoth || itemMatchesBoth;
+      } else if (hasSistemaFilter) {
+        const pkgMatches = pkg.sistema === selectedSistema;
+        const itemMatches = Array.isArray(pkg.itens) && pkg.itens.some((it) => {
+          const itSis = it.sistema || pkg.sistema || 'Foundry VTT Geral';
+          return itSis === selectedSistema;
+        });
+        matchSistemaAndCategory = pkgMatches || itemMatches;
+      } else if (hasCategoryFilter) {
+        const pkgMatches = Boolean(pkg.tipo && selectedCategories.includes(pkg.tipo));
+        const itemMatches = Array.isArray(pkg.itens) && pkg.itens.some((it) => {
+          const itCat = it.categoria || it.tipo || 'Não informada';
+          return selectedCategories.includes(itCat);
+        });
+        matchSistemaAndCategory = pkgMatches || itemMatches;
+      }
 
       // 4. Preço em Reais
       const catalogPrice =
@@ -388,7 +400,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
       const matchMinPrice = min === null || isNaN(min) || catalogPrice >= min;
       const matchMaxPrice = max === null || isNaN(max) || catalogPrice <= max;
 
-      return matchSearch && matchSistema && matchCategory && matchMinPrice && matchMaxPrice;
+      return matchSearch && matchSistemaAndCategory && matchMinPrice && matchMaxPrice;
     });
 
     // Sorting
@@ -508,64 +520,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
       setDriveEditError(err.message || 'Erro ao salvar link do Drive');
     } finally {
       setIsSavingDrive(false);
-    }
-  };
-
-  // Tags (Sistema e Categoria) quick edit handler (Mestre)
-  const openEditTagsModal = (pkg: FundingPackage, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setTagsEditPkg(pkg);
-    setEditSistema(pkg.sistema || 'Foundry VTT Geral');
-    setEditCategoria(pkg.tipo || 'Material para VTT');
-    setApplyToSubitems(true);
-    setTagsError('');
-  };
-
-  const handleSaveTags = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!tagsEditPkg) return;
-
-    try {
-      setIsSavingTags(true);
-      setTagsError('');
-
-      const updatedItens = applyToSubitems && Array.isArray(tagsEditPkg.itens)
-        ? tagsEditPkg.itens.map((it) => ({
-            ...it,
-            sistema: editSistema,
-            tipo: editCategoria,
-            categoria: editCategoria,
-          }))
-        : tagsEditPkg.itens;
-
-      const updatedPkgData: any = {
-        ...tagsEditPkg,
-        sistema: editSistema,
-        tipo: editCategoria,
-        itens: updatedItens,
-      };
-
-      if (onSavePackage) {
-        await onSavePackage(updatedPkgData);
-      }
-
-      if (selectedPackageDetails && selectedPackageDetails.id === tagsEditPkg.id) {
-        setSelectedPackageDetails({
-          ...selectedPackageDetails,
-          sistema: editSistema,
-          tipo: editCategoria,
-          itens: updatedItens,
-        });
-      }
-
-      onToast(`Tags de "${tagsEditPkg.titulo}" atualizadas com sucesso!`);
-      setTagsEditPkg(null);
-    } catch (err: any) {
-      console.error('Erro ao salvar tags do pacote:', err);
-      setTagsError(err.message || 'Erro ao salvar tags.');
-      onToast(err.message || 'Falha ao atualizar tags.');
-    } finally {
-      setIsSavingTags(false);
     }
   };
 
@@ -914,17 +868,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                                 <button
                                   onClick={() => {
                                     setActiveMenuId(null);
-                                    openEditTagsModal(pkg);
-                                  }}
-                                  className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
-                                >
-                                  <Edit2 className="w-3.5 h-3.5 text-[#716016]" />
-                                  <span>Editar Tags (Sistema / Categoria)</span>
-                                </button>
-
-                                <button
-                                  onClick={() => {
-                                    setActiveMenuId(null);
                                     handleOpenDriveEdit(pkg);
                                   }}
                                   className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
@@ -985,20 +928,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F]">
                             {pkg.tipo || 'Material para VTT'}
                           </span>
-                          {isMaster && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditTagsModal(pkg, e);
-                              }}
-                              className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#48551F]/10 hover:bg-[#48551F]/20 text-[#48551F] border border-[#48551F]/30 flex items-center gap-1 cursor-pointer transition-colors"
-                              title="Editar tags (Sistema e Categoria)"
-                            >
-                              <Edit2 className="w-2.5 h-2.5" />
-                              <span>Editar tags</span>
-                            </button>
-                          )}
                         </div>
 
                         {/* Título do Pacote (Permite mais de uma linha sem truncamento prematuro) */}
@@ -1006,10 +935,38 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           {pkg.titulo}
                         </h3>
 
-                        {/* Itens Inclusos */}
-                        <div className="flex items-center gap-1.5 text-xs text-[#71634D] mt-1">
-                          <Package className="w-3.5 h-3.5 text-[#716016] shrink-0" />
-                          <span>{itemCount} itens inclusos</span>
+                        {/* Itens Inclusos com Sistema e Categoria */}
+                        <div className="space-y-1 mt-1">
+                          <div className="flex items-center gap-1.5 text-xs text-[#71634D]">
+                            <Package className="w-3.5 h-3.5 text-[#716016] shrink-0" />
+                            <span>{itemCount} {itemCount === 1 ? 'material incluso' : 'materiais inclusos'}</span>
+                          </div>
+                          {Array.isArray(pkg.itens) && pkg.itens.length > 0 && (
+                            <div className="flex flex-wrap gap-1 max-h-16 overflow-hidden pt-0.5">
+                              {pkg.itens.slice(0, 3).map((it) => {
+                                const cat = it.categoria || it.tipo || 'Não informada';
+                                const sis = it.sistema || pkg.sistema || 'Foundry VTT Geral';
+                                return (
+                                  <span
+                                    key={it.id}
+                                    title={`${it.nome} (${sis} · ${cat})`}
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#FAF4E6] border border-[#D5C49F] text-[10px] text-[#302414] truncate max-w-full"
+                                  >
+                                    <strong className="text-[#55482e]">{sis}</strong>
+                                    <span>·</span>
+                                    <span className="text-[#71634D]">{cat}</span>
+                                    <span>·</span>
+                                    <span className="truncate font-medium">{it.nome}</span>
+                                  </span>
+                                );
+                              })}
+                              {pkg.itens.length > 3 && (
+                                <span className="text-[10px] text-[#71634D] self-center">
+                                  +{pkg.itens.length - 3} mais
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         {/* Data de Aquisição (Requirement 4) */}
@@ -1052,66 +1009,68 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           </button>
                         </div>
 
-                        {/* Ação Principal: Adicionar ao Carrinho / No seu acervo / Solicitação Pendente / No carrinho */}
-                        <div>
-                          {isUserParticipant ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (onGoToMyItems) onGoToMyItems();
-                                else setSelectedPackageDetails(pkg);
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-[#E3E8D0] hover:bg-[#d5dcc0] text-[#282D13] border border-[#8F9F5B] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                              title="Material já adquirido. Clique para acessar no seu acervo."
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-[#48551F]" />
-                              <span>No seu acervo</span>
-                            </button>
-                          ) : isUserPending ? (
-                            <div className="flex items-center gap-1.5">
-                              <span
-                                className="px-2.5 py-1.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-[11px] font-bold select-none"
-                                title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
-                              >
-                                ⏳ Pendente
-                              </span>
+                        {/* Ação Principal: Oculto no Modo Mestre */}
+                        {!isMaster && (
+                          <div>
+                            {isUserParticipant ? (
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCancelMyRequest(pkg.id);
+                                onClick={() => {
+                                  if (onGoToMyItems) onGoToMyItems();
+                                  else setSelectedPackageDetails(pkg);
                                 }}
-                                className="px-2 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#fae5e5] text-[#8b261b] border border-[#d69696] text-[11px] font-bold cursor-pointer transition-colors"
-                                title="Cancelar minha solicitação pendente"
+                                className="px-3 py-1.5 rounded-xl bg-[#E3E8D0] hover:bg-[#d5dcc0] text-[#282D13] border border-[#8F9F5B] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                                title="Material já adquirido. Clique para acessar no seu acervo."
                               >
-                                Cancelar
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#48551F]" />
+                                <span>No seu acervo</span>
                               </button>
-                            </div>
-                          ) : isInCart ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (onOpenCart) onOpenCart();
-                                else onRemoveFromCart?.(pkg.id);
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] text-[#48551F] border border-[#48551F] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                              title="No carrinho! Clique para abrir o carrinho."
-                            >
-                              <Check className="w-3.5 h-3.5 text-[#48551F]" />
-                              <span>No carrinho</span>
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => onAddToCart?.(pkg)}
-                              className="px-3.5 py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
-                              title="Adicionar pacote ao carrinho"
-                            >
-                              <ShoppingCart className="w-3.5 h-3.5" />
-                              <span>Adicionar ao carrinho</span>
-                            </button>
-                          )}
-                        </div>
+                            ) : isUserPending ? (
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  className="px-2.5 py-1.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-[11px] font-bold select-none"
+                                  title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
+                                >
+                                  ⏳ Pendente
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelMyRequest(pkg.id);
+                                  }}
+                                  className="px-2 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#fae5e5] text-[#8b261b] border border-[#d69696] text-[11px] font-bold cursor-pointer transition-colors"
+                                  title="Cancelar minha solicitação pendente"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            ) : isInCart ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onOpenCart) onOpenCart();
+                                  else onRemoveFromCart?.(pkg.id);
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] text-[#48551F] border border-[#48551F] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                                title="No carrinho! Clique para abrir o carrinho."
+                              >
+                                <Check className="w-3.5 h-3.5 text-[#48551F]" />
+                                <span>No carrinho</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => onAddToCart?.(pkg)}
+                                className="px-3.5 py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                                title="Adicionar pacote ao carrinho"
+                              >
+                                <ShoppingCart className="w-3.5 h-3.5" />
+                                <span>Adicionar ao carrinho</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                     </div>
@@ -1164,17 +1123,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                   <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F]">
                     {selectedPackageDetails.tipo || 'Material para VTT'}
                   </span>
-                  {isMaster && (
-                    <button
-                      type="button"
-                      onClick={() => openEditTagsModal(selectedPackageDetails)}
-                      className="px-2 py-0.5 rounded text-xs font-semibold bg-[#48551F]/10 hover:bg-[#48551F]/20 text-[#48551F] border border-[#48551F]/30 flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Editar tags do pacote"
-                    >
-                      <Edit2 className="w-3 h-3" />
-                      <span>Editar tags</span>
-                    </button>
-                  )}
                 </div>
                 <h2 className="font-rpg text-2xl font-bold text-[#302414]">
                   {selectedPackageDetails.titulo}
@@ -1200,30 +1148,34 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                     <span>Itens incluídos no pacote ({selectedPackageDetails.itens.length})</span>
                   </h4>
                   <ul className="divide-y divide-[#E3D1AC] text-xs">
-                    {selectedPackageDetails.itens.map((it, idx) => (
-                      <li key={idx} className="py-2 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="px-1.5 py-0.5 rounded bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
-                            {it.sistema || selectedPackageDetails.sistema || 'Foundry VTT Geral'}
-                          </span>
-                          <span className="px-1.5 py-0.5 rounded bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F] text-[10px] font-bold shrink-0">
-                            {it.categoria || it.tipo || selectedPackageDetails.tipo || 'Material para VTT'}
-                          </span>
-                          <span className="font-medium text-[#302414]">{it.nome}</span>
-                        </div>
-                        {it.link && (
-                          <a
-                            href={it.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#48551F] hover:underline flex items-center gap-1 text-[11px] shrink-0"
-                          >
-                            <span>Ver link original</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
-                      </li>
-                    ))}
+                    {selectedPackageDetails.itens.map((it, idx) => {
+                      const cat = it.categoria || it.tipo || 'Não informada';
+                      const sis = it.sistema || selectedPackageDetails.sistema || 'Foundry VTT Geral';
+                      return (
+                        <li key={idx} className="py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F] font-bold shrink-0">
+                              {sis}
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F] font-bold shrink-0">
+                              {cat}
+                            </span>
+                            <span className="font-semibold text-[#302414]">{it.nome}</span>
+                          </div>
+                          {it.link && (
+                            <a
+                              href={it.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#48551F] hover:underline flex items-center gap-1 text-[11px] shrink-0"
+                            >
+                              <span>Ver link original</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -1280,7 +1232,23 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                      {isUserParticipant ? (
+                      {isMaster ? (
+                        selectedPackageDetails.linkDrive ? (
+                          <a
+                            href={selectedPackageDetails.linkDrive}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            <FolderCheck className="w-4 h-4" />
+                            <span>Acessar Google Drive (Mestre)</span>
+                          </a>
+                        ) : (
+                          <div className="text-xs text-[#71634D] bg-[#F8EDD5] px-3 py-2 rounded-lg border border-[#D6C296]">
+                            Nenhum link do Drive cadastrado ainda. Use o menu do Mestre para cadastrar.
+                          </div>
+                        )
+                      ) : isUserParticipant ? (
                         selectedPackageDetails.linkDrive ? (
                           <a
                             href={selectedPackageDetails.linkDrive}
@@ -1661,134 +1629,6 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
           onClose={() => setNoticeCompletedPkg(null)}
           onToast={onToast}
         />
-      )}
-
-      {/* 6. Modal de Edição de Tags (Sistema e Categoria - Exclusivo Mestre) */}
-      {tagsEditPkg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#282D13]/70 backdrop-blur-md animate-in fade-in">
-          <div className="parchment-card w-full max-w-lg shadow-2xl flex flex-col overflow-hidden border-[#C6AD78]">
-            {/* Header */}
-            <div className="px-5 py-4 bg-[#282D13] border-b border-[#3f471e] flex items-center justify-between text-[#F8EDD5]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#3a4419] border border-[#C6AD78] flex items-center justify-center text-[#F8EDD5]">
-                  <Edit2 className="w-4 h-4 text-[#C6AD78]" />
-                </div>
-                <div>
-                  <h3 className="font-rpg text-base font-bold text-[#F8EDD5]">
-                    Editar Tags do Pacote
-                  </h3>
-                  <p className="text-[11px] text-[#cfc4a6]">
-                    Altere o Sistema de RPG e a Categoria oficial no Catálogo
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setTagsEditPkg(null)}
-                className="p-1.5 rounded-lg text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] transition-colors cursor-pointer"
-                disabled={isSavingTags}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Conteúdo */}
-            <div className="p-5 space-y-4 text-xs text-[#302414]">
-              {tagsError && (
-                <div className="p-3 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-semibold flex items-center gap-2">
-                  <Info className="w-4 h-4 shrink-0" />
-                  <span>{tagsError}</span>
-                </div>
-              )}
-
-              <div className="p-3 rounded-xl bg-[#FBF4E4] border border-[#D6C296]">
-                <span className="text-[11px] text-[#71634D] block mb-0.5">Pacote selecionado:</span>
-                <span className="font-bold text-sm text-[#302414] leading-snug">{tagsEditPkg.titulo}</span>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#302414] mb-1">
-                    Sistema de RPG <span className="text-[#8b261b] font-bold">*</span>
-                  </label>
-                  <select
-                    value={editSistema}
-                    onChange={(e) => setEditSistema(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-medium focus:outline-none focus:border-[#48551F]"
-                  >
-                    {SISTEMAS_PADRAO.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#302414] mb-1">
-                    Categoria / Tipo de Produto <span className="text-[#8b261b] font-bold">*</span>
-                  </label>
-                  <select
-                    value={editCategoria}
-                    onChange={(e) => setEditCategoria(e.target.value as ProductType)}
-                    className="w-full px-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] font-medium focus:outline-none focus:border-[#48551F]"
-                  >
-                    {OFFICIAL_PRODUCT_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {Array.isArray(tagsEditPkg.itens) && tagsEditPkg.itens.length > 0 && (
-                  <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#FAF4E6] border border-[#C6AD78] cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={applyToSubitems}
-                      onChange={(e) => setApplyToSubitems(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded text-[#48551F] focus:ring-[#48551F]"
-                    />
-                    <div className="text-[11px] leading-tight">
-                      <span className="font-bold text-[#302414] block">
-                        Atualizar tags dos {tagsEditPkg.itens.length} itens incluídos
-                      </span>
-                      <span className="text-[#71634D]">
-                        Aplica este sistema e categoria a todos os itens deste pacote para sincronia com a busca.
-                      </span>
-                    </div>
-                  </label>
-                )}
-              </div>
-            </div>
-
-            {/* Rodapé */}
-            <div className="px-5 py-3.5 bg-[#FAF4E6] border-t border-[#C6AD78] flex items-center justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setTagsEditPkg(null)}
-                disabled={isSavingTags}
-                className="px-4 py-2 rounded-xl border border-[#C6AD78] text-[#71634D] hover:bg-[#EADBBE] text-xs font-semibold cursor-pointer transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveTags}
-                disabled={isSavingTags}
-                className="px-4 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all disabled:opacity-50"
-              >
-                {isSavingTags ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Salvando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Salvar Tags</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
     </div>

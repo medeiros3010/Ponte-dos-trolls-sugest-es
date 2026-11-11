@@ -536,15 +536,46 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                         </p>
                       )}
 
-                      {/* Itens Inclusos */}
-                      <p className="text-xs text-[#71634D] leading-relaxed pt-1">
-                        <strong className="text-[#302414]">
-                          📦 {pkg.itens?.length || pkg.itensInclusos?.length || 1} itens inclusos:
-                        </strong>{' '}
-                        {pkg.itens && pkg.itens.length > 0
-                          ? pkg.itens.map((i) => i.nome).join(' · ')
-                          : pkg.itensInclusos?.join(' · ') || 'Módulos e compêndios digitais'}
-                      </p>
+                      {/* Itens Inclusos com Sistema e Categoria */}
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-xs font-semibold text-[#302414] flex items-center gap-1.5">
+                          <span>📦</span>
+                          <span>{pkg.itens?.length || pkg.itensInclusos?.length || 1} {((pkg.itens?.length || pkg.itensInclusos?.length || 1) === 1) ? 'material incluso' : 'materiais inclusos'}:</span>
+                        </span>
+                        {pkg.itens && pkg.itens.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {pkg.itens.map((it) => {
+                              const cat = it.categoria || it.tipo || 'Não informada';
+                              const sis = it.sistema || pkg.sistema || 'Foundry VTT Geral';
+                              return (
+                                <div
+                                  key={it.id}
+                                  className="text-xs text-[#55482e] flex flex-wrap items-center justify-between gap-1.5 bg-[#FAF4E6] px-2.5 py-1 rounded-lg border border-[#E3D1AC]"
+                                >
+                                  <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F] font-bold shrink-0">
+                                      {sis}
+                                    </span>
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E5DBC1] text-[#55482e] border border-[#D5C49F] font-bold shrink-0">
+                                      {cat}
+                                    </span>
+                                    <span className="font-medium text-[#302414] truncate">{it.nome}</span>
+                                  </div>
+                                  {typeof it.precoBRL === 'number' && it.precoBRL > 0 && (
+                                    <span className="font-mono text-[11px] font-bold text-[#71634D] shrink-0">
+                                      R$ {it.precoBRL.toFixed(2).replace('.', ',')}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-[#71634D] leading-relaxed">
+                            {pkg.itensInclusos?.join(' · ') || 'Módulos e compêndios digitais'}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     {/* CASO 1: ETAPA DE COLETA DE MEMBROS */}

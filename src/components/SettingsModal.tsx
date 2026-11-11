@@ -11,6 +11,8 @@ import {
   pushItemsToCloud,
   createNewCloudBin,
   apiSyncOfficialMembers,
+  apiMirrorOfficialToDev,
+  isDevelopmentEnvironment,
   DEFAULT_BIN_ID,
 } from '../utils/cloudStorage';
 import {
@@ -83,8 +85,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [isLoadingCloud, setIsLoadingCloud] = useState(false);
   const [cloudStatus, setCloudStatus] = useState<string | null>(null);
+  const [isMirroringDev, setIsMirroringDev] = useState(false);
+  const [mirrorStatus, setMirrorStatus] = useState<string | null>(null);
 
   const shareableLink = getShareableGroupLink(binInput || binId);
+
+  const handleMirrorOfficialToDev = async () => {
+    setIsMirroringDev(true);
+    setMirrorStatus('Copiando dados da mesa oficial para o ambiente de testes...');
+    try {
+      const res = await apiMirrorOfficialToDev();
+      setMirrorStatus(res.message);
+      onToast('Espelho atualizado com sucesso! Recarregando tela...');
+      const freshItems = await fetchItemsFromCloud('trolls-rpg-dev');
+      if (freshItems && freshItems.length > 0) {
+        onUpdateItemsFromCloud(freshItems);
+      }
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err: any) {
+      setMirrorStatus(`Erro: ${err.message || 'Falha ao espelhar'}`);
+      onToast(`Erro ao espelhar: ${err.message}`);
+    } finally {
+      setIsMirroringDev(false);
+    }
+  };
 
   const handleParseText = (text: string) => {
     setPastedText(text);
@@ -503,6 +529,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {cloudStatus}
                 </div>
               )}
+
+              {/* Espelho de Testes (Produção -> Sandbox) */}
+              <div className="p-3.5 bg-gradient-to-r from-[#FAF4E6] to-[#F5ECE0] border border-[#C6AD78] rounded-xl space-y-2 mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[#302414] flex items-center gap-1.5 text-xs">
+                    <Sparkles className="w-4 h-4 text-[#716016]" />
+                    <span>Espelho da Mesa Oficial para Testes</span>
+                  </span>
+                  <span className="text-[10px] bg-[#48551F]/10 text-[#48551F] font-semibold px-2 py-0.5 rounded-full border border-[#48551F]/20">
+                    Mestre
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#71634D] leading-relaxed">
+                  Copia todos os pacotes, sugestões e membros da base oficial de produção para o seu ambiente de testes aqui no editor, permitindo visualizar os dados reais com segurança antes de publicar.
+                </p>
+                <button
+                  onClick={handleMirrorOfficialToDev}
+                  disabled={isMirroringDev}
+                  className="w-full py-2.5 px-3 rounded-xl font-bold bg-[#716016] hover:bg-[#85721B] text-[#F8EDD5] border border-[#594d12] disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm text-xs"
+                >
+                  {isMirroringDev ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#F8EDD5]" />
+                  ) : (
+                    <RefreshCw className="w-3.5 h-3.5 text-[#F8EDD5]" />
+                  )}
+                  <span>{isMirroringDev ? 'Atualizando Espelho...' : 'Atualizar Espelho de Testes Agora'}</span>
+                </button>
+                {mirrorStatus && (
+                  <p className="text-[11px] font-mono text-[#48551F] text-center pt-1">
+                    {mirrorStatus}
+                  </p>
+                )}
+              </div>
             </div>
           )}
 

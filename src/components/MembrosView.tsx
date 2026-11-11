@@ -556,21 +556,6 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           )}
         </div>
 
-        {/* Dropdown Filtro (Apenas Mestre) */}
-        {isMaster && (
-          <div className="relative shrink-0">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
-            >
-              <option value="todos">Todos os membros</option>
-              <option value="ativos">Participantes ativos</option>
-              <option value="pendencias">Com pendências</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#71634D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-        )}
 
         {/* Dropdown Ordenação */}
         <div className="relative shrink-0">

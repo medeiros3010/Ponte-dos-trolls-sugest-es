@@ -432,27 +432,29 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                       </div>
                     </div>
 
-                    {/* Botão de Ação: "Você apoiou" ou "Apoiar" */}
-                    <div className="mt-3 w-full">
-                      {isUserSupporting ? (
-                        <button
-                          onClick={() => handleSupportClick(item)}
-                          className="w-full py-2 px-3 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-                          title="Clique para remover seu apoio"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Você apoiou</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleSupportClick(item)}
-                          className="w-full py-2 px-3 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
-                        >
-                          <span>🤝</span>
-                          <span>Apoiar</span>
-                        </button>
-                      )}
-                    </div>
+                    {/* Botão de Ação: "Você apoiou" ou "Apoiar" (Oculto no Modo Mestre) */}
+                    {!isMaster && (
+                      <div className="mt-3 w-full">
+                        {isUserSupporting ? (
+                          <button
+                            onClick={() => handleSupportClick(item)}
+                            className="w-full py-2 px-3 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                            title="Clique para remover seu apoio"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Você apoiou</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleSupportClick(item)}
+                            className="w-full py-2 px-3 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                          >
+                            <span>🤝</span>
+                            <span>Apoiar</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
 
                   </div>
 

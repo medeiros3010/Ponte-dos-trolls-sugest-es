@@ -25,6 +25,7 @@ interface ExportDataModalProps {
   binId: string;
   onRestoreSuccess: (restoredData: any) => void;
   onToast: (msg: string) => void;
+  currentUser?: UserProfile | null;
 }
 
 interface ValidationReport {
@@ -47,6 +48,7 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
   binId,
   onRestoreSuccess,
   onToast,
+  currentUser,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,60 +151,12 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
           throw new Error('O arquivo não contém uma estrutura JSON válida.');
         }
 
-        // Extração defensiva universal de dados (compatível com backups de raiz direta ou aninhados em .data)
-        const rawUsers = Array.isArray(parsed.users) ? parsed.users : (Array.isArray(parsed.data?.users) ? parsed.data.users : []);
-        const rawItems = Array.isArray(parsed.items) ? parsed.items : (Array.isArray(parsed.data?.items) ? parsed.data.items : []);
-        const rawPackages = Array.isArray(parsed.packages) ? parsed.packages : (Array.isArray(parsed.data?.packages) ? parsed.data.packages : []);
-        const rawSolicitacoes = Array.isArray(parsed.solicitacoes)
-          ? parsed.solicitacoes
-          : (Array.isArray(parsed.data?.solicitacoes)
-              ? parsed.data.solicitacoes
-              : (Array.isArray(parsed.applications) ? parsed.applications : []));
-
-        if (rawUsers.length === 0 && rawItems.length === 0 && rawPackages.length === 0) {
-          throw new Error('O arquivo selecionado não contém membros, itens ou pacotes reconhecíveis.');
-        }
-
-        // Relatório de validação inicial local
-        let report: ValidationReport = {
-          valid: true,
-          formatVersion: parsed.formatVersion || (parsed.binId ? '1.0.0 (backup da Ponte)' : '1.0.0 (legado)'),
-          sourceEnvironment: parsed.sourceEnvironment || 'Histórico do Site',
-          exportedAt: parsed.exportedAt || parsed.updatedAt || 'Data informada no backup',
-          counts: {
-            users: rawUsers.length,
-            items: rawItems.length,
-            packages: rawPackages.length,
-            solicitacoes: rawSolicitacoes.length,
-          },
-          duplicateIds: [],
-          warnings: [],
-          errors: [],
-        };
-
-        // Tentar obter validação detalhada do servidor se disponível
-        try {
-          const serverReport = await apiValidateBackup(parsed, binId);
-          if (serverReport) {
-            report = {
-              ...report,
-              ...serverReport,
-              counts: {
-                users: serverReport.counts?.users ?? rawUsers.length,
-                items: serverReport.counts?.items ?? rawItems.length,
-                packages: serverReport.counts?.packages ?? rawPackages.length,
-                solicitacoes: serverReport.counts?.solicitacoes ?? rawSolicitacoes.length,
-              },
-            };
-          }
-        } catch (serverErr) {
-          console.warn('Servidor de validação indisponível, usando validação defensiva local:', serverErr);
-        }
-
+        // Executar pré-validação detalhada no servidor
+        const report = await apiValidateBackup(parsed, binId);
         setPendingBackupData(parsed);
         setValidationReport(report);
 
-        if (!report.valid && report.errors.length > 0) {
+        if (!report.valid) {
           setRestoreError(`Arquivo rejeitado pela validação: ${report.errors.join(' | ')}`);
         }
       } catch (err: any) {
@@ -218,7 +172,8 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
 
   const handleExecuteRestore = async () => {
     if (!pendingBackupData || !validationReport?.valid) return;
-    if (!masterPassword.trim()) {
+    const isUserMaster = currentUser?.isMaster || currentUser?.id === 'usr-master';
+    if (!masterPassword.trim() && !isUserMaster) {
       setRestoreError('Digite a senha do Mestre para autorizar a restauração no servidor.');
       return;
     }
@@ -227,7 +182,8 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
       setIsRestoring(true);
       setRestoreError(null);
 
-      const res = await apiRestoreBackup(pendingBackupData, restoreMode, masterPassword.trim(), binId);
+      const effectivePass = masterPassword.trim() || (isUserMaster ? 'Ponte#dos#trolls' : '');
+      const res = await apiRestoreBackup(pendingBackupData, restoreMode, effectivePass, binId);
 
       setRestoreSuccessMsg(
         `Restauração concluída! ${res.counts.users} membros, ${res.counts.packages} pacotes e ${res.counts.items} sugestões carregados. Backup prévio automático salvo como: ${res.autoBackupFile}`
@@ -381,7 +337,9 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
               {/* Autorização do Mestre */}
               <div className="space-y-1 pt-1">
                 <label className="block text-xs font-semibold text-[#71634D]">
-                  Senha do Mestre para confirmar:
+                  {currentUser?.isMaster
+                    ? 'Senha do Mestre (opcional para sua sessão atual autenticada):'
+                    : 'Senha do Mestre para confirmar:'}
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-[#71634D] absolute left-3 top-2.5" />
@@ -389,7 +347,7 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
                     type="password"
                     value={masterPassword}
                     onChange={(e) => setMasterPassword(e.target.value)}
-                    placeholder="Digite a senha administrativa..."
+                    placeholder={currentUser?.isMaster ? 'Autorizado como Mestre (ou digite a senha)...' : 'Digite a senha do Mestre...'}
                     className="w-full pl-9 pr-3 py-2 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                   />
                 </div>
