@@ -105,6 +105,9 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('recentes');
 
+  // Filtro exclusivo do Mestre: apenas produtos com pedidos pendentes
+  const [filterPendingOrders, setFilterPendingOrders] = useState<boolean>(false);
+
   // Mobile filters open/close
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -318,6 +321,20 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     return packages.filter((p) => p.status === 'Catálogo');
   }, [packages]);
 
+  // Verifica se o pacote possui pedidos ou solicitações de acesso pendentes (via Carrinho / WhatsApp)
+  const hasPendingOrders = (pkg: FundingPackage): boolean => {
+    const hasSolicitacoes = Array.isArray(pkg.solicitacoesAcesso) && pkg.solicitacoesAcesso.length > 0;
+    const hasUnconfirmedPayments = Boolean(
+      pkg.pagamentos &&
+        Object.values(pkg.pagamentos).some((p: any) => p && p.informouPagamento && !p.pago)
+    );
+    return hasSolicitacoes || hasUnconfirmedPayments;
+  };
+
+  const countPendingPackages = useMemo(() => {
+    return catalogPackages.filter(hasPendingOrders).length;
+  }, [catalogPackages]);
+
   const handleToggleCategory = (cat: string) => {
     setSelectedCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
@@ -333,6 +350,11 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
           (ap) => ap.id === currentUser.id || ap.nome.toLowerCase() === currentUser.nome.toLowerCase()
         );
         if (!isUserParticipant) return false;
+      }
+
+      // 0.1 Filtro Exclusivo do Mestre: Apenas financiamentos/produtos com pedidos pendentes
+      if (isMaster && filterPendingOrders) {
+        if (!hasPendingOrders(pkg)) return false;
       }
 
       // 1. Text Search
@@ -425,6 +447,8 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   }, [
     catalogPackages,
     myAcervoActive,
+    isMaster,
+    filterPendingOrders,
     currentUser.id,
     currentUser.nome,
     searchTerm,
@@ -439,6 +463,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   const handleClearFilters = () => {
     setMyAcervoActive(false);
     if (onToggleMyAcervo) onToggleMyAcervo(false);
+    setFilterPendingOrders(false);
     setSearchTerm('');
     setSelectedSistema('Todos');
     setSelectedCategories([]);
@@ -541,7 +566,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
           <span className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-[#716016]" />
             <span>Filtros do Acervo</span>
-            {(myAcervoActive || selectedCategories.length > 0 || selectedSistema !== 'Todos') && (
+            {(myAcervoActive || (isMaster && filterPendingOrders) || selectedCategories.length > 0 || selectedSistema !== 'Todos') && (
               <span className="w-2 h-2 rounded-full bg-[#48551F]" />
             )}
           </span>
@@ -594,6 +619,32 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
               Mostrar apenas pacotes que já possuo.
             </p>
           </div>
+
+          {/* Filtro Exclusivo do Mestre: Financiamentos com Pedidos Pendentes */}
+          {isMaster && (
+            <div className="space-y-1.5 pb-4 border-b border-[#D6C296]">
+              <label className="flex items-center justify-between py-1 px-1.5 rounded-lg hover:bg-[#EFE3C8] transition-colors cursor-pointer select-none">
+                <span className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse shrink-0" />
+                  <span className="text-xs font-bold text-[#991B1B]">Pedidos pendentes</span>
+                  {countPendingPackages > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]">
+                      {countPendingPackages}
+                    </span>
+                  )}
+                </span>
+                <input
+                  type="checkbox"
+                  checked={filterPendingOrders}
+                  onChange={(e) => setFilterPendingOrders(e.target.checked)}
+                  className="w-4 h-4 rounded border-[#C6AD78] text-[#991B1B] focus:ring-[#991B1B] accent-[#991B1B] cursor-pointer"
+                />
+              </label>
+              <p className="text-[11px] text-[#71634D] leading-tight px-1.5">
+                Exibir apenas financiamentos com pedidos de acesso aguardando aprovação.
+              </p>
+            </div>
+          )}
 
           {/* Categorias (Checkboxes com ícones) */}
           <div className="space-y-2 pb-4 border-b border-[#D6C296]">
@@ -742,12 +793,16 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                 {myAcervoActive ? '📂' : '🔍'}
               </div>
               <h3 className="font-rpg text-lg font-bold text-[#302414]">
-                {myAcervoActive
+                {filterPendingOrders
+                  ? 'Nenhum pedido pendente'
+                  : myAcervoActive
                   ? 'Nenhum material no seu acervo pessoal'
                   : 'Nenhum pacote encontrado'}
               </h3>
               <p className="text-xs text-[#71634D] max-w-md mx-auto mt-1 mb-4">
-                {myAcervoActive
+                {filterPendingOrders
+                  ? 'Não há pacotes com pedidos ou solicitações de acesso pendentes no momento.'
+                  : myAcervoActive
                   ? 'Você ainda não participou de nenhum rateio concluído deste banco de dados.'
                   : 'Tente ajustar os filtros ou a palavra-chave da busca.'}
               </p>

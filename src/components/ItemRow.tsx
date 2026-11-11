@@ -226,7 +226,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
             )}
           </div>
 
-          {/* Botão Principal: 🙋‍♂️ Apoiar ou Apoiado (Oculto no Modo Mestre) */}
+          {/* Botão Principal: 🙋‍♂️ Me interesso ou Tenho interesse (Oculto no Modo Mestre) */}
           {!isFinalizado && !currentUser?.isMaster ? (
             <button
               onClick={() => onOpenApoiar(item)}
@@ -235,16 +235,16 @@ export const ItemRow: React.FC<ItemRowProps> = ({
                   ? 'bg-[#183824] hover:bg-[#1f482e] text-[#6ee7b7] border border-[#34d399]/70'
                   : 'bg-[#d49e2a] hover:bg-[#e5b23d] text-[#122015]'
               }`}
-              title={isUserSupporting ? 'Você já está apoiando! Clique para gerenciar ou retirar apoio' : 'Entrar no rateio deste item'}
+              title={isUserSupporting ? 'Você já manifestou interesse! Clique para gerenciar ou retirar interesse' : 'Manifestar interesse neste item'}
             >
               {isUserSupporting ? (
                 <>
                   <CheckCircle className="w-4 h-4 text-[#34d399]" />
-                  <span>Apoiado ({totalApoiadores})</span>
+                  <span>Tenho interesse ({totalApoiadores})</span>
                 </>
               ) : (
                 <>
-                  <span>🙋‍♂️ Apoiar</span>
+                  <span>🙋‍♂️ Me interesso</span>
                   {totalApoiadores > 0 && <span className="font-mono text-xs">({totalApoiadores})</span>}
                 </>
               )}

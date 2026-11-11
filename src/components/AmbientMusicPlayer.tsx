@@ -118,7 +118,7 @@ export const AmbientMusicPlayer: React.FC<AmbientMusicPlayerProps> = ({ isAuthen
     } catch (e) {}
   }, [volume, isMuted]);
 
-  // Início ou parada da reprodução atrelado estritamente à autenticação confirmada
+  // Início ou parada da reprodução: música pausada por padrão ao acessar o site
   useEffect(() => {
     const audio = audioRef.current;
     if (!isAuthenticated) {
@@ -133,32 +133,11 @@ export const AmbientMusicPlayer: React.FC<AmbientMusicPlayerProps> = ({ isAuthen
     }
 
     if (!audio) return;
-
     playCancelledRef.current = false;
     audio.volume = volume;
     audio.muted = isMuted;
-
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          if (playCancelledRef.current) {
-            audio.pause();
-            audio.currentTime = 0;
-            setIsPlaying(false);
-            return;
-          }
-          setIsPlaying(true);
-          setAutoplayBlocked(false);
-        })
-        .catch((err) => {
-          if (playCancelledRef.current) return;
-          console.log('[AmbientMusic] Autoplay bloqueado pelo navegador, aguardando clique', err?.name);
-          setIsPlaying(false);
-          setAutoplayBlocked(true);
-        });
-    }
-  }, [isAuthenticated, currentTrack.src]);
+    // Música pausada por padrão: o usuário ativa manualmente pelo controle existente
+  }, [isAuthenticated]);
 
   const handleStartMusic = useCallback(() => {
     const audio = audioRef.current;
@@ -273,7 +252,7 @@ export const AmbientMusicPlayer: React.FC<AmbientMusicPlayerProps> = ({ isAuthen
   const handleNextTrack = () => {
     const currentIndex = PLAYLIST.findIndex((t) => t.id === currentTrack.id);
     const nextIndex = (currentIndex + 1) % PLAYLIST.length;
-    changeTrack(PLAYLIST[nextIndex], isPlaying || !autoplayBlocked);
+    changeTrack(PLAYLIST[nextIndex], isPlaying);
   };
 
   // Enquanto não houver autenticação confirmada, o áudio permanece parado e o player oculto

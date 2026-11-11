@@ -757,7 +757,7 @@ export default function App() {
         setItems((prev) => prev.map((it) => (it.id === itemId ? res.item! : it)));
         saveItemToFirestore(res.item).catch(() => {});
         const already = (targetItem.apoiadores || []).some((a) => a.id === currentUser.id);
-        showToast(already ? `Você retirou seu apoio da sugestão "${targetItem.nome}".` : `Você apoiou "${targetItem.nome}"!`);
+        showToast(already ? `Você retirou seu interesse da sugestão "${targetItem.nome}".` : `Interesse registrado em "${targetItem.nome}"!`);
       }
     } catch (err: any) {
       showToast(err.message || 'Erro ao alternar apoio');

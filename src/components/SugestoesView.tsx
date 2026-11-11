@@ -176,7 +176,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
       {/* Banner Superior com Arte dos Trolls (Fiel ao Print 4 / image_a9b2f00e.png) */}
       <PageBanner
         title="Ideias para a próxima aventura"
-        subtitle="Sugira materiais e apoie as escolhas da comunidade."
+        subtitle="Sugira materiais e manifeste seu interesse nas escolhas da comunidade."
       />
 
       {/* Cabeçalho da Seção: Título à Esquerda + Botão Sugerir Compra à Direita */}
@@ -432,17 +432,17 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                       </div>
                     </div>
 
-                    {/* Botão de Ação: "Você apoiou" ou "Apoiar" (Oculto no Modo Mestre) */}
+                    {/* Botão de Ação: "Tenho interesse" ou "Me interesso" (Oculto no Modo Mestre) */}
                     {!isMaster && (
                       <div className="mt-3 w-full">
                         {isUserSupporting ? (
                           <button
                             onClick={() => handleSupportClick(item)}
                             className="w-full py-2 px-3 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-                            title="Clique para remover seu apoio"
+                            title="Clique para remover seu interesse"
                           >
                             <Check className="w-3.5 h-3.5" />
-                            <span>Você apoiou</span>
+                            <span>Tenho interesse</span>
                           </button>
                         ) : (
                           <button
@@ -450,7 +450,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                             className="w-full py-2 px-3 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
                           >
                             <span>🤝</span>
-                            <span>Apoiar</span>
+                            <span>Me interesso</span>
                           </button>
                         )}
                       </div>
@@ -502,10 +502,10 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                 <div className="space-y-0.5">
                   <h4 className="font-bold text-[#302414] text-xs flex items-center gap-1.5">
                     <span>🤝</span>
-                    <span>Apoiar</span>
+                    <span>Me interesso</span>
                   </h4>
                   <p className="text-[#71634D] leading-relaxed">
-                    Demonstre interesse apoiando as sugestões da comunidade.
+                    Demonstre interesse nas sugestões da comunidade.
                   </p>
                 </div>
               </div>
@@ -521,7 +521,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                     <span>Financiar</span>
                   </h4>
                   <p className="text-[#71634D] leading-relaxed">
-                    As ideias mais apoiadas viram pacotes de financiamento oficial organizados pelo Mestre.
+                    As ideias com maior interesse viram pacotes de financiamento oficial organizados pelo Mestre.
                   </p>
                 </div>
               </div>
@@ -543,7 +543,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                 {userSupportedCount}
               </span>
               <span className="text-sm font-semibold text-[#302414]">
-                {userSupportedCount === 1 ? 'sugestão apoiada' : 'sugestões apoiadas'}
+                {userSupportedCount === 1 ? 'sugestão de interesse' : 'sugestões de interesse'}
               </span>
             </div>
             <p className="text-[11px] text-[#71634D] leading-tight">
@@ -555,7 +555,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
 
       </div>
 
-      {/* Modal de Confirmação de Apoio */}
+      {/* Modal de Confirmação de Interesse */}
       {itemToCommit && (
         <div
           className="fixed inset-0 z-50 bg-[#282D13]/60 backdrop-blur-sm flex items-center justify-center p-4"
@@ -581,7 +581,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
             </div>
 
             <p className="text-xs text-[#55482e] leading-relaxed">
-              Apoiar significa que você tem interesse real em participar da compra quando ela for organizada. Apoie apenas os materiais que pretende adquirir. A inscrição no financiamento será feita depois.
+              Manifestar interesse significa que você gostaria de participar da compra quando ela for organizada. Marque interesse apenas nos materiais que pretende adquirir. A inscrição e a coleta no financiamento serão feitas posteriormente.
             </p>
 
             {/* Detalhes do item apoiado */}
