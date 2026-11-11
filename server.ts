@@ -1,10 +1,11 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES, HISTORICAL_CATALOG_PACKAGES } from './src/data/seedData';
-import { normalizeProductType } from './src/types';
+import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES, HISTORICAL_CATALOG_PACKAGES } from './src/data/seedData.ts';
+import { normalizeProductType } from './src/types/index.ts';
 
 // ==================== CONFIGURAÇÕES & SEGURANÇA ====================
 // A senha do Mestre é estritamente mantida no servidor (variável de ambiente ou fallback seguro no servidor)
@@ -23,7 +24,7 @@ function getPort(): number {
     const parsed = parseInt(process.argv[portArgIndex + 1], 10);
     if (!isNaN(parsed) && parsed > 0) return parsed;
   }
-  if (process.env.PORT && process.env.PORT !== '8080') {
+  if (process.env.PORT) {
     const parsed = parseInt(process.env.PORT, 10);
     if (!isNaN(parsed) && parsed > 0) return parsed;
   }

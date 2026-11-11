@@ -1,5 +1,5 @@
-import { ItemRPG, UserProfile, FundingPackage, PackageSubItem } from '../types';
-import catalogoRaw from '../../public/assets/aistudio/catalogo_ponte_dos_trolls_ea54de7f.json';
+import type { ItemRPG, UserProfile, FundingPackage, PackageSubItem } from '../types/index.ts';
+import catalogoRaw from '../../public/assets/aistudio/catalogo_ponte_dos_trolls_ea54de7f.json' with { type: 'json' };
 
 export const SEED_USERS: UserProfile[] = [
   { id: "u_1", nome: "Alef Henrique", telefone: "8293951773", email: "alefffhenriquee2@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
