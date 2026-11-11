@@ -363,7 +363,7 @@ export const AmbientMusicPlayer: React.FC<AmbientMusicPlayerProps> = ({ isAuthen
 
             {/* Menu expandido: abre para cima (bottom-full) para evitar cobrir qualquer elemento */}
             {isExpanded && (
-              <div className="absolute bottom-full right-0 mb-2 w-72 sm:w-80 bg-[#282D13]/95 backdrop-blur-md border border-[#5d7328] text-[#F8EDD5] rounded-2xl shadow-2xl p-3.5 space-y-3 animate-in fade-in-50 zoom-in-95 z-50">
+              <div className="absolute bottom-full right-0 mb-2 w-[calc(100vw-1.5rem)] max-w-xs sm:w-80 bg-[#282D13]/95 backdrop-blur-md border border-[#5d7328] text-[#F8EDD5] rounded-2xl shadow-2xl p-3.5 space-y-3 animate-in fade-in-50 zoom-in-95 z-50">
                 {/* Cabeçalho da Playlist */}
                 <div className="flex items-center justify-between pb-2 border-b border-[#3f4820] text-xs">
                   <span className="font-bold font-rpg text-[#F8EDD5] flex items-center gap-1.5">

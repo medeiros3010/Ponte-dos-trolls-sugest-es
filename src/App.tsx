@@ -712,6 +712,9 @@ export default function App() {
         if (res.application) {
           setApplications((prev) => prev.map((a) => (a.id === appId ? res.application! : a)));
         }
+        if (res.users) {
+          setUsers(res.users);
+        }
         showToast('Solicitação recusada.');
         return true;
       }

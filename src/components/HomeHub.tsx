@@ -55,7 +55,7 @@ export const HomeHub: React.FC<HomeHubProps> = ({
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col justify-center animate-in fade-in duration-200 space-y-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-5 flex-1 flex flex-col justify-center animate-in fade-in duration-200 space-y-6">
       
       {/* Banner Superior com Arte dos Trolls */}
       <PageBanner
@@ -90,10 +90,10 @@ export const HomeHub: React.FC<HomeHubProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
           <button
             onClick={() => onNavigate('financiamento')}
-            className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+            className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center active:scale-95"
           >
             Ver Financiamentos
           </button>
@@ -118,15 +118,15 @@ export const HomeHub: React.FC<HomeHubProps> = ({
           </div>
           <button
             onClick={() => onNavigate('financiamento')}
-            className="px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold rounded-xl shrink-0 cursor-pointer shadow-sm"
+            className="w-full sm:w-auto min-h-[44px] px-4 py-2 bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold rounded-xl shrink-0 cursor-pointer shadow-sm flex items-center justify-center"
           >
             Pagar Agora
           </button>
         </div>
       )}
 
-      {/* 4 CARDS PRINCIPAIS DE NAVEGAÇÃO (Fiel ao tema pergaminho) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* CARDS PRINCIPAIS DE NAVEGAÇÃO (Fiel ao tema pergaminho) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         
         {/* Card 1: Sugestões */}
         <button

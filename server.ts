@@ -1702,8 +1702,20 @@ app.post('/api/solicitacoes/:id/recusar', async (req: Request, res: Response) =>
       app.avaliadoPor = MASTER_ADMIN_NAME;
       if (observacoesMestre) app.observacoesMestre = String(observacoesMestre).trim();
 
+      // Garante que qualquer registro de usuário vinculado seja marcado como recusado
+      if (Array.isArray(data.users)) {
+        data.users.forEach((u: any) => {
+          if (
+            u.solicitacaoId === applicationId ||
+            (u.email && app.email && u.email.trim().toLowerCase() === app.email.trim().toLowerCase())
+          ) {
+            u.status = 'recusado';
+          }
+        });
+      }
+
       writeBinData(binId, data);
-      return res.json({ success: true, application: app });
+      return res.json({ success: true, application: app, users: data.users });
     } catch (err: any) {
       console.error('Erro ao recusar solicitação:', err);
       return res.status(500).json({ error: 'Erro ao recusar solicitação', details: err.message });

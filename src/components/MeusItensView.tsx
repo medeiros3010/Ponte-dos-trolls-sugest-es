@@ -65,7 +65,7 @@ export const MeusItensView: React.FC<MeusItensViewProps> = ({
   }, [acquiredPackages, selectedSistema, searchTerm]);
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-5 flex-1 flex flex-col space-y-6 w-full animate-in fade-in duration-200">
       {/* Banner */}
       <PageBanner
         title="Meus Itens"

@@ -171,7 +171,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-5 flex-1 flex flex-col animate-in fade-in duration-200">
       
       {/* Banner Superior com Arte dos Trolls (Fiel ao Print 4 / image_a9b2f00e.png) */}
       <PageBanner
@@ -309,7 +309,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                   className="parchment-card p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 transition-all hover:shadow-md"
                 >
                   {/* Miniatura à Esquerda */}
-                  <div className="w-full sm:w-44 h-28 rounded-xl overflow-hidden bg-[#282D13] shrink-0 border border-[#C6AD78] relative">
+                  <div className="w-full sm:w-44 h-36 sm:h-28 rounded-xl overflow-hidden bg-[#282D13] shrink-0 border border-[#C6AD78] relative">
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
@@ -438,7 +438,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                         {isUserSupporting ? (
                           <button
                             onClick={() => handleSupportClick(item)}
-                            className="w-full py-2 px-3 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                            className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-[#dbe6c2] hover:bg-[#cfdcaf] text-[#354817] border border-[#8ea259] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                             title="Clique para remover seu interesse"
                           >
                             <Check className="w-3.5 h-3.5" />
@@ -447,7 +447,7 @@ export const SugestoesView: React.FC<SugestoesViewProps> = ({
                         ) : (
                           <button
                             onClick={() => handleSupportClick(item)}
-                            className="w-full py-2 px-3 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                            className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
                           >
                             <span>🤝</span>
                             <span>Me interesso</span>

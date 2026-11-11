@@ -248,7 +248,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-5 flex-1 flex flex-col animate-in fade-in duration-200">
       
       {/* Banner Superior com Arte dos Trolls */}
       <PageBanner

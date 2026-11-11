@@ -20,6 +20,15 @@
     background-color: #F3E5C5;
     color: #302414;
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html {
+    overflow-x: hidden;
+    width: 100%;
   }
 }
 

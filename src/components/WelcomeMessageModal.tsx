@@ -28,6 +28,7 @@ interface WelcomeMessageModalProps {
 }
 
 const STORAGE_OFFICIAL_URL_KEY = 'ponte_trolls_official_site_url';
+const DEFAULT_OFFICIAL_URL = 'https://ponte-dos-trolls.ai.studio/';
 
 export const WelcomeMessageModal: React.FC<WelcomeMessageModalProps> = ({
   isOpen,
@@ -43,7 +44,7 @@ export const WelcomeMessageModal: React.FC<WelcomeMessageModalProps> = ({
       if (stored && stored.trim()) return stored.trim();
     } catch (e) {}
     if (initialSiteUrl && initialSiteUrl.trim()) return initialSiteUrl.trim();
-    return '';
+    return DEFAULT_OFFICIAL_URL;
   });
 
   const [isEditingUrl, setIsEditingUrl] = useState(false);
@@ -55,13 +56,15 @@ export const WelcomeMessageModal: React.FC<WelcomeMessageModalProps> = ({
         const stored = localStorage.getItem(STORAGE_OFFICIAL_URL_KEY);
         if (stored && stored.trim()) {
           setSiteUrl(stored.trim());
+        } else if (!siteUrl) {
+          setSiteUrl(DEFAULT_OFFICIAL_URL);
         }
       } catch (e) {}
     }
   }, [isOpen]);
 
   const handleSaveSiteUrl = (url: string) => {
-    const clean = url.trim();
+    const clean = url.trim() || DEFAULT_OFFICIAL_URL;
     setSiteUrl(clean);
     try {
       localStorage.setItem(STORAGE_OFFICIAL_URL_KEY, clean);
@@ -78,7 +81,7 @@ export const WelcomeMessageModal: React.FC<WelcomeMessageModalProps> = ({
   // Mensagem Oficial de Boas-Vindas
   const welcomeMessageText = useMemo(() => {
     const nome = member?.nome ? member.nome.trim() : 'Aventureiro';
-    const linkSite = siteUrl.trim() ? siteUrl.trim() : '[CONFIGURAR LINK DO SITE ACIMA]';
+    const linkSite = siteUrl.trim() ? siteUrl.trim() : DEFAULT_OFFICIAL_URL;
 
     return `🎉 Olá, ${nome}! Sua entrada foi aprovada. Seja bem-vindo(a) à Ponte dos Trolls — PDT!
 
@@ -285,7 +288,7 @@ Bem-vindo(a) à Ponte dos Trolls! 👊🐉`;
                   type="url"
                   value={siteUrl}
                   onChange={(e) => setSiteUrl(e.target.value)}
-                  placeholder="https://pontedostrolls.com.br"
+                  placeholder="https://ponte-dos-trolls.ai.studio/"
                   className="flex-1 bg-[#FAF4E6] border border-[#C6AD78] rounded-lg px-2.5 py-1.5 text-xs text-[#302414] focus:outline-none focus:border-[#48551F]"
                 />
                 <button

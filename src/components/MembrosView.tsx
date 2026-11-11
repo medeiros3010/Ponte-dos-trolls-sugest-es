@@ -82,7 +82,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
 
   // Filtros da aba de solicitações
   const [appSearchTerm, setAppSearchTerm] = useState('');
-  const [appFilterStatus, setAppFilterStatus] = useState<'todos' | 'pendente' | 'aprovado' | 'recusado'>('todos');
+  const [appFilterStatus, setAppFilterStatus] = useState<'todos' | 'pendente' | 'aprovado' | 'recusado'>('pendente');
 
   const isMaster = Boolean(currentUser.isMaster);
 
@@ -194,12 +194,17 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     };
   };
 
+  // Apenas membros efetivos/aprovados da mesa (recusados ou pendentes não entram na mesa)
+  const approvedMembers = useMemo(() => {
+    return users.filter((u) => u.status !== 'recusado' && u.status !== 'pendente');
+  }, [users]);
+
   // Estatísticas globais do grupo (para os 3 cards do topo)
   const groupStats = useMemo(() => {
     let activeParticipantsSet = new Set<string>();
     let membersWithPendingCount = 0;
 
-    users.forEach((u) => {
+    approvedMembers.forEach((u) => {
       const stats = getStats(u);
       if (stats.activeFundingCount > 0) {
         activeParticipantsSet.add(u.id);
@@ -210,15 +215,15 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     });
 
     return {
-      totalMembers: users.length,
+      totalMembers: approvedMembers.length,
       activeParticipants: activeParticipantsSet.size,
       membersWithPending: membersWithPendingCount,
     };
-  }, [users, packages, items]);
+  }, [approvedMembers, packages, items]);
 
-  // Lista filtrada e ordenada
+  // Lista filtrada e ordenada (apenas membros aprovados da mesa)
   const filteredAndSortedMembers = useMemo(() => {
-    let list = [...users];
+    let list = [...approvedMembers];
 
     // Busca textual
     if (searchTerm.trim()) {
@@ -399,7 +404,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-5 flex-1 flex flex-col animate-in fade-in duration-200">
       
       {/* Banner Superior com Arte dos Trolls (Fiel ao Print 2 / image_b133733d.png) */}
       <PageBanner
@@ -423,7 +428,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
             <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
               activeTab === 'membros' ? 'bg-[#374217] text-[#F8EDD5]' : 'bg-[#D6C296] text-[#302414]'
             }`}>
-              {users.length}
+              {approvedMembers.length}
             </span>
           </button>
 
@@ -445,7 +450,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
               <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
                 activeTab === 'solicitacoes' ? 'bg-[#374217] text-[#F8EDD5]' : 'bg-[#D6C296] text-[#302414]'
               }`}>
-                {applications.length}
+                0
               </span>
             )}
           </button>
@@ -922,8 +927,8 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                 onChange={(e) => setAppFilterStatus(e.target.value as any)}
                 className="appearance-none bg-[#F8EDD5] border border-[#C6AD78] rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold text-[#302414] focus:outline-none focus:border-[#48551F] shadow-sm cursor-pointer"
               >
-                <option value="todos">Todas as solicitações</option>
-                <option value="pendente">Apenas Pendentes</option>
+                <option value="pendente">Apenas Pendentes (Aguardando)</option>
+                <option value="todos">Todas (Histórico Completo)</option>
                 <option value="aprovado">Aprovadas</option>
                 <option value="recusado">Recusadas</option>
               </select>

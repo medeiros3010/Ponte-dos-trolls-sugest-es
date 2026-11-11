@@ -188,11 +188,11 @@ export const CartModal: React.FC<CartModalProps> = ({
 
         {/* Footer Actions */}
         {cartPackages.length > 0 && (
-          <div className="p-4 bg-[#EDE2CA] border-t border-[#D6C296] flex items-center justify-between gap-3">
+          <div className="p-4 bg-[#EDE2CA] border-t border-[#D6C296] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-[#F8EDD5] hover:bg-[#FBF4E4] text-[#302414] border border-[#C6AD78] text-xs font-semibold cursor-pointer"
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-4 py-2.5 sm:py-2 rounded-xl bg-[#F8EDD5] hover:bg-[#FBF4E4] text-[#302414] border border-[#C6AD78] text-xs font-semibold cursor-pointer flex items-center justify-center transition-colors"
             >
               Continuar Comprando
             </button>
@@ -200,7 +200,7 @@ export const CartModal: React.FC<CartModalProps> = ({
             <button
               type="button"
               onClick={onProceedToWhatsApp}
-              className="px-5 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
+              className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Finalizar Pedido</span>

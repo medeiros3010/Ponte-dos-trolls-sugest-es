@@ -943,7 +943,7 @@ export async function apiRejectApplication(
   adminPassword?: string,
   observacoesMestre?: string,
   binId: string = DEFAULT_BIN_ID
-): Promise<{ success: boolean; application?: MembershipApplication }> {
+): Promise<{ success: boolean; application?: MembershipApplication; users?: UserProfile[] }> {
   const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
     ? window.location.origin
     : FALLBACK_SERVER_URL;

@@ -148,15 +148,15 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <button
               onClick={onGoHome}
-              className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer focus:outline-none"
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer focus:outline-none min-h-[44px]"
               title="A Ponte dos Trolls - Início"
             >
               <img
                 src="/bridge-logo.png"
                 alt="A Ponte dos Trolls"
-                className="h-7 sm:h-8 w-auto object-contain filter drop-shadow brightness-110 group-hover:scale-105 transition-transform"
+                className="h-7 sm:h-8 w-auto object-contain filter drop-shadow brightness-110 group-hover:scale-105 transition-transform shrink-0"
               />
-              <span className="font-rpg font-bold tracking-widest text-[#F8EDD5] text-base sm:text-lg uppercase group-hover:text-[#e4cf98] transition-colors whitespace-nowrap">
+              <span className="font-rpg font-bold tracking-wider sm:tracking-widest text-[#F8EDD5] text-xs sm:text-base md:text-lg uppercase group-hover:text-[#e4cf98] transition-colors whitespace-nowrap">
                 A PONTE DOS TROLLS
               </span>
             </button>
@@ -255,9 +255,9 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
-            {/* Ferramentas do Mestre (Dropdown compacto e organizado) */}
+            {/* Ferramentas do Mestre (Dropdown no desktop, integrado no menu móvel) */}
             {isMaster && (
-              <div className="relative" ref={toolsMenuRef}>
+              <div className="relative hidden md:block" ref={toolsMenuRef}>
                 <button
                   onClick={() => setIsToolsMenuOpen(!isToolsMenuOpen)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
@@ -450,7 +450,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Mobile Menu Hamburger */}
             <button
               onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-              className="md:hidden p-2 text-[#cfc4a6] hover:text-[#F8EDD5] rounded-xl hover:bg-[#323917] transition-colors cursor-pointer"
+              className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-[#cfc4a6] hover:text-[#F8EDD5] rounded-xl hover:bg-[#323917] transition-colors cursor-pointer select-none"
               aria-label="Abrir menu de navegação"
             >
               {isMobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -462,7 +462,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Navigation Drawer */}
         {isMobileNavOpen && (
-          <div className="md:hidden py-3 border-t border-[#3f471e] flex flex-col gap-1 pb-4">
+          <div className="md:hidden py-3 border-t border-[#3f471e] flex flex-col gap-1 pb-4 animate-in fade-in-50 duration-150">
             {navItems.map((item) => {
               const isActive = currentView === item.id;
               const isMembrosTab = item.id === 'membros';
@@ -477,7 +477,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onNavigate(item.id);
                     setIsMobileNavOpen(false);
                   }}
-                  className={`px-4 py-2.5 rounded-xl text-left text-sm font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                  className={`min-h-[44px] px-4 py-2.5 rounded-xl text-left text-sm font-semibold transition-colors flex items-center justify-between cursor-pointer select-none ${
                     isActive
                       ? 'bg-[#525c28] text-[#F8EDD5] border border-[#6b7a35]'
                       : 'text-[#cfc4a6] hover:bg-[#363e1a] hover:text-[#F8EDD5]'
@@ -490,7 +490,14 @@ export const Header: React.FC<HeaderProps> = ({
                       : item.label
                   }
                 >
-                  <span>{item.label}</span>
+                  <span className="flex items-center gap-2">
+                    {item.label}
+                    {item.id === 'meus-itens' && typeof item.badge === 'number' && item.badge > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#384318] text-[#a8d363] border border-[#5d7328]">
+                        {item.badge}
+                      </span>
+                    )}
+                  </span>
                   {showPendingDot && (
                     <span
                       className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C2410C] text-[#F8EDD5] border border-[#ea580c] shadow-xs"
@@ -514,6 +521,102 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               );
             })}
+
+            {/* Painel do Mestre no Celular */}
+            {isMaster && (
+              <div className="mt-2 pt-2 border-t border-[#3f471e]/70 space-y-1">
+                <p className="px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-[#d6be8c]">
+                  Painel do Mestre
+                </p>
+
+                {/* Cotação do Dólar no Menu Mobile */}
+                <div className="min-h-[44px] px-4 py-2 flex items-center justify-between text-xs text-[#cfc4a6] bg-[#21260e] rounded-xl border border-[#3f471e]">
+                  <span className="flex items-center gap-1.5">
+                    <DollarSign className="w-4 h-4 text-[#d6be8c]" />
+                    <span>Cotação USD</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      setTempRate(exchangeRate.toFixed(2));
+                      setIsEditingRate(true);
+                      setIsMobileNavOpen(false);
+                      setIsToolsMenuOpen(true);
+                    }}
+                    className="font-mono font-bold text-[#a8d363] px-2 py-1 rounded bg-[#333b16] border border-[#4d5921]"
+                  >
+                    R$ {exchangeRate.toFixed(2)}
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => {
+                    handleCopyLink();
+                  }}
+                  className="w-full min-h-[44px] px-4 py-2.5 text-xs text-left font-medium flex items-center gap-2 text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] rounded-xl transition-colors cursor-pointer"
+                >
+                  <Link2 className="w-4 h-4 text-[#d6be8c]" />
+                  <span>{copiedLink ? '✓ Link Copiado!' : 'Copiar Link do Grupo'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    onOpenBulletinModal();
+                  }}
+                  className="w-full min-h-[44px] px-4 py-2.5 text-xs text-left font-medium flex items-center gap-2 text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] rounded-xl transition-colors cursor-pointer"
+                >
+                  <MessageSquareShare className="w-4 h-4 text-[#a8d363]" />
+                  <span>Gerar Boletim WhatsApp</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    onOpenExportModal();
+                  }}
+                  className="w-full min-h-[44px] px-4 py-2.5 text-xs text-left font-medium flex items-center gap-2 text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] rounded-xl transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-[#d6be8c]" />
+                  <span>Exportar Dados (Excel / Backup)</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    onOpenSettingsModal();
+                  }}
+                  className="w-full min-h-[44px] px-4 py-2.5 text-xs text-left font-medium flex items-center gap-2 text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] rounded-xl transition-colors cursor-pointer"
+                >
+                  <Cloud className="w-4 h-4 text-[#a8d363]" />
+                  <span>Configurações da Nuvem</span>
+                </button>
+              </div>
+            )}
+
+            {/* Ações de Conta no Menu Mobile */}
+            <div className="mt-2 pt-2 border-t border-[#3f471e]/70 space-y-1">
+              <button
+                onClick={() => {
+                  setIsMobileNavOpen(false);
+                  onOpenProfileModal();
+                }}
+                className="w-full min-h-[44px] px-4 py-2.5 text-xs text-left font-medium flex items-center gap-2 text-[#cfc4a6] hover:text-[#F8EDD5] hover:bg-[#363e1a] rounded-xl transition-colors cursor-pointer"
+              >
+                <User className="w-4 h-4 text-[#a8d363]" />
+                <span>Meu Perfil</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsMobileNavOpen(false);
+                  onChangeUser();
+                }}
+                className="w-full min-h-[44px] px-4 py-2.5 text-xs text-left font-medium flex items-center gap-2 text-[#f87171] hover:bg-[#363e1a] rounded-xl transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 text-[#f87171]" />
+                <span>Trocar de Conta</span>
+              </button>
+            </div>
           </div>
         )}
 

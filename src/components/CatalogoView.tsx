@@ -321,15 +321,14 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
     return packages.filter((p) => p.status === 'Catálogo');
   }, [packages]);
 
-  // Verifica se o pacote possui pedidos ou solicitações de acesso pendentes (via Carrinho / WhatsApp)
+  // Verifica se o pacote possui pedidos ou solicitações de acesso a materiais pendentes de autorização do Mestre
   const hasPendingOrders = (pkg: FundingPackage): boolean => {
-    const hasSolicitacoes = Array.isArray(pkg.solicitacoesAcesso) && pkg.solicitacoesAcesso.length > 0;
-    const hasUnconfirmedPayments = Boolean(
-      pkg.pagamentos &&
-        Object.values(pkg.pagamentos).some((p: any) => p && p.informouPagamento && !p.pago)
-    );
-    return hasSolicitacoes || hasUnconfirmedPayments;
+    return Array.isArray(pkg.solicitacoesAcesso) && pkg.solicitacoesAcesso.length > 0;
   };
+
+  const totalPendingOrdersCount = useMemo(() => {
+    return catalogPackages.reduce((sum, pkg) => sum + (pkg.solicitacoesAcesso?.length || 0), 0);
+  }, [catalogPackages]);
 
   const countPendingPackages = useMemo(() => {
     return catalogPackages.filter(hasPendingOrders).length;
@@ -549,7 +548,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col animate-in fade-in duration-200">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-5 flex-1 flex flex-col animate-in fade-in duration-200">
       
       {/* Banner Superior com Arte dos Trolls (fiel ao Print 1 / image_968094c5.png) */}
       <PageBanner
@@ -625,11 +624,15 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
             <div className="space-y-1.5 pb-4 border-b border-[#D6C296]">
               <label className="flex items-center justify-between py-1 px-1.5 rounded-lg hover:bg-[#EFE3C8] transition-colors cursor-pointer select-none">
                 <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse shrink-0" />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                      totalPendingOrdersCount > 0 ? 'bg-[#EF4444] animate-pulse' : 'bg-[#71634D]/40'
+                    }`}
+                  />
                   <span className="text-xs font-bold text-[#991B1B]">Pedidos pendentes</span>
-                  {countPendingPackages > 0 && (
+                  {totalPendingOrdersCount > 0 && (
                     <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]">
-                      {countPendingPackages}
+                      {totalPendingOrdersCount}
                     </span>
                   )}
                 </span>
@@ -1050,8 +1053,8 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                       </div>
 
                       {/* Rodapé: Preço & Botão de Ação */}
-                      <div className="pt-3 border-t border-[#D6C296] flex items-center justify-between gap-2">
-                        <div>
+                      <div className="pt-3 border-t border-[#D6C296] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="flex items-center justify-between sm:block">
                           <span className="font-mono text-base sm:text-lg font-bold text-[#302414] block">
                             R$ {catalogPrice.toFixed(2).replace('.', ',')}
                           </span>
@@ -1066,7 +1069,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
 
                         {/* Ação Principal: Oculto no Modo Mestre */}
                         {!isMaster && (
-                          <div>
+                          <div className="w-full sm:w-auto">
                             {isUserParticipant ? (
                               <button
                                 type="button"
@@ -1074,16 +1077,16 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                                   if (onGoToMyItems) onGoToMyItems();
                                   else setSelectedPackageDetails(pkg);
                                 }}
-                                className="px-3 py-1.5 rounded-xl bg-[#E3E8D0] hover:bg-[#d5dcc0] text-[#282D13] border border-[#8F9F5B] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                                className="w-full sm:w-auto min-h-[42px] sm:min-h-0 px-3 py-2 sm:py-1.5 rounded-xl bg-[#E3E8D0] hover:bg-[#d5dcc0] text-[#282D13] border border-[#8F9F5B] text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                                 title="Material já adquirido. Clique para acessar no seu acervo."
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5 text-[#48551F]" />
                                 <span>No seu acervo</span>
                               </button>
                             ) : isUserPending ? (
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 w-full sm:w-auto">
                                 <span
-                                  className="px-2.5 py-1.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-[11px] font-bold select-none"
+                                  className="flex-1 sm:flex-none text-center min-h-[42px] sm:min-h-0 px-2.5 py-2 sm:py-1.5 rounded-xl bg-[#E5DCC9] text-[#786C56] border border-[#C6AD78]/80 text-[11px] font-bold select-none flex items-center justify-center"
                                   title="Você já solicitou acesso a este pacote. Aguardando aprovação do Mestre."
                                 >
                                   ⏳ Pendente
@@ -1094,7 +1097,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                                     e.stopPropagation();
                                     handleCancelMyRequest(pkg.id);
                                   }}
-                                  className="px-2 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#fae5e5] text-[#8b261b] border border-[#d69696] text-[11px] font-bold cursor-pointer transition-colors"
+                                  className="min-h-[42px] sm:min-h-0 px-2.5 py-2 sm:py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#fae5e5] text-[#8b261b] border border-[#d69696] text-[11px] font-bold cursor-pointer transition-colors flex items-center justify-center"
                                   title="Cancelar minha solicitação pendente"
                                 >
                                   Cancelar
@@ -1107,7 +1110,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                                   if (onOpenCart) onOpenCart();
                                   else onRemoveFromCart?.(pkg.id);
                                 }}
-                                className="px-3 py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] text-[#48551F] border border-[#48551F] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                                className="w-full sm:w-auto min-h-[42px] sm:min-h-0 px-3 py-2 sm:py-1.5 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] text-[#48551F] border border-[#48551F] text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                                 title="No carrinho! Clique para abrir o carrinho."
                               >
                                 <Check className="w-3.5 h-3.5 text-[#48551F]" />
@@ -1117,7 +1120,7 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => onAddToCart?.(pkg)}
-                                className="px-3.5 py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                                className="w-full sm:w-auto min-h-[42px] sm:min-h-0 px-3.5 py-2 sm:py-1.5 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                                 title="Adicionar pacote ao carrinho"
                               >
                                 <ShoppingCart className="w-3.5 h-3.5" />

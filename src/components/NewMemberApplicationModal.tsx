@@ -262,20 +262,20 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
 
         {/* Stepper Progress Bar */}
         {!isSubmittedSuccess && (
-          <div className="bg-[#EADBBE] px-6 py-2.5 border-b border-[#C6AD78]">
-            <div className="grid grid-cols-4 gap-2 text-center">
+          <div className="bg-[#EADBBE] px-3 sm:px-6 py-2.5 border-b border-[#C6AD78]">
+            <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center">
               {[
-                { s: 1, label: '1. Regras' },
-                { s: 2, label: '2. Perguntas' },
-                { s: 3, label: '3. Seus Dados' },
-                { s: 4, label: '4. Revisão' },
+                { s: 1, label: '1. Regras', short: 'Regras' },
+                { s: 2, label: '2. Perguntas', short: 'Perguntas' },
+                { s: 3, label: '3. Seus Dados', short: 'Dados' },
+                { s: 4, label: '4. Revisão', short: 'Revisão' },
               ].map((item) => {
                 const isActive = step === item.s;
                 const isPast = step > item.s;
                 return (
                   <div
                     key={item.s}
-                    className={`py-1 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-1 px-1 rounded-lg text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-all truncate ${
                       isActive
                         ? 'bg-[#48551F] text-[#F8EDD5] shadow-xs'
                         : isPast
@@ -283,8 +283,9 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
                         : 'text-[#71634D] opacity-60'
                     }`}
                   >
-                    {isPast && <CheckCircle2 className="w-3 h-3 text-[#282D13]" />}
-                    <span>{item.label}</span>
+                    {isPast && <CheckCircle2 className="w-3 h-3 text-[#282D13] shrink-0" />}
+                    <span className="hidden sm:inline">{item.label}</span>
+                    <span className="sm:hidden">{item.short}</span>
                   </div>
                 );
               })}
