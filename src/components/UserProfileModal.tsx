@@ -24,7 +24,9 @@ import {
 } from 'lucide-react';
 import { formatDateDisplay, formatPhone } from '../utils/helpers';
 import { getUserAcquiredPackages, getUserRank } from '../utils/ranksAndAcquisitions';
+import { getMemberTrollinsBalance, isMasterUser } from '../utils/trollins';
 import { RankBadgeIcon } from './RankBadge';
+import { TrollinCoinIcon, TrollinInfoBadge } from './TrollinCoin';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -92,6 +94,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   }, 0);
 
   const strikes = Array.isArray(currentUser.strikes) ? currentUser.strikes.length : (currentUser.strikes || 0);
+  const isMaster = isMasterUser(currentUser);
+  const trollinsBalance = getMemberTrollinsBalance(currentUser);
+  const trollinsExtrato = Array.isArray(currentUser.trollinsExtrato) ? currentUser.trollinsExtrato : [];
+
+  const trollinsSummary = trollinsExtrato.reduce(
+    (acc, entry) => {
+      if (entry.type === 'inicial') acc.initial += entry.amount;
+      else if (entry.type === 'ganho_financiamento') acc.earned += entry.amount;
+      else if (entry.type === 'gasto_sugestao') acc.spent += Math.abs(entry.amount);
+      else if (entry.type === 'doacao_sugestao') acc.donated += Math.abs(entry.amount);
+      else if (entry.type === 'ajuste_mestre_credito' || entry.type === 'ajuste_mestre_debito') {
+        acc.adjusted += entry.amount;
+      }
+      return acc;
+    },
+    { initial: 0, earned: 0, spent: 0, donated: 0, adjusted: 0 }
+  );
 
   const handlePhoneMask = (val: string) => {
     let digits = val.replace(/\D/g, '');
@@ -357,6 +376,115 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Card: Seus Trollins e Extrato (Visível apenas para o dono da conta) */}
+          {!isMaster && (
+            <div className="p-4 rounded-2xl bg-[#FBF4E4] border border-[#D6C296] space-y-3">
+              <div className="flex items-center justify-between border-b border-[#D6C296] pb-2.5">
+                <TrollinInfoBadge iconSize={20} align="left">
+                  <span className="font-bold text-xs uppercase tracking-wider text-[#716016]">
+                    Trollins — Saldo e Extrato
+                  </span>
+                </TrollinInfoBadge>
+                <span className="font-rpg text-lg font-bold text-[#48551F] inline-flex items-center gap-1.5 tabular-nums">
+                  <TrollinCoinIcon size={20} />
+                  <span>
+                    {trollinsBalance} {trollinsBalance === 1 ? 'Trollin' : 'Trollins'}
+                  </span>
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#71634D] tabular-nums">
+                <span>
+                  Saldo inicial: <strong className="text-[#302414]">{trollinsSummary.initial}</strong>
+                </span>
+                <span>·</span>
+                <span>
+                  Ganhos em financiamentos: <strong className="text-[#48551F]">+{trollinsSummary.earned}</strong>
+                </span>
+                <span>·</span>
+                <span>
+                  Investidos em sugestões: <strong className="text-[#8b261b]">-{trollinsSummary.spent}</strong>
+                </span>
+                {trollinsSummary.donated > 0 && (
+                  <>
+                    <span>·</span>
+                    <span>
+                      Doados em sugestões: <strong className="text-[#8b261b]">-{trollinsSummary.donated}</strong>
+                    </span>
+                  </>
+                )}
+                {trollinsSummary.adjusted !== 0 && (
+                  <>
+                    <span>·</span>
+                    <span>
+                      Ajustes do Mestre:{' '}
+                      <strong className={trollinsSummary.adjusted >= 0 ? 'text-[#48551F]' : 'text-[#8b261b]'}>
+                        {trollinsSummary.adjusted >= 0 ? `+${trollinsSummary.adjusted}` : trollinsSummary.adjusted}
+                      </strong>
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {trollinsExtrato.length === 0 ? (
+                <p className="text-[11px] text-[#71634D] italic">
+                  Nenhuma movimentação registrada ainda. Participe de financiamentos para ganhar Trollins.
+                </p>
+              ) : (
+                <div className="divide-y divide-[#E3D1AC] max-h-48 overflow-y-auto pr-1">
+                  {trollinsExtrato.map((entry) => {
+                    const isCredit = entry.amount >= 0;
+                    const typeLabel =
+                      entry.type === 'inicial'
+                        ? 'Crédito inicial'
+                        : entry.type === 'ganho_financiamento'
+                        ? 'Financiamento'
+                        : entry.type === 'gasto_sugestao'
+                        ? 'Sugestão'
+                        : entry.type === 'doacao_sugestao'
+                        ? 'Doação para sugestão'
+                        : entry.type === 'ajuste_mestre_credito'
+                        ? 'Ajuste do Mestre (+)'
+                        : entry.type === 'ajuste_mestre_debito'
+                        ? 'Ajuste do Mestre (-)'
+                        : 'Movimentação';
+
+                    return (
+                      <div key={entry.id} className="py-2 flex items-center justify-between gap-3 text-[11px]">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-[#302414] block truncate">
+                            {entry.description}
+                          </span>
+                          <span className="text-[10px] text-[#71634D] block">
+                            {typeLabel} · {formatDateDisplay(entry.createdAt.split('T')[0])}
+                            {entry.adjustedBy ? ` · por ${entry.adjustedBy}` : ''}
+                          </span>
+                          {entry.reason && (
+                            <span className="text-[10px] text-[#55482e] italic block truncate">
+                              Motivo: {entry.reason}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0 tabular-nums">
+                          <span
+                            className={`font-mono font-bold block ${
+                              isCredit ? 'text-[#48551F]' : 'text-[#8b261b]'
+                            }`}
+                          >
+                            {isCredit ? `+${entry.amount}` : entry.amount}
+                          </span>
+                          <span className="text-[10px] text-[#71634D]">
+                            Saldo: {entry.balanceAfter}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Lista das Vaquinhas Ativas do Usuário */}
           {myActivePackages.length > 0 && (

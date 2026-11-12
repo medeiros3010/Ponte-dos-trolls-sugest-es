@@ -6,6 +6,14 @@ import path from 'path';
 import crypto from 'crypto';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES, HISTORICAL_CATALOG_PACKAGES } from './src/data/seedData.ts';
 import { normalizeProductType } from './src/types/index.ts';
+import {
+  ensureTrollinsActivated,
+  creditMemberTrollinsForCompletedFinancing,
+  getMemberTrollinsBalance,
+  createLedgerId,
+  isMasterUser,
+  isAuthorSupporter,
+} from './src/utils/trollins.ts';
 
 // ==================== CONFIGURAÇÕES & SEGURANÇA ====================
 // A senha do Mestre é estritamente mantida no servidor (variável de ambiente ou fallback seguro no servidor)
@@ -476,6 +484,20 @@ function readBinData(binId: string): any {
     }
   }
   data.packages = Array.from(pkgMap.values()).map(sanitizePackage);
+  const { activatedNow } = ensureTrollinsActivated(data);
+  if (activatedNow) {
+    try {
+      data.updatedAt = new Date().toISOString();
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+      const devMirrorPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
+      if (filePath !== devMirrorPath) {
+        fs.writeFileSync(devMirrorPath, JSON.stringify({ ...data, id: 'trolls-rpg-dev' }, null, 2), 'utf-8');
+      }
+      console.log(`[Trollins] Ativação inicial concluída e persistida em ${binId}.json.`);
+    } catch (e) {
+      console.warn('[Trollins] Aviso ao persistir ativação inicial:', e);
+    }
+  }
   return data;
 }
 
@@ -672,6 +694,8 @@ app.post('/api/auth/member-login', async (req: Request, res: Response) => {
       status: user.status || 'aprovado',
       isMaster: Boolean(user.isMaster),
       strikes: user.strikes || [],
+      trollinsSaldo: isMasterUser(user) ? 0 : getMemberTrollinsBalance(user),
+      trollinsExtrato: isMasterUser(user) ? [] : (Array.isArray(user.trollinsExtrato) ? user.trollinsExtrato : []),
     },
   });
 });
@@ -682,12 +706,35 @@ app.get('/api/auth/me', (req: Request, res: Response) => {
   if (!session) {
     return res.status(401).json({ authenticated: false });
   }
+  try {
+    const data = readBinData('trolls-rpg-oficial');
+    const found = (data.users || []).find((u: any) => u.id === session.userId);
+    if (found) {
+      return res.json({
+        authenticated: true,
+        user: {
+          id: found.id,
+          nome: found.nome,
+          telefone: found.telefone,
+          email: found.email,
+          dataEntrada: found.dataEntrada,
+          status: found.status || 'aprovado',
+          isMaster: Boolean(found.isMaster || session.isMaster),
+          strikes: found.strikes || [],
+          trollinsSaldo: isMasterUser(found) ? 0 : getMemberTrollinsBalance(found),
+          trollinsExtrato: isMasterUser(found) ? [] : (Array.isArray(found.trollinsExtrato) ? found.trollinsExtrato : []),
+        },
+      });
+    }
+  } catch {}
   return res.json({
     authenticated: true,
     user: {
       id: session.userId,
       nome: session.nome,
       isMaster: session.isMaster,
+      trollinsSaldo: 0,
+      trollinsExtrato: [],
     },
   });
 });
@@ -847,6 +894,13 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
 
       // Solicitações são exclusivas do Mestre
       data.solicitacoes = [];
+
+      if (data.trollinsMeta) {
+        data.trollinsMeta = {
+          activatedAt: data.trollinsMeta.activatedAt,
+          version: data.trollinsMeta.version || 1,
+        };
+      }
     }
 
     return res.json(data);
@@ -903,35 +957,85 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
           valorNumerico: typeof item.valorNumerico === 'number' ? item.valorNumerico : (parseFloat(item.valorNumerico) || 0),
           observacaoValor: item.observacaoValor ? String(item.observacaoValor).trim() : undefined,
           status: isMaster && item.status ? item.status : existing.status,
+          trollinsInvestidos: typeof existing.trollinsInvestidos === 'number' ? existing.trollinsInvestidos : 0,
+          trollinsDoados: typeof existing.trollinsDoados === 'number' ? existing.trollinsDoados : 0,
+          ...(Array.isArray(existing.doacoesTrollins) ? { doacoesTrollins: existing.doacoesTrollins } : {}),
         };
         writeBinData(binId, data);
         return res.json({ success: true, item: data.items[existingIdx] });
       }
 
-      // Criação: qualquer usuário comum pode publicar sugestões livremente
-      // Se o usuário estiver identificado no sistema, sua identidade é preservada e vinculada à sugestão
-      const authorId =
-        session?.userId ||
-        item.sugeridoPorId ||
-        (req.headers['x-user-id'] as string) ||
-        `usr-${Date.now()}`;
+      // Criação de nova sugestão com validação atômica de Trollins
+      const isMaster = checkMasterPermission(req, req.body && req.body.adminPassword);
+      const users: any[] = Array.isArray(data.users) ? data.users : [];
+      const candidateId = session?.userId || item.sugeridoPorId || (req.headers['x-user-id'] as string);
+      const candidateName = (session?.nome && session.nome.trim()) || (item.sugeridoPorNome && String(item.sugeridoPorNome).trim()) || '';
 
-      const authorName =
-        (session?.nome && session.nome.trim()) ||
-        (item.sugeridoPorNome && String(item.sugeridoPorNome).trim()) ||
-        'Membro da Ponte';
+      // Idempotência para evitar dupla cobrança em retentativas de rede
+      const clientRequestId = item.clientRequestId ? String(item.clientRequestId).trim() : '';
+      if (clientRequestId) {
+        const duplicateItem = data.items.find((it: any) => it && it.clientRequestId === clientRequestId);
+        if (duplicateItem) {
+          const dupMember = candidateId ? users.find((u: any) => u.id === candidateId) : null;
+          return res.json({
+            success: true,
+            item: duplicateItem,
+            userBalance: dupMember && !isMasterUser(dupMember) ? getMemberTrollinsBalance(dupMember) : 0,
+            userLedger: dupMember && !isMasterUser(dupMember) ? (dupMember.trollinsExtrato || []) : [],
+          });
+        }
+      }
 
-      const authorPhone =
-        (session as any)?.telefone ||
-        (item.sugeridoPorTelefone ? String(item.sugeridoPorTelefone).trim() : undefined);
+      const matchedMember = candidateId
+        ? users.find((u: any) => u.id === candidateId)
+        : (candidateName ? users.find((u: any) => u.nome && u.nome.trim().toLowerCase() === candidateName.toLowerCase()) : undefined);
 
-      const authorEmail =
-        (session as any)?.email ||
-        (item.sugeridoPorEmail ? String(item.sugeridoPorEmail).trim() : ((req.headers['x-user-email'] as string) || undefined));
+      const isMasterCaller = isMaster || isMasterUser(matchedMember);
 
+      let trollinsInvestidos = 0;
+      let authorId = candidateId || `usr-${Date.now()}`;
+      let authorName = candidateName || 'Membro da Ponte';
+      let authorPhone = (session as any)?.telefone || (item.sugeridoPorTelefone ? String(item.sugeridoPorTelefone).trim() : undefined);
+      let authorEmail = (session as any)?.email || (item.sugeridoPorEmail ? String(item.sugeridoPorEmail).trim() : ((req.headers['x-user-email'] as string) || undefined));
+
+      if (!isMasterCaller) {
+        if (!matchedMember) {
+          return res.status(401).json({ error: 'Identificação de membro válida necessária para sugerir com Trollins.' });
+        }
+
+        authorId = matchedMember.id;
+        authorName = matchedMember.nome;
+        authorPhone = matchedMember.telefone || authorPhone;
+        authorEmail = matchedMember.email || authorEmail;
+
+        const currentBalance = getMemberTrollinsBalance(matchedMember);
+        if (currentBalance < 1) {
+          return res.status(400).json({
+            error: 'Você precisa de pelo menos 1 Trollin para sugerir. Você ainda pode apoiar sugestões gratuitamente.',
+          });
+        }
+
+        const requestedInvest = Number(item.trollinsInvestidos ?? req.body?.trollinsInvestidos ?? 1);
+        if (!Number.isInteger(requestedInvest) || requestedInvest < 1) {
+          return res.status(400).json({
+            error: 'Informe uma quantidade inteira de pelo menos 1 Trollin para investir na sugestão.',
+          });
+        }
+
+        if (requestedInvest > currentBalance) {
+          return res.status(400).json({
+            error: `Saldo de Trollins insuficiente. Você possui ${currentBalance} Trollin(s) disponível(is).`,
+          });
+        }
+
+        trollinsInvestidos = requestedInvest;
+      }
+
+      const nowIso = new Date().toISOString();
+      const newItemId = `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
       const newItem = {
-        id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        data: item.data || new Date().toISOString().split('T')[0],
+        id: newItemId,
+        data: item.data || nowIso.split('T')[0],
         nome: String(item.nome).trim(),
         produto: item.produto || 'Material para VTT',
         sistema: item.sistema || 'Foundry VTT Geral',
@@ -946,18 +1050,51 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
         valorNumerico: typeof item.valorNumerico === 'number' ? item.valorNumerico : (parseFloat(item.valorNumerico) || 0),
         observacaoValor: item.observacaoValor ? String(item.observacaoValor).trim() : undefined,
         status: 'Sugestão',
-        apoiadores: [
-          {
-            id: authorId,
-            nome: authorName,
-            data: new Date().toISOString(),
-          },
-        ],
+        apoiadores: [],
+        trollinsInvestidos,
+        trollinsDoados: 0,
+        doacoesTrollins: [],
+        ...(clientRequestId ? { clientRequestId } : {}),
       };
+
+      let updatedBalance = 0;
+      let updatedLedger: any[] = [];
+
+      if (!isMasterCaller && matchedMember && trollinsInvestidos > 0) {
+        if (!Array.isArray(matchedMember.trollinsExtrato)) {
+          matchedMember.trollinsExtrato = [];
+        }
+        const dedupKey = `spend:${newItemId}`;
+        const alreadySpent = matchedMember.trollinsExtrato.some((e: any) => e && e.dedupKey === dedupKey);
+        if (!alreadySpent) {
+          const prevBalance = getMemberTrollinsBalance(matchedMember);
+          const nextBalance = Math.max(0, prevBalance - trollinsInvestidos);
+          matchedMember.trollinsSaldo = nextBalance;
+          matchedMember.trollinsExtrato.unshift({
+            id: createLedgerId(),
+            dedupKey,
+            memberId: matchedMember.id,
+            type: 'gasto_sugestao',
+            amount: -trollinsInvestidos,
+            balanceAfter: nextBalance,
+            itemId: newItemId,
+            itemNome: newItem.nome,
+            description: `Sugestão enviada: ${newItem.nome}`,
+            createdAt: nowIso,
+          });
+        }
+        updatedBalance = getMemberTrollinsBalance(matchedMember);
+        updatedLedger = matchedMember.trollinsExtrato;
+      }
 
       data.items.unshift(newItem);
       writeBinData(binId, data);
-      return res.json({ success: true, item: newItem });
+      return res.json({
+        success: true,
+        item: newItem,
+        userBalance: updatedBalance,
+        userLedger: updatedLedger,
+      });
     } catch (err: any) {
       console.error('Erro ao salvar sugestão:', err);
       return res.status(500).json({ error: 'Erro ao salvar sugestão', details: err.message });
@@ -998,6 +1135,9 @@ app.post('/api/bin/:binId/item/:itemId/apoio', async (req: Request, res: Respons
       if (exists) {
         item.apoiadores = item.apoiadores.filter((a: any) => a.id !== userId && (!a.nome || a.nome.toLowerCase() !== userNome.toLowerCase()));
       } else {
+        if (isAuthorSupporter(item, { id: userId, nome: userNome })) {
+          return res.status(400).json({ error: 'O autor da sugestão já investe Trollins nela e não recebe ponto extra de apoio próprio.' });
+        }
         item.apoiadores.push({
           id: userId,
           nome: userNome,
@@ -1010,6 +1150,130 @@ app.post('/api/bin/:binId/item/:itemId/apoio', async (req: Request, res: Respons
     } catch (err: any) {
       console.error('Erro ao alternar apoio na sugestão:', err);
       return res.status(500).json({ error: 'Erro ao registrar apoio', details: err.message });
+    }
+  });
+});
+
+// POST /api/bin/:binId/item/:itemId/doar-trollins - Doar Trollins para aumentar a prioridade de uma sugestão
+app.post('/api/bin/:binId/item/:itemId/doar-trollins', async (req: Request, res: Response) => {
+  const binId = sanitizeBinId(req.params.binId);
+  const itemId = req.params.itemId;
+  const session = getSession(req);
+  const body = req.body || {};
+  const isMaster = checkMasterPermission(req, body.adminPassword);
+
+  if (isMaster) {
+    return res.status(403).json({ error: 'A conta no Modo Mestre não possui nem doa Trollins.' });
+  }
+
+  const candidateId = session?.userId || body.userId || (req.headers['x-user-id'] as string);
+  const candidateName = session?.nome || body.userName || (req.headers['x-user-name'] as string);
+
+  if (!candidateId && !candidateName) {
+    return res.status(401).json({ error: 'Você precisa estar identificado para doar Trollins.' });
+  }
+
+  const rawAmount = Number(body.amount);
+  if (!Number.isInteger(rawAmount) || rawAmount < 1) {
+    return res.status(400).json({ error: 'Informe uma quantidade inteira de pelo menos 1 Trollin para doar.' });
+  }
+  const clientRequestId = body.clientRequestId ? String(body.clientRequestId).trim() : '';
+
+  await withBinLock(binId, async () => {
+    try {
+      const data = readBinData(binId);
+      const users: any[] = Array.isArray(data.users) ? data.users : [];
+      const items: any[] = Array.isArray(data.items) ? data.items : [];
+
+      const matchedMember = candidateId
+        ? users.find((u: any) => u.id === candidateId)
+        : users.find((u: any) => u.nome && candidateName && u.nome.trim().toLowerCase() === String(candidateName).trim().toLowerCase());
+
+      if (!matchedMember) {
+        return res.status(401).json({ error: 'Identificação de membro válida necessária para doar Trollins.' });
+      }
+      if (isMasterUser(matchedMember)) {
+        return res.status(403).json({ error: 'A conta no Modo Mestre não possui nem doa Trollins.' });
+      }
+
+      const item = items.find((it: any) => it.id === itemId);
+      if (!item) {
+        return res.status(404).json({ error: 'Sugestão não encontrada.' });
+      }
+      if (item.status !== 'Sugestão') {
+        return res.status(400).json({ error: 'Só é possível doar Trollins para sugestões ativas na fila.' });
+      }
+
+      if (!Array.isArray(item.doacoesTrollins)) {
+        item.doacoesTrollins = [];
+      }
+      if (!Array.isArray(matchedMember.trollinsExtrato)) {
+        matchedMember.trollinsExtrato = [];
+      }
+
+      // Idempotência para proteção contra clique duplo e retentativas simultâneas
+      if (clientRequestId) {
+        const alreadyDonated =
+          item.doacoesTrollins.some((d: any) => d && d.clientRequestId === clientRequestId) ||
+          matchedMember.trollinsExtrato.some((e: any) => e && e.dedupKey === `donate:${item.id}:${clientRequestId}`);
+        if (alreadyDonated) {
+          return res.json({
+            success: true,
+            deduplicated: true,
+            item,
+            userBalance: getMemberTrollinsBalance(matchedMember),
+            userLedger: matchedMember.trollinsExtrato,
+          });
+        }
+      }
+
+      const currentBalance = getMemberTrollinsBalance(matchedMember);
+      if (currentBalance < 1 || rawAmount > currentBalance) {
+        return res.status(400).json({
+          error: `Saldo de Trollins insuficiente. Você possui ${currentBalance} Trollin(s) disponível(is).`,
+        });
+      }
+
+      const nowIso = new Date().toISOString();
+      const nextBalance = currentBalance - rawAmount;
+      const donationId = `don-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const dedupKey = clientRequestId ? `donate:${item.id}:${clientRequestId}` : `donate:${item.id}:${donationId}`;
+
+      // Débito do doador, crédito de pontuação na sugestão (sem transferir ao saldo do autor) e lançamento no extrato na mesma operação
+      matchedMember.trollinsSaldo = nextBalance;
+      item.trollinsDoados = (typeof item.trollinsDoados === 'number' ? item.trollinsDoados : 0) + rawAmount;
+      item.doacoesTrollins.push({
+        id: donationId,
+        ...(clientRequestId ? { clientRequestId } : {}),
+        memberId: matchedMember.id,
+        memberNome: matchedMember.nome,
+        amount: rawAmount,
+        createdAt: nowIso,
+      });
+
+      matchedMember.trollinsExtrato.unshift({
+        id: createLedgerId(),
+        dedupKey,
+        memberId: matchedMember.id,
+        type: 'doacao_sugestao',
+        amount: -rawAmount,
+        balanceAfter: nextBalance,
+        itemId: item.id,
+        itemNome: item.nome,
+        description: `Doação para sugestão: ${item.nome}`,
+        createdAt: nowIso,
+      });
+
+      writeBinData(binId, data);
+      return res.json({
+        success: true,
+        item,
+        userBalance: nextBalance,
+        userLedger: matchedMember.trollinsExtrato,
+      });
+    } catch (err: any) {
+      console.error('Erro ao doar Trollins para sugestão:', err);
+      return res.status(500).json({ error: 'Erro ao registrar doação de Trollins', details: err.message });
     }
   });
 });
@@ -1075,20 +1339,35 @@ app.post('/api/bin/:binId/package', async (req: Request, res: Response) => {
       const sanitized = sanitizePackage(pkg);
 
       const existingIdx = data.packages.findIndex((p: any) => p && p.id === sanitized.id);
+      const wasFinancing = existingIdx >= 0 && data.packages[existingIdx].status === 'Financiamento';
+      let savedPkg: any;
       if (existingIdx >= 0) {
-        data.packages[existingIdx] = {
+        savedPkg = {
           ...data.packages[existingIdx],
           ...sanitized,
           // Preservar apoiadores e pagamentos se não explicitamente substituídos
           apoiadores: sanitized.apoiadores?.length ? sanitized.apoiadores : data.packages[existingIdx].apoiadores,
           pagamentos: Object.keys(sanitized.pagamentos || {}).length ? sanitized.pagamentos : data.packages[existingIdx].pagamentos,
         };
+        data.packages[existingIdx] = savedPkg;
       } else {
-        data.packages.unshift(sanitized);
+        savedPkg = sanitized;
+        data.packages.unshift(savedPkg);
+      }
+
+      let trollinsResult = { creditedCount: 0, creditedMemberIds: [] as string[] };
+      if (wasFinancing && savedPkg.status === 'Catálogo') {
+        trollinsResult = creditMemberTrollinsForCompletedFinancing(data, savedPkg);
       }
 
       writeBinData(binId, data);
-      return res.json({ success: true, package: sanitized });
+      return res.json({
+        success: true,
+        package: savedPkg,
+        trollinsAwardedCount: trollinsResult.creditedCount,
+        trollinsAwardedMemberIds: trollinsResult.creditedMemberIds,
+        users: data.users,
+      });
     } catch (err: any) {
       console.error('Erro ao salvar pacote:', err);
       return res.status(500).json({ error: 'Erro ao salvar pacote', details: err?.message || String(err) });
@@ -1555,6 +1834,110 @@ app.delete('/api/bin/:binId/user/:userId', async (req: Request, res: Response) =
   });
 });
 
+// POST /api/bin/:binId/user/:userId/adjust-trollins - Ajuste manual de Trollins exclusivo do Mestre
+app.post('/api/bin/:binId/user/:userId/adjust-trollins', async (req: Request, res: Response) => {
+  const binId = sanitizeBinId(req.params.binId, req);
+  const userId = req.params.userId;
+  const session = getSession(req);
+  const body = req.body || {};
+  const adminPassword = (req.headers['x-admin-password'] as string) || body.adminPassword;
+  const isMaster = checkMasterPermission(req, adminPassword);
+
+  if (!isMaster) {
+    return res.status(403).json({ error: 'Apenas o Mestre da Ponte pode ajustar o saldo de Trollins.' });
+  }
+
+  const operation = body.operation === 'remove' ? 'remove' : body.operation === 'add' ? 'add' : null;
+  if (!operation) {
+    return res.status(400).json({ error: 'Operação inválida. Informe "add" ou "remove".' });
+  }
+
+  const rawAmount = Number(body.amount);
+  if (!Number.isInteger(rawAmount) || rawAmount < 1) {
+    return res.status(400).json({ error: 'Informe uma quantidade inteira de pelo menos 1 Trollin.' });
+  }
+
+  const cleanReason = String(body.reason || '').trim();
+  if (!cleanReason) {
+    return res.status(400).json({ error: 'Informe um motivo obrigatório para o ajuste de Trollins.' });
+  }
+
+  const clientRequestId = body.clientRequestId ? String(body.clientRequestId).trim() : '';
+  const adjustedBy =
+    (session?.nome && session.nome.trim()) ||
+    (body.adjustedBy && String(body.adjustedBy).trim()) ||
+    MASTER_ADMIN_NAME;
+
+  await withBinLock(binId, async () => {
+    try {
+      const data = readBinData(binId);
+      const users: any[] = Array.isArray(data.users) ? data.users : [];
+      const targetUser = users.find((u: any) => u.id === userId);
+
+      if (!targetUser) {
+        return res.status(404).json({ error: 'Membro não encontrado.' });
+      }
+      if (isMasterUser(targetUser)) {
+        return res.status(400).json({ error: 'A conta no Modo Mestre não acumula nem gasta Trollins.' });
+      }
+
+      if (!Array.isArray(targetUser.trollinsExtrato)) {
+        targetUser.trollinsExtrato = [];
+      }
+
+      if (clientRequestId) {
+        const dedupKey = `adjust:${clientRequestId}`;
+        const existingEntry = targetUser.trollinsExtrato.find((e: any) => e && e.dedupKey === dedupKey);
+        if (existingEntry) {
+          return res.json({
+            success: true,
+            deduplicated: true,
+            user: targetUser,
+            users: data.users,
+          });
+        }
+      }
+
+      const currentBalance = getMemberTrollinsBalance(targetUser);
+      if (operation === 'remove' && rawAmount > currentBalance) {
+        return res.status(400).json({
+          error: `Não é possível retirar ${rawAmount} Trollin(s): o saldo atual de ${targetUser.nome} é ${currentBalance} e não pode ficar negativo.`,
+        });
+      }
+
+      const delta = operation === 'add' ? rawAmount : -rawAmount;
+      const nextBalance = currentBalance + delta;
+      const nowIso = new Date().toISOString();
+      const entryId = createLedgerId();
+      const dedupKey = clientRequestId ? `adjust:${clientRequestId}` : `adjust:${entryId}`;
+
+      targetUser.trollinsSaldo = nextBalance;
+      targetUser.trollinsExtrato.unshift({
+        id: entryId,
+        dedupKey,
+        memberId: targetUser.id,
+        type: operation === 'add' ? 'ajuste_mestre_credito' : 'ajuste_mestre_debito',
+        amount: delta,
+        balanceAfter: nextBalance,
+        reason: cleanReason,
+        adjustedBy,
+        description: `${operation === 'add' ? 'Ajuste do Mestre (+)' : 'Ajuste do Mestre (-)'}: ${cleanReason}`,
+        createdAt: nowIso,
+      });
+
+      writeBinData(binId, data);
+      return res.json({
+        success: true,
+        user: targetUser,
+        users: data.users,
+      });
+    } catch (err: any) {
+      console.error('Erro ao ajustar saldo de Trollins:', err);
+      return res.status(500).json({ error: 'Erro ao ajustar saldo de Trollins', details: err.message });
+    }
+  });
+});
+
 // ==================== CANDIDATURA & NOVO MEMBRO ENDPOINTS ====================
 
 // GET /api/solicitacoes - Lista todas as solicitações de novos membros (apenas Mestre)
@@ -1720,6 +2103,8 @@ app.post('/api/solicitacoes/:id/aprovar', async (req: Request, res: Response) =>
           status: 'aprovado',
           strikes: [],
           solicitacaoId: app.id,
+          trollinsSaldo: 0,
+          trollinsExtrato: [],
         };
         data.users.push(createdOrUpdatedUser);
       }
@@ -2120,14 +2505,30 @@ app.post('/api/admin/sync-official-members', async (req: Request, res: Response)
 
     const finalUsers = [masterAdmin, ...mappedMembers];
 
-    // 3. Atualizar o arquivo de dados padrão do servidor ('trolls-rpg-oficial.json') e qualquer bin ativo
+    // 3. Atualizar o arquivo de dados padrão do servidor ('trolls-rpg-oficial.json') e qualquer bin ativo preservando Trollins
     const binFiles = fs.readdirSync(BINS_DIR).filter(f => f.endsWith('.json'));
     for (const f of binFiles) {
       const bPath = path.join(BINS_DIR, f);
       try {
         const content = fs.readFileSync(bPath, 'utf-8');
         const data = JSON.parse(content);
-        data.users = finalUsers;
+        const existingUsers = Array.isArray(data.users) ? data.users : [];
+        data.users = finalUsers.map((fu: any) => {
+          const prev = existingUsers.find(
+            (eu: any) =>
+              eu.id === fu.id ||
+              (eu.email && fu.email && eu.email.toLowerCase() === fu.email.toLowerCase()) ||
+              (eu.nome && fu.nome && eu.nome.trim().toLowerCase() === fu.nome.trim().toLowerCase())
+          );
+          if (fu.isMaster) {
+            return { ...fu, trollinsSaldo: 0, trollinsExtrato: [] };
+          }
+          return {
+            ...fu,
+            trollinsSaldo: typeof prev?.trollinsSaldo === 'number' ? prev.trollinsSaldo : 0,
+            trollinsExtrato: Array.isArray(prev?.trollinsExtrato) ? prev.trollinsExtrato : [],
+          };
+        });
         data.updatedAt = new Date().toISOString();
         data.usersVersion = USERS_VERSION;
         fs.writeFileSync(bPath, JSON.stringify(data, null, 2), 'utf-8');
@@ -2248,6 +2649,7 @@ app.get('/api/admin/export-backup', (req: Request, res: Response) => {
       packages: data.packages || [],
       solicitacoes: data.solicitacoes || [],
       regrasConfig: data.regrasConfig || null,
+      trollinsMeta: data.trollinsMeta || null,
       data: {
         users: data.users || [],
         items: data.items || [],
@@ -2255,6 +2657,7 @@ app.get('/api/admin/export-backup', (req: Request, res: Response) => {
         solicitacoes: data.solicitacoes || [],
         regrasConfig: data.regrasConfig || null,
         usersVersion: data.usersVersion || USERS_VERSION,
+        trollinsMeta: data.trollinsMeta || null,
       },
     };
 
@@ -2436,10 +2839,20 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
       incomingPackages = incomingPackages.map(sanitizePackage);
 
       // Prevenir elevação indevida de privilégios: apenas usr-master pode ser isMaster
-      incomingUsers = incomingUsers.map((u: any) => ({
-        ...u,
-        isMaster: u.id === 'usr-master' || (u.email && u.email.toLowerCase() === 'pontedostrolls@gmail.com'),
-      }));
+      // Preservar saldos e extratos de Trollins quando presentes no backup
+      incomingUsers = incomingUsers.map((u: any) => {
+        const isMasterAcc = u.id === 'usr-master' || (u.email && u.email.toLowerCase() === 'pontedostrolls@gmail.com');
+        return {
+          ...u,
+          isMaster: isMasterAcc,
+          ...(isMasterAcc
+            ? { trollinsSaldo: 0, trollinsExtrato: [] }
+            : {
+                ...(typeof u.trollinsSaldo === 'number' ? { trollinsSaldo: Math.max(0, Math.floor(u.trollinsSaldo)) } : {}),
+                ...(Array.isArray(u.trollinsExtrato) ? { trollinsExtrato: u.trollinsExtrato } : {}),
+              }),
+        };
+      });
 
       // Garante que o Mestre oficial sempre existe e está ativo
       if (!incomingUsers.some((u: any) => u.id === 'usr-master')) {
@@ -2452,9 +2865,13 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
           createdAt: '2026-01-01',
           strikes: [],
           isMaster: true,
+          trollinsSaldo: 0,
+          trollinsExtrato: [],
         });
       }
 
+      const incomingTrollinsMeta = backupData.trollinsMeta || payload.trollinsMeta || null;
+      let finalTrollinsMeta = incomingTrollinsMeta;
       let finalUsers = incomingUsers;
       let finalItems = incomingItems;
       let finalPackages = incomingPackages;
@@ -2464,7 +2881,17 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
       if (mode === 'merge') {
         const userMap = new Map<string, any>();
         (currentData.users || []).forEach((u: any) => { if (u && u.id) userMap.set(u.id, u); });
-        incomingUsers.forEach((u: any) => { if (u && u.id) userMap.set(u.id, { ...(userMap.get(u.id) || {}), ...u }); });
+        incomingUsers.forEach((u: any) => {
+          if (u && u.id) {
+            const existing = userMap.get(u.id) || {};
+            userMap.set(u.id, {
+              ...existing,
+              ...u,
+              trollinsSaldo: typeof u.trollinsSaldo === 'number' ? u.trollinsSaldo : existing.trollinsSaldo,
+              trollinsExtrato: Array.isArray(u.trollinsExtrato) ? u.trollinsExtrato : existing.trollinsExtrato,
+            });
+          }
+        });
         finalUsers = Array.from(userMap.values());
 
         const itemMap = new Map<string, any>();
@@ -2495,10 +2922,22 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
         (currentData.solicitacoes || []).forEach((s: any) => { if (s && s.id) solMap.set(s.id, s); });
         incomingSolicitacoes.forEach((s: any) => { if (s && s.id) solMap.set(s.id, { ...(solMap.get(s.id) || {}), ...s }); });
         finalSolicitacoes = Array.from(solMap.values());
+
+        if (currentData.trollinsMeta || incomingTrollinsMeta) {
+          const awardedSet = new Set<string>([
+            ...(currentData.trollinsMeta?.awardedPackageIds || []),
+            ...(incomingTrollinsMeta?.awardedPackageIds || []),
+          ]);
+          finalTrollinsMeta = {
+            activatedAt: incomingTrollinsMeta?.activatedAt || currentData.trollinsMeta?.activatedAt || new Date().toISOString(),
+            version: incomingTrollinsMeta?.version || currentData.trollinsMeta?.version || 1,
+            awardedPackageIds: Array.from(awardedSet),
+          };
+        }
       }
 
-      // 4. Gravar atomicamente no arquivo bin
-      const newBinData = {
+      // 4. Gravar atomicamente no arquivo bin (preserva saldos/ativação se já presentes no backup; ativa apenas se backup for pré-Trollins)
+      const newBinData: any = {
         id: binId,
         name: `A Ponte dos Trolls - ${binId}`,
         updatedAt: new Date().toISOString(),
@@ -2508,8 +2947,10 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
         packages: finalPackages,
         solicitacoes: finalSolicitacoes,
         regrasConfig: payload.regrasConfig || currentData.regrasConfig,
+        ...(finalTrollinsMeta ? { trollinsMeta: finalTrollinsMeta } : {}),
       };
 
+      ensureTrollinsActivated(newBinData);
       writeBinData(binId, newBinData);
 
       if (binId === 'trolls-rpg-oficial') {
@@ -2577,7 +3018,24 @@ app.put('/api/bin/:binId', async (req: Request, res: Response) => {
 
       packagesToSave = packagesToSave.map(sanitizePackage);
 
-      const payload = {
+      const existingUserById = new Map<string, any>();
+      (existingData.users || []).forEach((u: any) => {
+        if (u && u.id) existingUserById.set(u.id, u);
+      });
+
+      usersToSave = usersToSave.map((u: any) => {
+        const prev = existingUserById.get(u.id);
+        if (isMasterUser(u)) {
+          return { ...u, trollinsSaldo: 0, trollinsExtrato: [] };
+        }
+        return {
+          ...u,
+          trollinsSaldo: typeof u.trollinsSaldo === 'number' ? u.trollinsSaldo : (prev?.trollinsSaldo ?? 0),
+          trollinsExtrato: Array.isArray(u.trollinsExtrato) ? u.trollinsExtrato : (prev?.trollinsExtrato ?? []),
+        };
+      });
+
+      const payload: any = {
         id: binId,
         name: body.name || existingData.name || `A Ponte dos Trolls - ${binId}`,
         updatedAt: new Date().toISOString(),
@@ -2586,6 +3044,7 @@ app.put('/api/bin/:binId', async (req: Request, res: Response) => {
         users: usersToSave,
         packages: packagesToSave,
         solicitacoes: solicitacoesToSave,
+        ...(body.trollinsMeta || existingData.trollinsMeta ? { trollinsMeta: body.trollinsMeta || existingData.trollinsMeta } : {}),
         ...(regrasConfigToSave ? { regrasConfig: regrasConfigToSave } : {}),
       };
 

@@ -447,7 +447,7 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
                 <span>O que este backup inclui e o que é omitido:</span>
               </div>
               <ul className="space-y-0.5 pl-3 list-disc">
-                <li>Preserva IDs, relações, pagamentos e histórico de acervo de cada membro.</li>
+                <li>Preserva IDs, relações, pagamentos, histórico de acervo e saldos/extrato de Trollins com estado de ativação.</li>
                 <li><strong>Arquivos e Imagens:</strong> Links do Google Drive e capas são referências (URLs), não os arquivos originais.</li>
                 <li><strong>Segurança:</strong> Contas do Firebase Auth, senhas e tokens de sessão são estritamente omitidos.</li>
               </ul>

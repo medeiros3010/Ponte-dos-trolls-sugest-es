@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ItemRPG, SISTEMAS_PADRAO, ItemStatus, UserProfile, OFFICIAL_PRODUCT_TYPES, ProductType } from '../types';
 import { formatPhone, getTodayISODate } from '../utils/helpers';
-import { X, Save, PlusCircle, Pencil, Lock, AlertCircle, User, Image as ImageIcon, Upload, Trash2 } from 'lucide-react';
+import { getMemberTrollinsBalance, isMasterUser } from '../utils/trollins';
+import { X, Save, PlusCircle, Pencil, AlertCircle, User, Image as ImageIcon, Trash2, Loader2 } from 'lucide-react';
+import { TrollinCoinIcon, TrollinInfoBadge } from './TrollinCoin';
 
 interface ItemFormModalProps {
   isOpen: boolean;
   itemToEdit: ItemRPG | null;
   currentUser: UserProfile | null;
   onClose: () => void;
-  onSave: (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string; adminPassword?: string }) => void;
+  onSave: (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string; adminPassword?: string }) => Promise<void> | void;
 }
 
 export const ItemFormModal: React.FC<ItemFormModalProps> = ({
@@ -19,7 +21,8 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   onSave,
 }) => {
   const isEditing = Boolean(itemToEdit);
-  const isMaster = Boolean(currentUser?.isMaster);
+  const isMaster = isMasterUser(currentUser);
+  const trollinsBalance = getMemberTrollinsBalance(currentUser);
 
   const [nome, setNome] = useState('');
   const [produto, setProduto] = useState<ProductType>('Material para VTT');
@@ -35,6 +38,10 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const [observacaoValor, setObservacaoValor] = useState('');
   const [descricao, setDescricao] = useState('');
   const [status, setStatus] = useState<ItemStatus>('Sugestão');
+  const [trollinsToInvest, setTrollinsToInvest] = useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const requestIdRef = useRef<string>('');
   
   // Admin password state (only required when editing)
   // Fixed Author details (Read-only)
@@ -53,6 +60,9 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   useEffect(() => {
     setUrlFormatError('');
     setImageLoadError(false);
+    setSubmitError('');
+    setIsSubmitting(false);
+    requestIdRef.current = `req-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     if (itemToEdit) {
       setNome(itemToEdit.nome);
       setProduto((itemToEdit.produto as ProductType) || 'Material para VTT');
@@ -72,6 +82,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setObservacaoValor(itemToEdit.observacaoValor || '');
       setDescricao(itemToEdit.descricao || '');
       setStatus(itemToEdit.status || 'Sugestão');
+      setTrollinsToInvest(itemToEdit.trollinsInvestidos || 0);
     } else {
       setNome('');
       setProduto('Material para VTT');
@@ -85,8 +96,9 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setObservacaoValor('');
       setDescricao('');
       setStatus('Sugestão');
+      setTrollinsToInvest(trollinsBalance >= 1 ? 1 : 0);
     }
-  }, [itemToEdit, isOpen, currentUser]);
+  }, [itemToEdit, isOpen, currentUser, trollinsBalance]);
 
   const validateImageUrl = (url: string): boolean => {
     const trimmed = url.trim();
@@ -125,9 +137,21 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     validateImageUrl(val);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!nome.trim()) return;
+
+    if (!isEditing && !isMaster) {
+      if (trollinsBalance < 1) {
+        setSubmitError('Você precisa de pelo menos 1 Trollin para sugerir. Você ainda pode apoiar sugestões gratuitamente.');
+        return;
+      }
+      if (trollinsToInvest < 1 || trollinsToInvest > trollinsBalance) {
+        setSubmitError('Escolha entre 1 e seu saldo disponível de Trollins para investir.');
+        return;
+      }
+    }
 
     if (imageUrl.trim() && !validateImageUrl(imageUrl)) {
       return;
@@ -136,27 +160,39 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     const finalSistema = isCustomSistema && customSistema.trim() ? customSistema.trim() : sistema;
     const finalValor = parseFloat(valorNumerico.replace(',', '.')) || 0;
 
-    // Preservação estrita do autor original ou vinculação ao usuário autenticado
-    onSave({
-      id: itemToEdit?.id,
-      nome: nome.trim(),
-      produto,
-      sistema: finalSistema,
-      descricao: descricao.trim(),
-      link: link.trim(),
-      imageUrl: imageUrl.trim() || undefined,
-      sugeridoPorId: isEditing ? (itemToEdit?.sugeridoPorId || authorId) : (currentUser?.id || ''),
-      sugeridoPorNome: authorName,
-      sugeridoPorTelefone: authorPhone,
-      sugeridoPorEmail: isEditing ? (itemToEdit?.sugeridoPorEmail || '') : (currentUser?.email || ''),
-      moeda,
-      valorNumerico: finalValor,
-      observacaoValor: observacaoValor.trim(),
-      status: isEditing ? status : 'Sugestão',
-      data: itemToEdit?.data || getTodayISODate(),
-    });
-
-    onClose();
+    try {
+      setIsSubmitting(true);
+      setSubmitError('');
+      await onSave({
+        id: itemToEdit?.id,
+        nome: nome.trim(),
+        produto,
+        sistema: finalSistema,
+        descricao: descricao.trim(),
+        link: link.trim(),
+        imageUrl: imageUrl.trim() || undefined,
+        sugeridoPorId: isEditing ? (itemToEdit?.sugeridoPorId || authorId) : (currentUser?.id || ''),
+        sugeridoPorNome: authorName,
+        sugeridoPorTelefone: authorPhone,
+        sugeridoPorEmail: isEditing ? (itemToEdit?.sugeridoPorEmail || '') : (currentUser?.email || ''),
+        moeda,
+        valorNumerico: finalValor,
+        observacaoValor: observacaoValor.trim(),
+        status: isEditing ? status : 'Sugestão',
+        data: itemToEdit?.data || getTodayISODate(),
+        ...(!isEditing
+          ? {
+              trollinsInvestidos: isMaster ? 0 : trollinsToInvest,
+              clientRequestId: requestIdRef.current,
+            }
+          : {}),
+      });
+      onClose();
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Erro ao salvar sugestão.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -433,13 +469,117 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             {isEditing ? (
               <p className="text-[10px] text-[#71634D] italic">
                 A autoria original desta sugestão é preservada mesmo durante edições administrativas.
+                {(itemToEdit?.trollinsInvestidos || 0) > 0 && (
+                  <span className="ml-1 font-semibold text-[#48551F]">
+                    ({itemToEdit?.trollinsInvestidos} Trollin{(itemToEdit?.trollinsInvestidos || 0) === 1 ? '' : 's'} investido{(itemToEdit?.trollinsInvestidos || 0) === 1 ? '' : 's'})
+                  </span>
+                )}
+              </p>
+            ) : isMaster ? (
+              <p className="text-[10px] text-[#71634D] italic">
+                A conta no Modo Mestre não recebe nem gasta Trollins ao cadastrar sugestões.
               </p>
             ) : (
               <p className="text-[10px] text-[#71634D] italic">
-                Você entrará automaticamente como o 1º apoiador deste item na fila de sugestões.
+                Os Trollins investidos somam prioridade imediata na fila de sugestões.
               </p>
             )}
           </div>
+
+          {/* Investimento de Trollins (apenas criação por membro comum) */}
+          {!isEditing && !isMaster && (
+            <div className="p-4 sm:p-5 bg-[#282D13] text-[#F8EDD5] border-2 border-[#D4A538] rounded-2xl shadow-md space-y-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#D4A538]/30">
+                <TrollinInfoBadge iconSize={24} align="left">
+                  <span className="font-rpg text-sm sm:text-base font-bold text-[#F6D365]">
+                    Investir Trollins
+                  </span>
+                </TrollinInfoBadge>
+                <span className="text-[11px] font-semibold text-[#E6D4A7] tabular-nums">
+                  Saldo atual: <strong className="text-[#F6D365]">{trollinsBalance}</strong>{' '}
+                  {trollinsBalance === 1 ? 'Trollin' : 'Trollins'}
+                </span>
+              </div>
+
+              {trollinsBalance <= 0 ? (
+                <div className="p-3 rounded-xl bg-[#4A1A17] border border-[#F87171]/60 text-[#FEE2E2] text-xs leading-relaxed font-medium">
+                  Você precisa de pelo menos 1 Trollin para sugerir. Você ainda pode demonstrar interesse em sugestões gratuitamente.
+                </div>
+              ) : (
+                (() => {
+                  const chosen = Math.min(Math.max(1, trollinsToInvest), trollinsBalance);
+                  const remaining = Math.max(0, trollinsBalance - chosen);
+                  const progressPct =
+                    trollinsBalance > 1
+                      ? Math.round(((chosen - 1) / (trollinsBalance - 1)) * 100)
+                      : 100;
+
+                  return (
+                    <>
+                      {/* Quantidade escolhida em destaque grande */}
+                      <div className="flex items-center justify-between gap-3 bg-[#1E220E] border border-[#D4A538]/40 rounded-xl px-3.5 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <TrollinCoinIcon size={32} />
+                          <div>
+                            <span className="block text-[10px] uppercase tracking-wider font-semibold text-[#E6D4A7]">
+                              Quantidade escolhida
+                            </span>
+                            <div className="flex items-baseline gap-1.5 tabular-nums">
+                              <span className="font-rpg text-3xl font-bold text-[#F6D365] leading-none">
+                                {chosen}
+                              </span>
+                              <span className="text-xs font-semibold text-[#F8EDD5]">
+                                {chosen === 1 ? 'Trollin' : 'Trollins'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right tabular-nums">
+                          <span className="block text-[10px] uppercase tracking-wider font-semibold text-[#E6D4A7]">
+                            Saldo após confirmar
+                          </span>
+                          <span className="font-rpg text-xl font-bold text-[#F8EDD5]">
+                            {remaining}{' '}
+                            <span className="text-xs font-sans font-semibold text-[#E6D4A7]">
+                              {remaining === 1 ? 'Trollin' : 'Trollins'}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Barra dourada com controle deslizante */}
+                      <div className="space-y-1.5 pt-0.5">
+                        <div className="relative flex items-center h-6">
+                          <div className="w-full h-2.5 rounded-full bg-[#1B1F0B] border border-[#D4A538]/50 overflow-hidden pointer-events-none">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#B8860B] via-[#D4A538] to-[#F6D365] rounded-full transition-all duration-100"
+                              style={{ width: `${Math.max(8, progressPct)}%` }}
+                            />
+                          </div>
+                          <input
+                            type="range"
+                            min={1}
+                            max={trollinsBalance}
+                            step={1}
+                            value={chosen}
+                            onChange={(e) => setTrollinsToInvest(parseInt(e.target.value, 10) || 1)}
+                            aria-label="Quantidade de Trollins para investir"
+                            className="absolute inset-0 w-full h-full opacity-90 accent-[#F6D365] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F6D365] rounded-full"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-[#E6D4A7] tabular-nums">
+                          <span>Mínimo: 1</span>
+                          <span>Máximo disponível: {trollinsBalance}</span>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()
+              )}
+            </div>
+          )}
 
           {/* Descrição Opcional */}
           <div>
@@ -455,22 +595,36 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
             />
           </div>
 
+          {submitError && (
+            <div className="p-2.5 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-[11px] font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{submitError}</span>
+            </div>
+          )}
 
           {/* Footer Actions */}
           <div className="pt-3 border-t border-[#D6C296] flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-[#302414] bg-[#EADBBE] hover:bg-[#E2D1A8] rounded-xl transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-xs font-semibold text-[#302414] bg-[#EADBBE] hover:bg-[#E2D1A8] rounded-xl transition-colors cursor-pointer disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F8EDD5] bg-[#48551F] hover:bg-[#59672A] rounded-xl transition-colors shadow-sm cursor-pointer"
+              disabled={isSubmitting || (!isEditing && !isMaster && trollinsBalance <= 0)}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F8EDD5] bg-[#48551F] hover:bg-[#59672A] rounded-xl transition-colors shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="w-3.5 h-3.5" />
-              <span>{isEditing ? 'Salvar Alterações' : 'Cadastrar Sugestão'}</span>
+              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              <span>
+                {isSubmitting
+                  ? 'Salvando...'
+                  : isEditing
+                  ? 'Salvar Alterações'
+                  : 'Cadastrar Sugestão'}
+              </span>
             </button>
           </div>
 

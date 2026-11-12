@@ -1,10 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { UserProfile, FundingPackage, ItemRPG, MembershipApplication } from '../types';
 import {
   Users,
   UserPlus,
   Search,
-  Shield,
   Phone,
   Mail,
   Calendar,
@@ -15,22 +14,17 @@ import {
   Package,
   Coins,
   Edit2,
-  Check,
   X,
   ChevronDown,
-  BookOpen,
-  Compass,
-  Crown,
-  Sparkles,
-  Sun,
   FileText,
   Clock,
   CheckCircle2,
   XCircle,
-  HelpCircle,
   Eye,
   MessageSquare,
   RefreshCw,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { PageBanner } from './PageBanner';
 import { getUserRank, getUserAcquiredPackages } from '../utils/ranksAndAcquisitions';
@@ -40,6 +34,8 @@ import { WelcomeMessageModal } from './WelcomeMessageModal';
 import { RulesConfig } from '../data/rulesAndQuestions';
 import { formatPhone } from '../utils/helpers';
 import { RankBadgeIcon } from './RankBadge';
+import { TrollinCoinIcon, TrollinInfoBadge } from './TrollinCoin';
+import { getMemberTrollinsBalance } from '../utils/trollins';
 
 interface MembrosViewProps {
   users: UserProfile[];
@@ -52,6 +48,15 @@ interface MembrosViewProps {
   onAddUser: (newUser: Omit<UserProfile, 'id'>) => void;
   onUpdateUser: (user: UserProfile) => void;
   onDeleteUser: (userId: string) => void;
+  onAdjustMemberTrollins?: (
+    memberId: string,
+    params: {
+      operation: 'add' | 'remove';
+      amount: number;
+      reason: string;
+      clientRequestId: string;
+    }
+  ) => Promise<void>;
   onApproveApplication?: (applicationId: string, adminPassword?: string) => Promise<boolean>;
   onRejectApplication?: (applicationId: string, observacoes: string, adminPassword?: string) => Promise<boolean>;
   onOpenSyncOfficialModal?: () => void;
@@ -69,6 +74,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   onAddUser,
   onUpdateUser,
   onDeleteUser,
+  onAdjustMemberTrollins,
   onApproveApplication,
   onRejectApplication,
   onOpenSyncOfficialModal,
@@ -93,6 +99,15 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
   const [memberToViewAcervo, setMemberToViewAcervo] = useState<UserProfile | null>(null);
   const [welcomeMember, setWelcomeMember] = useState<{ nome: string; telefone: string } | null>(null);
   const [activeMemberMenuId, setActiveMemberMenuId] = useState<string | null>(null);
+
+  // Modal de Ajuste de Trollins (exclusivo do Mestre)
+  const [memberToAdjustTrollins, setMemberToAdjustTrollins] = useState<UserProfile | null>(null);
+  const [adjustOperation, setAdjustOperation] = useState<'add' | 'remove'>('add');
+  const [adjustAmount, setAdjustAmount] = useState<string>('1');
+  const [adjustReason, setAdjustReason] = useState<string>('');
+  const [adjustError, setAdjustError] = useState<string>('');
+  const [isAdjustingTrollins, setIsAdjustingTrollins] = useState<boolean>(false);
+  const adjustRequestIdRef = useRef<string>('');
 
   // Formulário de Novo Membro
   const [newName, setNewName] = useState('');
@@ -402,6 +417,64 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     onToast(`Membro ${userToDelete.nome} removido do grupo.`);
     setUserToDelete(null);
     setDeleteError('');
+  };
+
+  // Ajuste manual de Trollins pelo Mestre
+  const handleOpenAdjustTrollins = (member: UserProfile) => {
+    if (!isMaster) return;
+    setMemberToAdjustTrollins(member);
+    setAdjustOperation('add');
+    setAdjustAmount('1');
+    setAdjustReason('');
+    setAdjustError('');
+    setIsAdjustingTrollins(false);
+    adjustRequestIdRef.current = `adjreq-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  };
+
+  const handleConfirmAdjustTrollins = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isMaster || !memberToAdjustTrollins || !onAdjustMemberTrollins || isAdjustingTrollins) return;
+
+    const currentBalance = getMemberTrollinsBalance(memberToAdjustTrollins);
+    const parsedAmount = Number(adjustAmount);
+    if (!Number.isInteger(parsedAmount) || parsedAmount < 1) {
+      setAdjustError('Informe uma quantidade inteira de pelo menos 1 Trollin.');
+      return;
+    }
+
+    const cleanReason = adjustReason.trim();
+    if (!cleanReason) {
+      setAdjustError('Informe o motivo obrigatório do ajuste.');
+      return;
+    }
+
+    if (adjustOperation === 'remove' && parsedAmount > currentBalance) {
+      setAdjustError(
+        `O saldo atual de ${memberToAdjustTrollins.nome} é ${currentBalance} e não pode ficar negativo.`
+      );
+      return;
+    }
+
+    try {
+      setIsAdjustingTrollins(true);
+      setAdjustError('');
+      const reqId =
+        adjustRequestIdRef.current ||
+        `adjreq-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+      adjustRequestIdRef.current = reqId;
+      await onAdjustMemberTrollins(memberToAdjustTrollins.id, {
+        operation: adjustOperation,
+        amount: parsedAmount,
+        reason: cleanReason,
+        clientRequestId: reqId,
+      });
+      setMemberToAdjustTrollins(null);
+    } catch (err: any) {
+      setAdjustError(err?.message || 'Erro ao ajustar Trollins do membro.');
+      adjustRequestIdRef.current = `adjreq-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+    } finally {
+      setIsAdjustingTrollins(false);
+    }
   };
 
   return (
@@ -726,8 +799,8 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Linha de Estatísticas: Acervo e Financiamentos */}
-                  <div className="flex items-center gap-3 text-xs text-[#302414] pt-2">
+                  {/* Linha de Estatísticas: Acervo, Financiamentos e Saldo de Trollins */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-[#302414] pt-2">
                     {isMaster ? (
                       <button
                         type="button"
@@ -760,20 +833,47 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                         Financiamentos: <strong>{stats.activeFundingCount}</strong> {stats.activeFundingCount === 1 ? 'ativo' : 'ativos'}
                       </span>
                     </div>
+
+                    {isMaster && !isThisMemberMaster && (
+                      <>
+                        <span className="text-[#C6AD78]">|</span>
+                        <TrollinInfoBadge iconSize={16} align="left">
+                          <span className="text-xs text-[#302414] tabular-nums">
+                            Trollins: <strong className="text-[#48551F]">{getMemberTrollinsBalance(member)}</strong>
+                          </span>
+                        </TrollinInfoBadge>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                {/* Rodapé do Card: Ações do Mestre (Fiel ao Print 2) */}
+                {/* Rodapé do Card: Ações do Mestre */}
                 {isMaster && (
-                  <div className="pt-3 border-t border-[#D6C296] flex items-center justify-between gap-2">
-                    {/* Botão Editar Membro */}
-                    <button
-                      onClick={() => handleOpenEditMember(member)}
-                      className="px-3 py-1.5 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs font-semibold text-[#302414] flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5 text-[#716016]" />
-                      <span>Editar membro</span>
-                    </button>
+                  <div className="pt-3 border-t border-[#D6C296] flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      {/* Botão Editar Membro */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditMember(member)}
+                        className="px-2.5 py-1.5 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs font-semibold text-[#302414] flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5 text-[#716016]" />
+                        <span>Editar</span>
+                      </button>
+
+                      {/* Botão Ajustar Trollins (exclusivo do Mestre para membros comuns) */}
+                      {!isThisMemberMaster && onAdjustMemberTrollins && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenAdjustTrollins(member)}
+                          className="px-2.5 py-1.5 rounded-xl bg-[#282D13] hover:bg-[#363d1b] border border-[#D4A538] text-xs font-bold text-[#F6D365] flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
+                          title="Adicionar ou retirar Trollins deste membro"
+                        >
+                          <TrollinCoinIcon size={14} />
+                          <span>Ajustar Trollins</span>
+                        </button>
+                      )}
+                    </div>
 
                     {/* Controle de Strikes e Menu Administrativo */}
                     <div className="flex items-center gap-1.5">
@@ -839,6 +939,20 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                               <Edit2 className="w-3.5 h-3.5 text-[#716016]" />
                               <span>Editar membro</span>
                             </button>
+
+                            {!isThisMemberMaster && onAdjustMemberTrollins && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveMemberMenuId(null);
+                                  handleOpenAdjustTrollins(member);
+                                }}
+                                className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                              >
+                                <TrollinCoinIcon size={14} />
+                                <span>Ajustar Trollins</span>
+                              </button>
+                            )}
 
                             <div className="border-t border-[#D6C296] my-1" />
 
@@ -1333,6 +1447,211 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
           onToast={onToast}
         />
       )}
+
+      {/* Modal de Ajuste Manual de Trollins (Exclusivo Mestre) */}
+      {memberToAdjustTrollins && isMaster && (() => {
+        const currentBalance = getMemberTrollinsBalance(memberToAdjustTrollins);
+        const parsedAmount = Number(adjustAmount);
+        const validAmount = Number.isInteger(parsedAmount) && parsedAmount >= 1 ? parsedAmount : 0;
+        const delta = adjustOperation === 'add' ? validAmount : -validAmount;
+        const predictedBalance = currentBalance + delta;
+        const wouldGoNegative = predictedBalance < 0;
+        const canSubmit =
+          !isAdjustingTrollins &&
+          validAmount >= 1 &&
+          adjustReason.trim().length > 0 &&
+          !wouldGoNegative;
+
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-[#282D13]/70 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !isAdjustingTrollins) {
+                setMemberToAdjustTrollins(null);
+              }
+            }}
+          >
+            <form
+              onSubmit={handleConfirmAdjustTrollins}
+              className="parchment-card w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in-50 border-2 border-[#D4A538]"
+            >
+              {/* Header */}
+              <div className="p-4 sm:p-5 bg-[#282D13] border-b border-[#D4A538]/40 flex items-center justify-between text-[#F8EDD5]">
+                <TrollinInfoBadge iconSize={24} align="left">
+                  <span className="font-rpg text-base sm:text-lg font-bold text-[#F6D365]">
+                    Ajustar Trollins
+                  </span>
+                </TrollinInfoBadge>
+                <button
+                  type="button"
+                  disabled={isAdjustingTrollins}
+                  onClick={() => setMemberToAdjustTrollins(null)}
+                  className="p-1.5 text-[#cfc4a6] hover:text-[#F8EDD5] rounded-lg hover:bg-[#363e1a] transition-colors cursor-pointer"
+                  aria-label="Fechar"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4 text-xs text-[#302414]">
+                {/* Membro & Saldo Atual */}
+                <div className="p-3.5 rounded-xl bg-[#282D13] text-[#F8EDD5] border border-[#D4A538] flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-semibold text-[#E6D4A7] block">
+                      Membro selecionado
+                    </span>
+                    <span className="font-rpg text-sm font-bold text-[#F8EDD5] block truncate">
+                      {memberToAdjustTrollins.nome}
+                    </span>
+                  </div>
+                  <div className="text-right shrink-0 tabular-nums">
+                    <span className="text-[10px] uppercase font-semibold text-[#E6D4A7] block">
+                      Saldo atual
+                    </span>
+                    <span className="font-rpg text-2xl font-bold text-[#F6D365] inline-flex items-center gap-1.5">
+                      <TrollinCoinIcon size={20} />
+                      <span>{currentBalance}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tipo de operação: Adicionar vs Retirar */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#302414] block">
+                    Operação *
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      disabled={isAdjustingTrollins}
+                      onClick={() => {
+                        setAdjustOperation('add');
+                        setAdjustError('');
+                      }}
+                      className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                        adjustOperation === 'add'
+                          ? 'bg-[#48551F] text-[#F8EDD5] border-[#48551F] shadow-sm'
+                          : 'bg-[#FAF4E6] text-[#302414] border-[#C6AD78] hover:bg-[#EFE4CC]'
+                      }`}
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Adicionar</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isAdjustingTrollins}
+                      onClick={() => {
+                        setAdjustOperation('remove');
+                        setAdjustError('');
+                      }}
+                      className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                        adjustOperation === 'remove'
+                          ? 'bg-[#8b261b] text-[#F8EDD5] border-[#8b261b] shadow-sm'
+                          : 'bg-[#FAF4E6] text-[#302414] border-[#C6AD78] hover:bg-[#EFE4CC]'
+                      }`}
+                    >
+                      <Minus className="w-4 h-4" />
+                      <span>Retirar</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quantidade */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#302414] block">
+                    Quantidade de Trollins *
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    required
+                    disabled={isAdjustingTrollins}
+                    value={adjustAmount}
+                    onChange={(e) => {
+                      setAdjustAmount(e.target.value);
+                      setAdjustError('');
+                    }}
+                    className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#302414] focus:outline-none focus:border-[#48551F] tabular-nums"
+                  />
+                </div>
+
+                {/* Motivo obrigatório */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#302414] block">
+                    Motivo do ajuste (obrigatório) *
+                  </label>
+                  <textarea
+                    rows={2}
+                    required
+                    disabled={isAdjustingTrollins}
+                    placeholder="Ex: Correção de financiamento anterior, bônus de moderação..."
+                    value={adjustReason}
+                    onChange={(e) => {
+                      setAdjustReason(e.target.value);
+                      setAdjustError('');
+                    }}
+                    className="w-full bg-[#FAF4E6] border border-[#C6AD78] rounded-xl px-3 py-2 text-xs text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
+                  />
+                </div>
+
+                {/* Prévia do novo saldo */}
+                <div
+                  className={`p-3 rounded-xl border text-xs flex items-center justify-between tabular-nums ${
+                    wouldGoNegative
+                      ? 'bg-[#FEE2E2] border-[#FCA5A5] text-[#991B1B]'
+                      : 'bg-[#FBF4E4] border-[#C6AD78] text-[#302414]'
+                  }`}
+                >
+                  <span className="font-semibold">
+                    {wouldGoNegative ? 'Saldo não pode ficar negativo:' : 'Novo saldo após confirmar:'}
+                  </span>
+                  <strong className="font-rpg text-base">
+                    {currentBalance} → {predictedBalance}{' '}
+                    {Math.abs(predictedBalance) === 1 ? 'Trollin' : 'Trollins'}
+                  </strong>
+                </div>
+
+                {adjustError && (
+                  <div className="p-2.5 rounded-xl bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-[11px] font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{adjustError}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-[#D6C296]">
+                  <button
+                    type="button"
+                    disabled={isAdjustingTrollins}
+                    onClick={() => setMemberToAdjustTrollins(null)}
+                    className="px-4 py-2 bg-[#EADBBE] hover:bg-[#E2D1A8] rounded-xl text-xs font-semibold text-[#302414] cursor-pointer disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!canSubmit}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold text-[#F8EDD5] shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5 ${
+                      adjustOperation === 'remove'
+                        ? 'bg-[#8b261b] hover:bg-[#a32d20]'
+                        : 'bg-[#48551F] hover:bg-[#59672A]'
+                    }`}
+                  >
+                    {isAdjustingTrollins ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Salvando...</span>
+                      </>
+                    ) : (
+                      <span>Confirmar ajuste</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        );
+      })()}
 
     </div>
   );

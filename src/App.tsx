@@ -40,6 +40,8 @@ import {
   apiSavePackage,
   apiDeletePackage,
   apiDeleteUser,
+  apiDonateTrollinsToItem,
+  apiAdjustMemberTrollins,
   setSessionToken,
   DEFAULT_BIN_ID,
   USERS_VERSION,
@@ -413,6 +415,23 @@ export default function App() {
           if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
             setUsers(cloudData.users);
             localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cloudData.users));
+            setCurrentUser((prev) => {
+              if (!prev) return prev;
+              const fresh = cloudData.users.find((u) => u.id === prev.id);
+              if (!fresh) return prev;
+              const merged: UserProfile = {
+                ...prev,
+                telefone: fresh.telefone || prev.telefone,
+                email: fresh.email || prev.email,
+                trollinsSaldo:
+                  typeof fresh.trollinsSaldo === 'number' ? fresh.trollinsSaldo : prev.trollinsSaldo,
+                trollinsExtrato: Array.isArray(fresh.trollinsExtrato)
+                  ? fresh.trollinsExtrato
+                  : prev.trollinsExtrato,
+              };
+              saveStoredCurrentUser(merged);
+              return merged;
+            });
           }
           if (Array.isArray(cloudData.solicitacoes)) {
             setApplications(cloudData.solicitacoes);
@@ -731,7 +750,9 @@ export default function App() {
   };
 
   // Sugestões Handlers
-  const handleSaveItem = async (itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string; adminPassword?: string }) => {
+  const handleSaveItem = async (
+    itemData: Omit<ItemRPG, 'id' | 'apoiadores'> & { id?: string; adminPassword?: string }
+  ): Promise<void> => {
     const isEdit = Boolean(itemData.id);
     try {
       const res = await apiSaveItem(binId, itemData, itemData.adminPassword);
@@ -741,7 +762,22 @@ export default function App() {
           showToast('Sugestão atualizada!');
         } else {
           setItems((prev) => [res.item!, ...prev]);
-          showToast('Sugestão enviada com sucesso!');
+          if (typeof res.userBalance === 'number' && currentUser && !currentUser.isMaster) {
+            const nextUser: UserProfile = {
+              ...currentUser,
+              trollinsSaldo: res.userBalance,
+              ...(Array.isArray(res.userLedger) ? { trollinsExtrato: res.userLedger } : {}),
+            };
+            setCurrentUser(nextUser);
+            saveStoredCurrentUser(nextUser);
+            setUsers((prev) => prev.map((u) => (u.id === nextUser.id ? { ...u, ...nextUser } : u)));
+          }
+          const invested = res.item.trollinsInvestidos || 0;
+          showToast(
+            invested > 0
+              ? `Sugestão enviada com ${invested} ${invested === 1 ? 'Trollin investido' : 'Trollins investidos'}!`
+              : 'Sugestão enviada com sucesso!'
+          );
         }
         // Sync to Firestore
         saveItemToFirestore(res.item).catch((err) => console.warn('Firestore sync item notice:', err));
@@ -751,6 +787,7 @@ export default function App() {
       }
     } catch (err: any) {
       showToast(err.message || 'Erro ao salvar sugestão.');
+      throw err;
     }
   };
 
@@ -769,6 +806,42 @@ export default function App() {
       }
     } catch (err: any) {
       showToast(err.message || 'Erro ao alternar apoio');
+    }
+  };
+
+  const handleDonateTrollins = async (
+    itemId: string,
+    amount: number,
+    clientRequestId: string
+  ): Promise<void> => {
+    if (!currentUser) {
+      throw new Error('Identifique-se para doar Trollins.');
+    }
+    try {
+      const res = await apiDonateTrollinsToItem(binId, itemId, amount, currentUser, clientRequestId);
+      if (res && res.item) {
+        setItems((prev) => prev.map((it) => (it.id === itemId ? res.item! : it)));
+        saveItemToFirestore(res.item).catch(() => {});
+      }
+      if (typeof res?.userBalance === 'number') {
+        const nextUser: UserProfile = {
+          ...currentUser,
+          trollinsSaldo: res.userBalance,
+          ...(Array.isArray(res.userLedger) ? { trollinsExtrato: res.userLedger } : {}),
+        };
+        setCurrentUser(nextUser);
+        saveStoredCurrentUser(nextUser);
+        setUsers((prev) => prev.map((u) => (u.id === nextUser.id ? { ...u, ...nextUser } : u)));
+      }
+      const targetName = res?.item?.nome || items.find((it) => it.id === itemId)?.nome || 'sugestão';
+      showToast(
+        res?.deduplicated
+          ? 'Doação já confirmada anteriormente.'
+          : `Você doou ${amount} ${amount === 1 ? 'Trollin' : 'Trollins'} para "${targetName}"!`
+      );
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao doar Trollins.');
+      throw err;
     }
   };
 
@@ -949,26 +1022,42 @@ export default function App() {
     }
   };
 
-  const handleConfirmMoveToCatalog = (packageId: string, linkDrive: string, valorCatalogoBRL: number) => {
-    let finalizedPkg: FundingPackage | null = null;
-    const nextPackages = packages.map((p) => {
-      if (p.id === packageId) {
-        finalizedPkg = {
-          ...p,
-          status: 'Catálogo' as const,
-          linkDrive,
-          valorCatalogoBRL,
-          finalizadoEm: new Date().toISOString().split('T')[0],
-        };
-        return finalizedPkg;
+  const handleConfirmMoveToCatalog = async (
+    packageId: string,
+    linkDrive: string,
+    valorCatalogoBRL: number
+  ): Promise<void> => {
+    const target = packages.find((p) => p.id === packageId);
+    if (!target) return;
+    const finalizedPkg: FundingPackage = {
+      ...target,
+      status: 'Catálogo' as const,
+      linkDrive,
+      valorCatalogoBRL,
+      finalizadoEm: new Date().toISOString().split('T')[0],
+    };
+
+    const res = await apiSavePackage(binId, finalizedPkg);
+    const savedPkg = res?.package || finalizedPkg;
+
+    setPackages((prev) => prev.map((p) => (p.id === packageId ? savedPkg : p)));
+    if (res?.users && Array.isArray(res.users)) {
+      setUsers(res.users);
+      if (currentUser) {
+        const freshSelf = res.users.find((u) => u.id === currentUser.id);
+        if (freshSelf) {
+          const merged = { ...currentUser, trollinsSaldo: freshSelf.trollinsSaldo, trollinsExtrato: freshSelf.trollinsExtrato };
+          setCurrentUser(merged);
+          saveStoredCurrentUser(merged);
+        }
       }
-      return p;
-    });
-    setPackages(nextPackages);
-    if (finalizedPkg) {
-      apiSavePackage(binId, finalizedPkg).catch((err) => console.warn('Erro ao salvar pacote no servidor:', err));
-      setCompletedNoticePkg(finalizedPkg);
     }
+    if (res?.trollinsAwardedCount && res.trollinsAwardedCount > 0) {
+      showToast(
+        `${res.trollinsAwardedCount} ${res.trollinsAwardedCount === 1 ? 'membro recebeu' : 'membros receberam'} +1 Trollin pelo financiamento concluído!`
+      );
+    }
+    setCompletedNoticePkg(savedPkg);
     setPackageToMove(null);
   };
 
@@ -1008,6 +1097,47 @@ export default function App() {
     apiDeleteUser(binId, userId).catch((err) => console.warn('Erro ao remover membro:', err));
   };
 
+  const handleAdjustMemberTrollins = async (
+    memberId: string,
+    params: {
+      operation: 'add' | 'remove';
+      amount: number;
+      reason: string;
+      clientRequestId: string;
+    }
+  ): Promise<void> => {
+    try {
+      const res = await apiAdjustMemberTrollins(binId, memberId, {
+        ...params,
+        adjustedBy: currentUser?.nome,
+      });
+      if (res && Array.isArray(res.users)) {
+        setUsers(res.users);
+      } else if (res && res.user) {
+        setUsers((prev) => prev.map((u) => (u.id === memberId ? res.user! : u)));
+      }
+      if (res?.user && currentUser && currentUser.id === memberId) {
+        const merged = {
+          ...currentUser,
+          trollinsSaldo: res.user.trollinsSaldo,
+          trollinsExtrato: res.user.trollinsExtrato,
+        };
+        setCurrentUser(merged);
+        saveStoredCurrentUser(merged);
+      }
+      const memberName = res?.user?.nome || users.find((u) => u.id === memberId)?.nome || 'membro';
+      const verb = params.operation === 'add' ? 'adicionados' : 'retirados';
+      showToast(
+        res?.deduplicated
+          ? 'Ajuste já registrado anteriormente.'
+          : `${params.amount} ${params.amount === 1 ? 'Trollin' : 'Trollins'} ${verb} para ${memberName}!`
+      );
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao ajustar saldo de Trollins.');
+      throw err;
+    }
+  };
+
   const handleRestoreBackup = (backupData: any) => {
     if (backupData.items && Array.isArray(backupData.items)) {
       setItems(backupData.items);
@@ -1017,6 +1147,18 @@ export default function App() {
       try {
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(backupData.users));
       } catch (e) {}
+      if (currentUser) {
+        const fresh = backupData.users.find((u: UserProfile) => u.id === currentUser.id);
+        if (fresh) {
+          const merged = {
+            ...currentUser,
+            trollinsSaldo: fresh.trollinsSaldo,
+            trollinsExtrato: fresh.trollinsExtrato,
+          };
+          setCurrentUser(merged);
+          saveStoredCurrentUser(merged);
+        }
+      }
     }
     if (backupData.packages && Array.isArray(backupData.packages)) {
       setPackages(backupData.packages);
@@ -1191,6 +1333,7 @@ export default function App() {
                   setIsFormOpen(true);
                 }}
                 onToggleSupportItem={handleToggleSupportItem}
+                onDonateTrollins={handleDonateTrollins}
                 onEditItem={(item) => {
                   setItemToEdit(item);
                   setIsFormOpen(true);
@@ -1311,6 +1454,7 @@ export default function App() {
                 onAddUser={handleAddUserFromManagement}
                 onUpdateUser={handleUpdateUserFromManagement}
                 onDeleteUser={handleDeleteUser}
+                onAdjustMemberTrollins={handleAdjustMemberTrollins}
                 onApproveApplication={handleApproveApplication}
                 onRejectApplication={handleRejectApplication}
                 onOpenSyncOfficialModal={() => setIsSettingsOpen(true)}

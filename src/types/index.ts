@@ -45,6 +45,46 @@ export interface MembershipApplication {
   userId?: string;
 }
 
+export type TrollinTransactionType =
+  | 'inicial'
+  | 'ganho_financiamento'
+  | 'gasto_sugestao'
+  | 'doacao_sugestao'
+  | 'ajuste_mestre_credito'
+  | 'ajuste_mestre_debito';
+
+export interface TrollinLedgerEntry {
+  id: string;
+  dedupKey: string;
+  memberId: string;
+  type: TrollinTransactionType;
+  amount: number;
+  balanceAfter: number;
+  packageId?: string;
+  packageTitle?: string;
+  itemId?: string;
+  itemNome?: string;
+  reason?: string;
+  adjustedBy?: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface TrollinDonationRecord {
+  id: string;
+  clientRequestId?: string;
+  memberId: string;
+  memberNome: string;
+  amount: number;
+  createdAt: string;
+}
+
+export interface TrollinsMeta {
+  activatedAt: string;
+  version: number;
+  awardedPackageIds?: string[];
+}
+
 export interface UserProfile {
   id: string;
   nome: string;
@@ -56,6 +96,8 @@ export interface UserProfile {
   isMaster?: boolean;
   status?: UserStatus;
   solicitacaoId?: string;
+  trollinsSaldo?: number;
+  trollinsExtrato?: TrollinLedgerEntry[];
 }
 
 export interface Apoiador {
@@ -103,6 +145,10 @@ export interface ItemRPG {
   status: ItemStatus;
   apoiadores: Apoiador[];
   packageId?: string; // Id do pacote se foi agrupado
+  trollinsInvestidos?: number;
+  trollinsDoados?: number;
+  doacoesTrollins?: TrollinDonationRecord[];
+  clientRequestId?: string;
 }
 
 export interface PackageSubItem {

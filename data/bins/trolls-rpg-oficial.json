@@ -1,7 +1,7 @@
 {
   "id": "trolls-rpg-oficial",
   "name": "A Ponte dos Trolls - Oficial",
-  "updatedAt": "2026-11-11T18:52:00.478Z",
+  "updatedAt": "2026-11-12T21:31:22.730Z",
   "usersVersion": "v2_125_oficial",
   "items": [
     {
@@ -25,7 +25,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:27.507Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372566222-flh6",
@@ -48,7 +49,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:26.222Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372564962-1dvc",
@@ -71,7 +73,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:24.962Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372563747-o642",
@@ -94,7 +97,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:23.747Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372562503-h3pd",
@@ -117,7 +121,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:22.503Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372561258-frb1",
@@ -140,7 +145,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:21.258Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372560049-3xz1",
@@ -163,7 +169,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:20.049Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372558884-np25",
@@ -186,7 +193,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:18.884Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372557604-b9uh",
@@ -209,7 +217,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:17.604Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372556409-w46h",
@@ -232,7 +241,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:16.409Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372555221-jj60",
@@ -255,7 +265,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:15.222Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372554053-fxvv",
@@ -278,7 +289,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:14.053Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372552902-84d0",
@@ -301,7 +313,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:12.902Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372551827-8c4u",
@@ -324,7 +337,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:11.827Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372550652-zocz",
@@ -347,7 +361,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:10.652Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372549409-iadl",
@@ -370,7 +385,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:09.409Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372548188-wvdh",
@@ -393,7 +409,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:08.188Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372546979-dlf3",
@@ -416,7 +433,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:49:06.979Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372538318-q5eo",
@@ -439,7 +457,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:58.318Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372537180-0f02",
@@ -462,7 +481,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:57.180Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372536098-20ki",
@@ -485,7 +505,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:56.098Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372534940-2xbt",
@@ -508,7 +529,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:54.940Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372533788-mses",
@@ -531,7 +553,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:53.789Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372532626-rz5z",
@@ -554,7 +577,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:52.626Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372531456-jpxm",
@@ -577,7 +601,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:51.456Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372530372-wnk6",
@@ -600,7 +625,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:50.372Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372529250-bqol",
@@ -623,7 +649,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:49.250Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372528124-lm6e",
@@ -646,7 +673,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:48.124Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372526974-z19p",
@@ -669,7 +697,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:46.974Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372525861-n9zb",
@@ -692,7 +721,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:45.861Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372524822-ir7a",
@@ -715,7 +745,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:44.822Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372515824-yg4p",
@@ -738,7 +769,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:35.825Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372496666-9hv7",
@@ -761,7 +793,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:16.666Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372495839-yz8i",
@@ -784,7 +817,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:15.839Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372494949-667g",
@@ -807,7 +841,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:14.949Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372494092-2vbc",
@@ -830,7 +865,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:48:14.092Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372464527-ebpc",
@@ -853,7 +889,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:47:44.527Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372463671-pvxg",
@@ -876,7 +913,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:47:43.671Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372462844-2sbp",
@@ -899,7 +937,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:47:42.844Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "item-1794372462156-l39i",
@@ -922,7 +961,8 @@
           "nome": "Ponte dos Trolls",
           "data": "2026-11-11T04:47:42.156Z"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "seed-1",
@@ -955,7 +995,8 @@
           "id": "ap-3",
           "nome": "Erick Santos"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "seed-2",
@@ -993,7 +1034,8 @@
           "id": "ap-7",
           "nome": "Igor Santos"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "seed-3",
@@ -1026,7 +1068,8 @@
           "id": "ap-9b",
           "nome": "Fernando A T Brito"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "seed-4",
@@ -1054,7 +1097,8 @@
           "telefone": "(43) 99952-8095",
           "id": "ap-11"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "seed-5",
@@ -1082,7 +1126,8 @@
           "nome": "Lomenha",
           "telefone": "(21) 97668-4894"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "seed-6",
@@ -1115,7 +1160,8 @@
           "id": "ap-15",
           "nome": "Gustavo Mozer"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     },
     {
       "id": "seed-7",
@@ -1143,7 +1189,8 @@
           "id": "ap-19",
           "nome": "Daniel Nach"
         }
-      ]
+      ],
+      "trollinsInvestidos": 0
     }
   ],
   "users": [
@@ -1155,7 +1202,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 13,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082672-fy4bw",
+          "dedupKey": "initial:u_1",
+          "memberId": "u_1",
+          "type": "inicial",
+          "amount": 13,
+          "balanceAfter": 13,
+          "description": "Saldo inicial (13 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_10",
@@ -1165,7 +1225,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082673-x9ksh",
+          "dedupKey": "initial:u_10",
+          "memberId": "u_10",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_100",
@@ -1175,7 +1248,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 7,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082674-i4d3e",
+          "dedupKey": "initial:u_100",
+          "memberId": "u_100",
+          "type": "inicial",
+          "amount": 7,
+          "balanceAfter": 7,
+          "description": "Saldo inicial (7 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_101",
@@ -1185,7 +1271,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 16,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082675-ptya3",
+          "dedupKey": "initial:u_101",
+          "memberId": "u_101",
+          "type": "inicial",
+          "amount": 16,
+          "balanceAfter": 16,
+          "description": "Saldo inicial (16 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_102",
@@ -1195,7 +1294,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 5,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082675-e8i40",
+          "dedupKey": "initial:u_102",
+          "memberId": "u_102",
+          "type": "inicial",
+          "amount": 5,
+          "balanceAfter": 5,
+          "description": "Saldo inicial (5 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_103",
@@ -1205,7 +1317,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 6,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082676-g2w33",
+          "dedupKey": "initial:u_103",
+          "memberId": "u_103",
+          "type": "inicial",
+          "amount": 6,
+          "balanceAfter": 6,
+          "description": "Saldo inicial (6 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_104",
@@ -1215,7 +1340,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 10,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082677-lyfnb",
+          "dedupKey": "initial:u_104",
+          "memberId": "u_104",
+          "type": "inicial",
+          "amount": 10,
+          "balanceAfter": 10,
+          "description": "Saldo inicial (10 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_105",
@@ -1225,7 +1363,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082677-6q2ps",
+          "dedupKey": "initial:u_105",
+          "memberId": "u_105",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_106",
@@ -1235,7 +1386,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 2,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082678-sodfj",
+          "dedupKey": "initial:u_106",
+          "memberId": "u_106",
+          "type": "inicial",
+          "amount": 2,
+          "balanceAfter": 2,
+          "description": "Saldo inicial (2 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_107",
@@ -1245,7 +1409,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 3,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082678-09rbf",
+          "dedupKey": "initial:u_107",
+          "memberId": "u_107",
+          "type": "inicial",
+          "amount": 3,
+          "balanceAfter": 3,
+          "description": "Saldo inicial (3 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_108",
@@ -1255,7 +1432,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082678-j8gdu",
+          "dedupKey": "initial:u_108",
+          "memberId": "u_108",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_109",
@@ -1265,7 +1455,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 3,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082679-q0a1f",
+          "dedupKey": "initial:u_109",
+          "memberId": "u_109",
+          "type": "inicial",
+          "amount": 3,
+          "balanceAfter": 3,
+          "description": "Saldo inicial (3 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_11",
@@ -1275,7 +1478,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 20,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082679-u5ggf",
+          "dedupKey": "initial:u_11",
+          "memberId": "u_11",
+          "type": "inicial",
+          "amount": 20,
+          "balanceAfter": 20,
+          "description": "Saldo inicial (20 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_110",
@@ -1285,7 +1501,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 6,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082680-0nuuj",
+          "dedupKey": "initial:u_110",
+          "memberId": "u_110",
+          "type": "inicial",
+          "amount": 6,
+          "balanceAfter": 6,
+          "description": "Saldo inicial (6 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_111",
@@ -1295,7 +1524,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 5,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082680-wkrm3",
+          "dedupKey": "initial:u_111",
+          "memberId": "u_111",
+          "type": "inicial",
+          "amount": 5,
+          "balanceAfter": 5,
+          "description": "Saldo inicial (5 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_112",
@@ -1305,7 +1547,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 0,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082680-i59nz",
+          "dedupKey": "initial:u_112",
+          "memberId": "u_112",
+          "type": "inicial",
+          "amount": 0,
+          "balanceAfter": 0,
+          "description": "Saldo inicial (0 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_113",
@@ -1315,7 +1570,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082681-8o4ii",
+          "dedupKey": "initial:u_113",
+          "memberId": "u_113",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_114",
@@ -1325,7 +1593,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 10,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082683-vv93g",
+          "dedupKey": "initial:u_114",
+          "memberId": "u_114",
+          "type": "inicial",
+          "amount": 10,
+          "balanceAfter": 10,
+          "description": "Saldo inicial (10 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_115",
@@ -1335,7 +1616,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 9,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082684-q49iw",
+          "dedupKey": "initial:u_115",
+          "memberId": "u_115",
+          "type": "inicial",
+          "amount": 9,
+          "balanceAfter": 9,
+          "description": "Saldo inicial (9 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_116",
@@ -1345,7 +1639,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 10,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082684-q4lva",
+          "dedupKey": "initial:u_116",
+          "memberId": "u_116",
+          "type": "inicial",
+          "amount": 10,
+          "balanceAfter": 10,
+          "description": "Saldo inicial (10 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_117",
@@ -1355,7 +1662,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 5,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082684-5oi6r",
+          "dedupKey": "initial:u_117",
+          "memberId": "u_117",
+          "type": "inicial",
+          "amount": 5,
+          "balanceAfter": 5,
+          "description": "Saldo inicial (5 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_118",
@@ -1365,7 +1685,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 5,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082685-ktuih",
+          "dedupKey": "initial:u_118",
+          "memberId": "u_118",
+          "type": "inicial",
+          "amount": 5,
+          "balanceAfter": 5,
+          "description": "Saldo inicial (5 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_119",
@@ -1375,7 +1708,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 3,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082685-dsb51",
+          "dedupKey": "initial:u_119",
+          "memberId": "u_119",
+          "type": "inicial",
+          "amount": 3,
+          "balanceAfter": 3,
+          "description": "Saldo inicial (3 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_12",
@@ -1385,7 +1731,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 81,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082685-b9gge",
+          "dedupKey": "initial:u_12",
+          "memberId": "u_12",
+          "type": "inicial",
+          "amount": 81,
+          "balanceAfter": 81,
+          "description": "Saldo inicial (81 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_120",
@@ -1395,7 +1754,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 6,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082686-dqu3d",
+          "dedupKey": "initial:u_120",
+          "memberId": "u_120",
+          "type": "inicial",
+          "amount": 6,
+          "balanceAfter": 6,
+          "description": "Saldo inicial (6 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_121",
@@ -1405,7 +1777,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 2,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082686-0duqa",
+          "dedupKey": "initial:u_121",
+          "memberId": "u_121",
+          "type": "inicial",
+          "amount": 2,
+          "balanceAfter": 2,
+          "description": "Saldo inicial (2 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_122",
@@ -1415,7 +1800,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 3,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082687-47hrc",
+          "dedupKey": "initial:u_122",
+          "memberId": "u_122",
+          "type": "inicial",
+          "amount": 3,
+          "balanceAfter": 3,
+          "description": "Saldo inicial (3 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_123",
@@ -1425,7 +1823,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 2,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082687-9vbz2",
+          "dedupKey": "initial:u_123",
+          "memberId": "u_123",
+          "type": "inicial",
+          "amount": 2,
+          "balanceAfter": 2,
+          "description": "Saldo inicial (2 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_124",
@@ -1435,7 +1846,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082687-a55w6",
+          "dedupKey": "initial:u_124",
+          "memberId": "u_124",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_125",
@@ -1445,7 +1869,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082688-89riw",
+          "dedupKey": "initial:u_125",
+          "memberId": "u_125",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_13",
@@ -1455,7 +1892,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 77,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082688-ixxpe",
+          "dedupKey": "initial:u_13",
+          "memberId": "u_13",
+          "type": "inicial",
+          "amount": 77,
+          "balanceAfter": 77,
+          "description": "Saldo inicial (77 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_14",
@@ -1465,7 +1915,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 18,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082688-yj2ww",
+          "dedupKey": "initial:u_14",
+          "memberId": "u_14",
+          "type": "inicial",
+          "amount": 18,
+          "balanceAfter": 18,
+          "description": "Saldo inicial (18 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_15",
@@ -1475,7 +1938,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 56,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082689-5c9gi",
+          "dedupKey": "initial:u_15",
+          "memberId": "u_15",
+          "type": "inicial",
+          "amount": 56,
+          "balanceAfter": 56,
+          "description": "Saldo inicial (56 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_16",
@@ -1485,7 +1961,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 28,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082690-qu57x",
+          "dedupKey": "initial:u_16",
+          "memberId": "u_16",
+          "type": "inicial",
+          "amount": 28,
+          "balanceAfter": 28,
+          "description": "Saldo inicial (28 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_17",
@@ -1495,7 +1984,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 12,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082690-ta6rs",
+          "dedupKey": "initial:u_17",
+          "memberId": "u_17",
+          "type": "inicial",
+          "amount": 12,
+          "balanceAfter": 12,
+          "description": "Saldo inicial (12 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_18",
@@ -1505,7 +2007,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 18,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082691-7f0ss",
+          "dedupKey": "initial:u_18",
+          "memberId": "u_18",
+          "type": "inicial",
+          "amount": 18,
+          "balanceAfter": 18,
+          "description": "Saldo inicial (18 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_19",
@@ -1515,7 +2030,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 84,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082691-gpp38",
+          "dedupKey": "initial:u_19",
+          "memberId": "u_19",
+          "type": "inicial",
+          "amount": 84,
+          "balanceAfter": 84,
+          "description": "Saldo inicial (84 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_2",
@@ -1525,7 +2053,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 26,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082691-9wx4q",
+          "dedupKey": "initial:u_2",
+          "memberId": "u_2",
+          "type": "inicial",
+          "amount": 26,
+          "balanceAfter": 26,
+          "description": "Saldo inicial (26 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_20",
@@ -1535,7 +2076,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 26,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082692-4dlf7",
+          "dedupKey": "initial:u_20",
+          "memberId": "u_20",
+          "type": "inicial",
+          "amount": 26,
+          "balanceAfter": 26,
+          "description": "Saldo inicial (26 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_21",
@@ -1545,7 +2099,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 59,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082697-w0ukp",
+          "dedupKey": "initial:u_21",
+          "memberId": "u_21",
+          "type": "inicial",
+          "amount": 59,
+          "balanceAfter": 59,
+          "description": "Saldo inicial (59 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_22",
@@ -1555,7 +2122,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 75,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082697-hlxfx",
+          "dedupKey": "initial:u_22",
+          "memberId": "u_22",
+          "type": "inicial",
+          "amount": 75,
+          "balanceAfter": 75,
+          "description": "Saldo inicial (75 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_23",
@@ -1565,7 +2145,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 12,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082698-lhaiq",
+          "dedupKey": "initial:u_23",
+          "memberId": "u_23",
+          "type": "inicial",
+          "amount": 12,
+          "balanceAfter": 12,
+          "description": "Saldo inicial (12 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_24",
@@ -1575,7 +2168,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 47,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082698-t7wm7",
+          "dedupKey": "initial:u_24",
+          "memberId": "u_24",
+          "type": "inicial",
+          "amount": 47,
+          "balanceAfter": 47,
+          "description": "Saldo inicial (47 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_25",
@@ -1585,7 +2191,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 14,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082699-5r6iu",
+          "dedupKey": "initial:u_25",
+          "memberId": "u_25",
+          "type": "inicial",
+          "amount": 14,
+          "balanceAfter": 14,
+          "description": "Saldo inicial (14 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_26",
@@ -1595,7 +2214,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 51,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082699-qubak",
+          "dedupKey": "initial:u_26",
+          "memberId": "u_26",
+          "type": "inicial",
+          "amount": 51,
+          "balanceAfter": 51,
+          "description": "Saldo inicial (51 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_27",
@@ -1605,7 +2237,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 29,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082699-k5pb0",
+          "dedupKey": "initial:u_27",
+          "memberId": "u_27",
+          "type": "inicial",
+          "amount": 29,
+          "balanceAfter": 29,
+          "description": "Saldo inicial (29 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_28",
@@ -1615,7 +2260,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 48,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082700-z0sao",
+          "dedupKey": "initial:u_28",
+          "memberId": "u_28",
+          "type": "inicial",
+          "amount": 48,
+          "balanceAfter": 48,
+          "description": "Saldo inicial (48 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_29",
@@ -1625,7 +2283,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 32,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082700-bpdik",
+          "dedupKey": "initial:u_29",
+          "memberId": "u_29",
+          "type": "inicial",
+          "amount": 32,
+          "balanceAfter": 32,
+          "description": "Saldo inicial (32 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_3",
@@ -1635,7 +2306,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 24,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082700-y1mzm",
+          "dedupKey": "initial:u_3",
+          "memberId": "u_3",
+          "type": "inicial",
+          "amount": 24,
+          "balanceAfter": 24,
+          "description": "Saldo inicial (24 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_30",
@@ -1645,7 +2329,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 82,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082701-u5ado",
+          "dedupKey": "initial:u_30",
+          "memberId": "u_30",
+          "type": "inicial",
+          "amount": 82,
+          "balanceAfter": 82,
+          "description": "Saldo inicial (82 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_31",
@@ -1655,7 +2352,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 35,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082701-kzmjn",
+          "dedupKey": "initial:u_31",
+          "memberId": "u_31",
+          "type": "inicial",
+          "amount": 35,
+          "balanceAfter": 35,
+          "description": "Saldo inicial (35 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_32",
@@ -1665,7 +2375,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 17,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082701-gayn0",
+          "dedupKey": "initial:u_32",
+          "memberId": "u_32",
+          "type": "inicial",
+          "amount": 17,
+          "balanceAfter": 17,
+          "description": "Saldo inicial (17 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_33",
@@ -1675,7 +2398,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 44,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082702-iyls9",
+          "dedupKey": "initial:u_33",
+          "memberId": "u_33",
+          "type": "inicial",
+          "amount": 44,
+          "balanceAfter": 44,
+          "description": "Saldo inicial (44 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_34",
@@ -1685,7 +2421,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 36,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082702-aeodm",
+          "dedupKey": "initial:u_34",
+          "memberId": "u_34",
+          "type": "inicial",
+          "amount": 36,
+          "balanceAfter": 36,
+          "description": "Saldo inicial (36 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_35",
@@ -1695,7 +2444,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 91,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082703-4epuy",
+          "dedupKey": "initial:u_35",
+          "memberId": "u_35",
+          "type": "inicial",
+          "amount": 91,
+          "balanceAfter": 91,
+          "description": "Saldo inicial (91 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_36",
@@ -1705,7 +2467,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 17,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082703-engv9",
+          "dedupKey": "initial:u_36",
+          "memberId": "u_36",
+          "type": "inicial",
+          "amount": 17,
+          "balanceAfter": 17,
+          "description": "Saldo inicial (17 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_37",
@@ -1715,7 +2490,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 76,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082703-jdnue",
+          "dedupKey": "initial:u_37",
+          "memberId": "u_37",
+          "type": "inicial",
+          "amount": 76,
+          "balanceAfter": 76,
+          "description": "Saldo inicial (76 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_38",
@@ -1725,7 +2513,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 39,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082704-tayba",
+          "dedupKey": "initial:u_38",
+          "memberId": "u_38",
+          "type": "inicial",
+          "amount": 39,
+          "balanceAfter": 39,
+          "description": "Saldo inicial (39 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_39",
@@ -1735,7 +2536,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 39,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082704-f72dp",
+          "dedupKey": "initial:u_39",
+          "memberId": "u_39",
+          "type": "inicial",
+          "amount": 39,
+          "balanceAfter": 39,
+          "description": "Saldo inicial (39 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_4",
@@ -1745,7 +2559,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 18,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082704-rx9gx",
+          "dedupKey": "initial:u_4",
+          "memberId": "u_4",
+          "type": "inicial",
+          "amount": 18,
+          "balanceAfter": 18,
+          "description": "Saldo inicial (18 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_40",
@@ -1755,7 +2582,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 13,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082705-6mlk9",
+          "dedupKey": "initial:u_40",
+          "memberId": "u_40",
+          "type": "inicial",
+          "amount": 13,
+          "balanceAfter": 13,
+          "description": "Saldo inicial (13 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_41",
@@ -1765,7 +2605,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 53,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082705-sk3r8",
+          "dedupKey": "initial:u_41",
+          "memberId": "u_41",
+          "type": "inicial",
+          "amount": 53,
+          "balanceAfter": 53,
+          "description": "Saldo inicial (53 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_42",
@@ -1775,7 +2628,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 70,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082705-1xs9z",
+          "dedupKey": "initial:u_42",
+          "memberId": "u_42",
+          "type": "inicial",
+          "amount": 70,
+          "balanceAfter": 70,
+          "description": "Saldo inicial (70 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_43",
@@ -1785,7 +2651,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 74,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082705-adrln",
+          "dedupKey": "initial:u_43",
+          "memberId": "u_43",
+          "type": "inicial",
+          "amount": 74,
+          "balanceAfter": 74,
+          "description": "Saldo inicial (74 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_44",
@@ -1795,7 +2674,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 13,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082706-4ye6f",
+          "dedupKey": "initial:u_44",
+          "memberId": "u_44",
+          "type": "inicial",
+          "amount": 13,
+          "balanceAfter": 13,
+          "description": "Saldo inicial (13 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_45",
@@ -1805,7 +2697,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 31,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082706-9mbw2",
+          "dedupKey": "initial:u_45",
+          "memberId": "u_45",
+          "type": "inicial",
+          "amount": 31,
+          "balanceAfter": 31,
+          "description": "Saldo inicial (31 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_46",
@@ -1815,7 +2720,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 20,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082706-o10us",
+          "dedupKey": "initial:u_46",
+          "memberId": "u_46",
+          "type": "inicial",
+          "amount": 20,
+          "balanceAfter": 20,
+          "description": "Saldo inicial (20 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_47",
@@ -1825,7 +2743,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 50,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082707-jm4nn",
+          "dedupKey": "initial:u_47",
+          "memberId": "u_47",
+          "type": "inicial",
+          "amount": 50,
+          "balanceAfter": 50,
+          "description": "Saldo inicial (50 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_48",
@@ -1835,7 +2766,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 20,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082707-4krnn",
+          "dedupKey": "initial:u_48",
+          "memberId": "u_48",
+          "type": "inicial",
+          "amount": 20,
+          "balanceAfter": 20,
+          "description": "Saldo inicial (20 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_49",
@@ -1845,7 +2789,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 11,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082707-5vgiz",
+          "dedupKey": "initial:u_49",
+          "memberId": "u_49",
+          "type": "inicial",
+          "amount": 11,
+          "balanceAfter": 11,
+          "description": "Saldo inicial (11 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_5",
@@ -1855,7 +2812,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 8,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082708-rp6oz",
+          "dedupKey": "initial:u_5",
+          "memberId": "u_5",
+          "type": "inicial",
+          "amount": 8,
+          "balanceAfter": 8,
+          "description": "Saldo inicial (8 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_50",
@@ -1865,7 +2835,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 24,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082708-dywst",
+          "dedupKey": "initial:u_50",
+          "memberId": "u_50",
+          "type": "inicial",
+          "amount": 24,
+          "balanceAfter": 24,
+          "description": "Saldo inicial (24 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_51",
@@ -1875,7 +2858,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 22,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082708-4gdxz",
+          "dedupKey": "initial:u_51",
+          "memberId": "u_51",
+          "type": "inicial",
+          "amount": 22,
+          "balanceAfter": 22,
+          "description": "Saldo inicial (22 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_52",
@@ -1885,7 +2881,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 2,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082709-8dqiw",
+          "dedupKey": "initial:u_52",
+          "memberId": "u_52",
+          "type": "inicial",
+          "amount": 2,
+          "balanceAfter": 2,
+          "description": "Saldo inicial (2 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_53",
@@ -1895,7 +2904,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 21,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082709-wok5k",
+          "dedupKey": "initial:u_53",
+          "memberId": "u_53",
+          "type": "inicial",
+          "amount": 21,
+          "balanceAfter": 21,
+          "description": "Saldo inicial (21 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_54",
@@ -1905,7 +2927,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 33,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082709-zsnni",
+          "dedupKey": "initial:u_54",
+          "memberId": "u_54",
+          "type": "inicial",
+          "amount": 33,
+          "balanceAfter": 33,
+          "description": "Saldo inicial (33 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_55",
@@ -1915,7 +2950,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 15,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082710-8qbya",
+          "dedupKey": "initial:u_55",
+          "memberId": "u_55",
+          "type": "inicial",
+          "amount": 15,
+          "balanceAfter": 15,
+          "description": "Saldo inicial (15 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_56",
@@ -1925,7 +2973,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 6,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082710-5hhb1",
+          "dedupKey": "initial:u_56",
+          "memberId": "u_56",
+          "type": "inicial",
+          "amount": 6,
+          "balanceAfter": 6,
+          "description": "Saldo inicial (6 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_57",
@@ -1935,7 +2996,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 18,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082710-gn532",
+          "dedupKey": "initial:u_57",
+          "memberId": "u_57",
+          "type": "inicial",
+          "amount": 18,
+          "balanceAfter": 18,
+          "description": "Saldo inicial (18 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_58",
@@ -1945,7 +3019,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 8,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082716-lxvtr",
+          "dedupKey": "initial:u_58",
+          "memberId": "u_58",
+          "type": "inicial",
+          "amount": 8,
+          "balanceAfter": 8,
+          "description": "Saldo inicial (8 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_59",
@@ -1955,7 +3042,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 44,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082716-tsxbd",
+          "dedupKey": "initial:u_59",
+          "memberId": "u_59",
+          "type": "inicial",
+          "amount": 44,
+          "balanceAfter": 44,
+          "description": "Saldo inicial (44 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_6",
@@ -1965,7 +3065,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 40,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082717-1uz6y",
+          "dedupKey": "initial:u_6",
+          "memberId": "u_6",
+          "type": "inicial",
+          "amount": 40,
+          "balanceAfter": 40,
+          "description": "Saldo inicial (40 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_60",
@@ -1975,7 +3088,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 8,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082718-2dcsx",
+          "dedupKey": "initial:u_60",
+          "memberId": "u_60",
+          "type": "inicial",
+          "amount": 8,
+          "balanceAfter": 8,
+          "description": "Saldo inicial (8 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_61",
@@ -1985,7 +3111,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 39,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082718-hu55x",
+          "dedupKey": "initial:u_61",
+          "memberId": "u_61",
+          "type": "inicial",
+          "amount": 39,
+          "balanceAfter": 39,
+          "description": "Saldo inicial (39 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_62",
@@ -1995,7 +3134,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 17,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082718-c2ur3",
+          "dedupKey": "initial:u_62",
+          "memberId": "u_62",
+          "type": "inicial",
+          "amount": 17,
+          "balanceAfter": 17,
+          "description": "Saldo inicial (17 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_63",
@@ -2005,7 +3157,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 19,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082719-4zxzf",
+          "dedupKey": "initial:u_63",
+          "memberId": "u_63",
+          "type": "inicial",
+          "amount": 19,
+          "balanceAfter": 19,
+          "description": "Saldo inicial (19 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_64",
@@ -2015,7 +3180,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 38,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082719-6tq38",
+          "dedupKey": "initial:u_64",
+          "memberId": "u_64",
+          "type": "inicial",
+          "amount": 38,
+          "balanceAfter": 38,
+          "description": "Saldo inicial (38 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_65",
@@ -2025,7 +3203,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 10,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082719-c6dn1",
+          "dedupKey": "initial:u_65",
+          "memberId": "u_65",
+          "type": "inicial",
+          "amount": 10,
+          "balanceAfter": 10,
+          "description": "Saldo inicial (10 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_66",
@@ -2035,7 +3226,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 17,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082719-6j6v1",
+          "dedupKey": "initial:u_66",
+          "memberId": "u_66",
+          "type": "inicial",
+          "amount": 17,
+          "balanceAfter": 17,
+          "description": "Saldo inicial (17 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_67",
@@ -2045,7 +3249,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 19,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082720-wy73e",
+          "dedupKey": "initial:u_67",
+          "memberId": "u_67",
+          "type": "inicial",
+          "amount": 19,
+          "balanceAfter": 19,
+          "description": "Saldo inicial (19 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_68",
@@ -2055,7 +3272,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 12,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082720-ug9zv",
+          "dedupKey": "initial:u_68",
+          "memberId": "u_68",
+          "type": "inicial",
+          "amount": 12,
+          "balanceAfter": 12,
+          "description": "Saldo inicial (12 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_69",
@@ -2065,7 +3295,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 16,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082720-fu1zx",
+          "dedupKey": "initial:u_69",
+          "memberId": "u_69",
+          "type": "inicial",
+          "amount": 16,
+          "balanceAfter": 16,
+          "description": "Saldo inicial (16 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_7",
@@ -2075,7 +3318,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 39,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082720-714uc",
+          "dedupKey": "initial:u_7",
+          "memberId": "u_7",
+          "type": "inicial",
+          "amount": 39,
+          "balanceAfter": 39,
+          "description": "Saldo inicial (39 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_70",
@@ -2085,7 +3341,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 4,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082721-28km1",
+          "dedupKey": "initial:u_70",
+          "memberId": "u_70",
+          "type": "inicial",
+          "amount": 4,
+          "balanceAfter": 4,
+          "description": "Saldo inicial (4 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_71",
@@ -2095,7 +3364,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 7,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082721-9mdp7",
+          "dedupKey": "initial:u_71",
+          "memberId": "u_71",
+          "type": "inicial",
+          "amount": 7,
+          "balanceAfter": 7,
+          "description": "Saldo inicial (7 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_72",
@@ -2105,7 +3387,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 24,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082721-pwx6g",
+          "dedupKey": "initial:u_72",
+          "memberId": "u_72",
+          "type": "inicial",
+          "amount": 24,
+          "balanceAfter": 24,
+          "description": "Saldo inicial (24 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_73",
@@ -2115,7 +3410,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 28,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082721-8xnfi",
+          "dedupKey": "initial:u_73",
+          "memberId": "u_73",
+          "type": "inicial",
+          "amount": 28,
+          "balanceAfter": 28,
+          "description": "Saldo inicial (28 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_74",
@@ -2125,7 +3433,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 32,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082722-f95rb",
+          "dedupKey": "initial:u_74",
+          "memberId": "u_74",
+          "type": "inicial",
+          "amount": 32,
+          "balanceAfter": 32,
+          "description": "Saldo inicial (32 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_75",
@@ -2135,7 +3456,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 24,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082722-9ulw5",
+          "dedupKey": "initial:u_75",
+          "memberId": "u_75",
+          "type": "inicial",
+          "amount": 24,
+          "balanceAfter": 24,
+          "description": "Saldo inicial (24 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_76",
@@ -2145,7 +3479,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 18,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082722-icftw",
+          "dedupKey": "initial:u_76",
+          "memberId": "u_76",
+          "type": "inicial",
+          "amount": 18,
+          "balanceAfter": 18,
+          "description": "Saldo inicial (18 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_77",
@@ -2155,7 +3502,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 8,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082722-65ls4",
+          "dedupKey": "initial:u_77",
+          "memberId": "u_77",
+          "type": "inicial",
+          "amount": 8,
+          "balanceAfter": 8,
+          "description": "Saldo inicial (8 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_78",
@@ -2165,7 +3525,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 5,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082723-00p0y",
+          "dedupKey": "initial:u_78",
+          "memberId": "u_78",
+          "type": "inicial",
+          "amount": 5,
+          "balanceAfter": 5,
+          "description": "Saldo inicial (5 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_79",
@@ -2175,7 +3548,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 23,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082723-vsdsc",
+          "dedupKey": "initial:u_79",
+          "memberId": "u_79",
+          "type": "inicial",
+          "amount": 23,
+          "balanceAfter": 23,
+          "description": "Saldo inicial (23 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_8",
@@ -2185,7 +3571,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 50,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082723-plrk8",
+          "dedupKey": "initial:u_8",
+          "memberId": "u_8",
+          "type": "inicial",
+          "amount": 50,
+          "balanceAfter": 50,
+          "description": "Saldo inicial (50 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_80",
@@ -2195,7 +3594,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 20,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082724-6arsk",
+          "dedupKey": "initial:u_80",
+          "memberId": "u_80",
+          "type": "inicial",
+          "amount": 20,
+          "balanceAfter": 20,
+          "description": "Saldo inicial (20 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_81",
@@ -2205,7 +3617,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082725-oq0t7",
+          "dedupKey": "initial:u_81",
+          "memberId": "u_81",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_82",
@@ -2215,7 +3640,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 18,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082725-ajlll",
+          "dedupKey": "initial:u_82",
+          "memberId": "u_82",
+          "type": "inicial",
+          "amount": 18,
+          "balanceAfter": 18,
+          "description": "Saldo inicial (18 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_83",
@@ -2225,7 +3663,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 27,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082725-z0vbp",
+          "dedupKey": "initial:u_83",
+          "memberId": "u_83",
+          "type": "inicial",
+          "amount": 27,
+          "balanceAfter": 27,
+          "description": "Saldo inicial (27 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_84",
@@ -2235,7 +3686,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 30,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082725-5l0zr",
+          "dedupKey": "initial:u_84",
+          "memberId": "u_84",
+          "type": "inicial",
+          "amount": 30,
+          "balanceAfter": 30,
+          "description": "Saldo inicial (30 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_85",
@@ -2245,7 +3709,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 5,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082726-m6kmj",
+          "dedupKey": "initial:u_85",
+          "memberId": "u_85",
+          "type": "inicial",
+          "amount": 5,
+          "balanceAfter": 5,
+          "description": "Saldo inicial (5 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_86",
@@ -2255,7 +3732,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 13,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082726-eb3ti",
+          "dedupKey": "initial:u_86",
+          "memberId": "u_86",
+          "type": "inicial",
+          "amount": 13,
+          "balanceAfter": 13,
+          "description": "Saldo inicial (13 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_87",
@@ -2265,7 +3755,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 12,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082726-kzsd1",
+          "dedupKey": "initial:u_87",
+          "memberId": "u_87",
+          "type": "inicial",
+          "amount": 12,
+          "balanceAfter": 12,
+          "description": "Saldo inicial (12 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_88",
@@ -2275,7 +3778,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 5,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082726-vt9ia",
+          "dedupKey": "initial:u_88",
+          "memberId": "u_88",
+          "type": "inicial",
+          "amount": 5,
+          "balanceAfter": 5,
+          "description": "Saldo inicial (5 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_89",
@@ -2285,7 +3801,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 3,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082727-uu562",
+          "dedupKey": "initial:u_89",
+          "memberId": "u_89",
+          "type": "inicial",
+          "amount": 3,
+          "balanceAfter": 3,
+          "description": "Saldo inicial (3 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_9",
@@ -2295,7 +3824,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 55,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082727-67yul",
+          "dedupKey": "initial:u_9",
+          "memberId": "u_9",
+          "type": "inicial",
+          "amount": 55,
+          "balanceAfter": 55,
+          "description": "Saldo inicial (55 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_90",
@@ -2305,7 +3847,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 4,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082727-ksjam",
+          "dedupKey": "initial:u_90",
+          "memberId": "u_90",
+          "type": "inicial",
+          "amount": 4,
+          "balanceAfter": 4,
+          "description": "Saldo inicial (4 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_91",
@@ -2315,7 +3870,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 10,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082727-0ncg2",
+          "dedupKey": "initial:u_91",
+          "memberId": "u_91",
+          "type": "inicial",
+          "amount": 10,
+          "balanceAfter": 10,
+          "description": "Saldo inicial (10 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_92",
@@ -2325,7 +3893,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 9,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082727-ntkhz",
+          "dedupKey": "initial:u_92",
+          "memberId": "u_92",
+          "type": "inicial",
+          "amount": 9,
+          "balanceAfter": 9,
+          "description": "Saldo inicial (9 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_93",
@@ -2335,7 +3916,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 12,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082728-2nt90",
+          "dedupKey": "initial:u_93",
+          "memberId": "u_93",
+          "type": "inicial",
+          "amount": 12,
+          "balanceAfter": 12,
+          "description": "Saldo inicial (12 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_94",
@@ -2345,7 +3939,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082728-gg4ow",
+          "dedupKey": "initial:u_94",
+          "memberId": "u_94",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_95",
@@ -2355,7 +3962,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 7,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082729-zadmg",
+          "dedupKey": "initial:u_95",
+          "memberId": "u_95",
+          "type": "inicial",
+          "amount": 7,
+          "balanceAfter": 7,
+          "description": "Saldo inicial (7 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_96",
@@ -2365,7 +3985,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 8,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082729-5bfzz",
+          "dedupKey": "initial:u_96",
+          "memberId": "u_96",
+          "type": "inicial",
+          "amount": 8,
+          "balanceAfter": 8,
+          "description": "Saldo inicial (8 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_97",
@@ -2375,7 +4008,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 24,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082729-v9pno",
+          "dedupKey": "initial:u_97",
+          "memberId": "u_97",
+          "type": "inicial",
+          "amount": 24,
+          "balanceAfter": 24,
+          "description": "Saldo inicial (24 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_98",
@@ -2385,7 +4031,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 18,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082730-aokhh",
+          "dedupKey": "initial:u_98",
+          "memberId": "u_98",
+          "type": "inicial",
+          "amount": 18,
+          "balanceAfter": 18,
+          "description": "Saldo inicial (18 itens no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "u_99",
@@ -2395,7 +4054,20 @@
       "createdAt": "2026-02-15",
       "isMaster": false,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 1,
+      "trollinsExtrato": [
+        {
+          "id": "trl-1794519082730-fscb5",
+          "dedupKey": "initial:u_99",
+          "memberId": "u_99",
+          "type": "inicial",
+          "amount": 1,
+          "balanceAfter": 1,
+          "description": "Saldo inicial (1 item no acervo)",
+          "createdAt": "2026-11-12T21:31:22.671Z"
+        }
+      ]
     },
     {
       "id": "usr-master",
@@ -2405,7 +4077,9 @@
       "createdAt": "2026-01-01",
       "isMaster": true,
       "status": "aprovado",
-      "strikes": []
+      "strikes": [],
+      "trollinsSaldo": 0,
+      "trollinsExtrato": []
     }
   ],
   "packages": [
@@ -49751,6 +51425,117 @@
         "pergunta": "É permitido compartilhar materiais brasileiros no grupo ou no acervo?",
         "guiaAvaliacao": "Não."
       }
+    ]
+  },
+  "trollinsMeta": {
+    "activatedAt": "2026-11-12T21:31:22.671Z",
+    "version": 1,
+    "awardedPackageIds": [
+      "pack-1794371263514-2vul",
+      "pack-1794371243609-0t2n",
+      "pack-1794371229830-dj88",
+      "pack-1794371218339-2cjn",
+      "pack-1794370900632-5sjx",
+      "pkg-acervo-001",
+      "pkg-acervo-002",
+      "pkg-acervo-003",
+      "pkg-acervo-004",
+      "pkg-acervo-005",
+      "pkg-acervo-006",
+      "pkg-acervo-007",
+      "pkg-acervo-008",
+      "pkg-acervo-009",
+      "pkg-acervo-010",
+      "pkg-acervo-011",
+      "pkg-acervo-012",
+      "pkg-acervo-013",
+      "pkg-acervo-014",
+      "pkg-acervo-015",
+      "pkg-acervo-016",
+      "pkg-acervo-017",
+      "pkg-acervo-018",
+      "pkg-acervo-019",
+      "pkg-acervo-020",
+      "pkg-acervo-021",
+      "pkg-acervo-022",
+      "pkg-acervo-023",
+      "pkg-acervo-024",
+      "pkg-acervo-025",
+      "pkg-acervo-026",
+      "pkg-acervo-027",
+      "pkg-acervo-028",
+      "pkg-acervo-029",
+      "pkg-acervo-030",
+      "pkg-acervo-031",
+      "pkg-acervo-032",
+      "pkg-acervo-033",
+      "pkg-acervo-034",
+      "pkg-acervo-035",
+      "pkg-acervo-036",
+      "pkg-acervo-037",
+      "pkg-acervo-038",
+      "pkg-acervo-039",
+      "pkg-acervo-040",
+      "pkg-acervo-041",
+      "pkg-acervo-042",
+      "pkg-acervo-043",
+      "pkg-acervo-044",
+      "pkg-acervo-045",
+      "pkg-acervo-046",
+      "pkg-acervo-047",
+      "pkg-acervo-048",
+      "pkg-acervo-049",
+      "pkg-acervo-050",
+      "pkg-acervo-051",
+      "pkg-acervo-052",
+      "pkg-acervo-053",
+      "pkg-acervo-054",
+      "pkg-acervo-055",
+      "pkg-acervo-056",
+      "pkg-acervo-057",
+      "pkg-acervo-058",
+      "pkg-acervo-059",
+      "pkg-acervo-060",
+      "pkg-acervo-061",
+      "pkg-acervo-062",
+      "pkg-acervo-063",
+      "pkg-acervo-064",
+      "pkg-acervo-065",
+      "pkg-acervo-066",
+      "pkg-acervo-067",
+      "pkg-acervo-068",
+      "pkg-acervo-069",
+      "pkg-acervo-070",
+      "pkg-acervo-071",
+      "pkg-acervo-072",
+      "pkg-acervo-073",
+      "pkg-acervo-074",
+      "pkg-acervo-075",
+      "pkg-acervo-076",
+      "pkg-acervo-077",
+      "pkg-acervo-078",
+      "pkg-acervo-079",
+      "pkg-acervo-080",
+      "pkg-acervo-081",
+      "pkg-acervo-082",
+      "pkg-acervo-083",
+      "pkg-acervo-084",
+      "pkg-acervo-085",
+      "pkg-acervo-086",
+      "pkg-acervo-087",
+      "pkg-acervo-088",
+      "pkg-acervo-089",
+      "pkg-acervo-090",
+      "pkg-acervo-091",
+      "pkg-acervo-092",
+      "pkg-acervo-093",
+      "pkg-acervo-094",
+      "pkg-acervo-095",
+      "pkg-acervo-096",
+      "pkg-acervo-097",
+      "pkg-acervo-098",
+      "pkg-acervo-099",
+      "pkg-acervo-100"
     ]
   }
 }

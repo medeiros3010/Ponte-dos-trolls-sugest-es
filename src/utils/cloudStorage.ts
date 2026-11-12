@@ -1,4 +1,4 @@
-import { ItemRPG, UserProfile, ItemStatus, FundingPackage, PackageSubItem, FundingStage, ParticipantPaymentInfo, normalizeProductType, MembershipApplication } from '../types';
+import { ItemRPG, UserProfile, ItemStatus, FundingPackage, PackageSubItem, FundingStage, ParticipantPaymentInfo, normalizeProductType, MembershipApplication, TrollinsMeta, TrollinLedgerEntry } from '../types';
 import { RulesConfig } from '../data/rulesAndQuestions';
 import { SEED_USERS, SEED_PACKAGES, SEED_ITEMS } from '../data/seedData';
 
@@ -130,6 +130,7 @@ export interface CloudPayloadData {
   solicitacoes?: MembershipApplication[];
   regrasConfig?: RulesConfig;
   usersVersion?: string;
+  trollinsMeta?: TrollinsMeta;
 }
 
 export async function fetchCloudData(
@@ -193,10 +194,13 @@ export async function fetchCloudData(
         telefone: String(u.telefone || '').trim(),
         email: String(u.email || '').trim(),
         createdAt: u.createdAt || new Date().toISOString(),
+        dataEntrada: u.dataEntrada,
         isMaster: Boolean(u.isMaster),
         status: (u.status as any) || 'aprovado',
         strikes: u.strikes !== undefined ? u.strikes : [],
         solicitacaoId: u.solicitacaoId || undefined,
+        ...(typeof u.trollinsSaldo === 'number' ? { trollinsSaldo: u.trollinsSaldo } : {}),
+        ...(Array.isArray(u.trollinsExtrato) ? { trollinsExtrato: u.trollinsExtrato } : {}),
       }));
     }
 
@@ -216,6 +220,7 @@ export async function fetchCloudData(
       solicitacoes,
       regrasConfig: data.regrasConfig,
       usersVersion: data.usersVersion,
+      trollinsMeta: data.trollinsMeta,
     };
   } catch (err) {
     console.error('fetchCloudData error:', err);
@@ -496,7 +501,7 @@ export async function apiSaveItem(
   binId: string,
   item: Partial<ItemRPG>,
   adminPassword?: string
-): Promise<{ success: boolean; item?: ItemRPG }> {
+): Promise<{ success: boolean; item?: ItemRPG; userBalance?: number; userLedger?: TrollinLedgerEntry[] }> {
   const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
     ? window.location.origin
     : FALLBACK_SERVER_URL;
@@ -568,13 +573,105 @@ export async function apiToggleItemSupport(
 }
 
 /**
+ * Doa Trollins para aumentar a prioridade de uma sugestão
+ */
+export async function apiDonateTrollinsToItem(
+  binId: string,
+  itemId: string,
+  amount: number,
+  user: UserProfile,
+  clientRequestId: string
+): Promise<{
+  success: boolean;
+  deduplicated?: boolean;
+  item?: ItemRPG;
+  userBalance?: number;
+  userLedger?: TrollinLedgerEntry[];
+}> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(
+    `${base}/api/bin/${encodeURIComponent(binId)}/item/${encodeURIComponent(itemId)}/doar-trollins`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include',
+      body: JSON.stringify({
+        amount,
+        userId: user.id,
+        userName: user.nome,
+        clientRequestId,
+      }),
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao doar Trollins');
+  }
+  return data;
+}
+
+/**
+ * Ajuste manual de Trollins por membro (exclusivo do Mestre)
+ */
+export async function apiAdjustMemberTrollins(
+  binId: string,
+  userId: string,
+  params: {
+    operation: 'add' | 'remove';
+    amount: number;
+    reason: string;
+    clientRequestId: string;
+    adjustedBy?: string;
+    adminPassword?: string;
+  }
+): Promise<{
+  success: boolean;
+  deduplicated?: boolean;
+  user?: UserProfile;
+  users?: UserProfile[];
+}> {
+  const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
+    ? window.location.origin
+    : FALLBACK_SERVER_URL;
+
+  const res = await fetch(
+    `${base}/api/bin/${encodeURIComponent(binId)}/user/${encodeURIComponent(userId)}/adjust-trollins`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders({
+        'Content-Type': 'application/json',
+        ...(params.adminPassword ? { 'x-admin-password': params.adminPassword } : {}),
+      }),
+      credentials: 'include',
+      body: JSON.stringify(params),
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao ajustar Trollins do membro');
+  }
+  return data;
+}
+
+/**
  * Salva ou edita um pacote de financiamento de forma atômica
  */
 export async function apiSavePackage(
   binId: string,
   pkg: Partial<FundingPackage>,
   adminPassword?: string
-): Promise<{ success: boolean; package?: FundingPackage }> {
+): Promise<{
+  success: boolean;
+  package?: FundingPackage;
+  trollinsAwardedCount?: number;
+  trollinsAwardedMemberIds?: string[];
+  users?: UserProfile[];
+}> {
   const base = typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')
     ? window.location.origin
     : FALLBACK_SERVER_URL;
@@ -1148,6 +1245,7 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
       descricao: row.descricao || '',
       link: row.link || '',
       imageUrl: row.imageUrl || undefined,
+      sugeridoPorId: row.sugeridoPorId || undefined,
       sugeridoPorNome: rawAutor,
       sugeridoPorTelefone: row.sugeridoPorTelefone || '',
       sugeridoPorEmail: row.sugeridoPorEmail || '',
@@ -1159,6 +1257,13 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
       status,
       apoiadores,
       packageId: row.packageId || undefined,
+      trollinsInvestidos: typeof row.trollinsInvestidos === 'number'
+        ? Math.max(0, Math.floor(row.trollinsInvestidos))
+        : 0,
+      trollinsDoados: typeof row.trollinsDoados === 'number'
+        ? Math.max(0, Math.floor(row.trollinsDoados))
+        : 0,
+      ...(Array.isArray(row.doacoesTrollins) ? { doacoesTrollins: row.doacoesTrollins } : {}),
     };
   });
 }
