@@ -7,6 +7,10 @@ import crypto from 'crypto';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES, HISTORICAL_CATALOG_PACKAGES } from './src/data/seedData.ts';
 import { normalizeProductType } from './src/types/index.ts';
 import {
+  normalizeMaterialSystemFields,
+  derivePackageSystemMeta,
+} from './src/utils/rpgSystems.ts';
+import {
   ensureTrollinsActivated,
   creditMemberTrollinsForCompletedFinancing,
   getMemberTrollinsBalance,
@@ -342,7 +346,15 @@ function sanitizeUrl(url: any): string {
   if (!url || typeof url !== 'string') return '';
   let trimmed = url.trim();
   if (!trimmed) return '';
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith('javascript:') || lower.startsWith('vbscript:') || lower.startsWith('data:text/html')) {
+    return '';
+  }
   if (trimmed.startsWith('/uploads/')) return trimmed;
+  // Preserva assets locais seguros (ex: /trollin-coin.webp, /assets/...) sem path traversal
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.includes('..')) {
+    return trimmed;
+  }
   if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
     if (trimmed.includes('.') && !trimmed.startsWith('/')) {
       trimmed = 'https://' + trimmed;
@@ -351,6 +363,130 @@ function sanitizeUrl(url: any): string {
     }
   }
   return trimmed;
+}
+
+const SENSITIVE_EXPORT_KEYS = new Set([
+  'password',
+  'adminpassword',
+  'senha',
+  'token',
+  'sessiontoken',
+  'apikey',
+  'secret',
+  'privatekey',
+  'clientsecret',
+  'serviceaccount',
+  'credentials',
+]);
+
+function stripSecretsDeep(value: any): any {
+  if (Array.isArray(value)) {
+    return value.map(stripSecretsDeep);
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(value)) {
+      if (SENSITIVE_EXPORT_KEYS.has(k.toLowerCase())) {
+        continue;
+      }
+      out[k] = stripSecretsDeep(v);
+    }
+    return out;
+  }
+  return value;
+}
+
+function deduplicateById<T extends Record<string, any>>(list: T[]): T[] {
+  const map = new Map<string, T>();
+  for (const entry of list) {
+    if (!entry || typeof entry !== 'object') continue;
+    const key = entry.id ? String(entry.id) : '';
+    if (key) {
+      map.set(key, entry);
+    }
+  }
+  return Array.from(map.values());
+}
+
+function deduplicateLedger(entries: any[]): any[] {
+  if (!Array.isArray(entries)) return [];
+  const seen = new Set<string>();
+  const result: any[] = [];
+  for (const e of entries) {
+    if (!e || typeof e !== 'object') continue;
+    const key = e.dedupKey ? String(e.dedupKey) : (e.id ? String(e.id) : '');
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    result.push(e);
+  }
+  return result;
+}
+
+function deduplicateSupporters(list: any[]): any[] {
+  if (!Array.isArray(list)) return [];
+  const seenIds = new Set<string>();
+  const seenNames = new Set<string>();
+  const result: any[] = [];
+  for (const ap of list) {
+    if (!ap || typeof ap !== 'object') continue;
+    const cleanId = ap.id ? String(ap.id).trim() : '';
+    const cleanName = ap.nome ? String(ap.nome).trim().toLowerCase() : '';
+    if (cleanId && seenIds.has(cleanId)) continue;
+    if (!cleanId && cleanName && seenNames.has(cleanName)) continue;
+    if (cleanId) seenIds.add(cleanId);
+    if (cleanName) seenNames.add(cleanName);
+    result.push(ap);
+  }
+  return result;
+}
+
+function deduplicateDonations(list: any[]): any[] {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  const result: any[] = [];
+  for (const d of list) {
+    if (!d || typeof d !== 'object') continue;
+    const key = d.clientRequestId ? `cr:${d.clientRequestId}` : (d.id ? `id:${d.id}` : '');
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    result.push(d);
+  }
+  return result;
+}
+
+function sanitizeItemRecord(it: any): any {
+  if (!it || typeof it !== 'object') return it;
+  const doacoesTrollins = Array.isArray(it.doacoesTrollins)
+    ? deduplicateDonations(it.doacoesTrollins)
+    : undefined;
+  const computedDonated = doacoesTrollins
+    ? doacoesTrollins.reduce((sum: number, d: any) => sum + (Number.isFinite(Number(d?.amount)) && Number(d.amount) > 0 ? Math.floor(Number(d.amount)) : 0), 0)
+    : 0;
+  const rawDonated = typeof it.trollinsDoados === 'number' && Number.isFinite(it.trollinsDoados)
+    ? Math.max(0, Math.floor(it.trollinsDoados))
+    : computedDonated;
+
+  const sysFields = normalizeMaterialSystemFields({
+    sistema: it.sistema || '',
+    sistemaId: it.sistemaId,
+    sistemaOriginal: it.sistemaOriginal,
+    sistemaPrecisaRevisao: it.sistemaPrecisaRevisao,
+  });
+
+  return {
+    ...it,
+    id: String(it.id),
+    nome: String(it.nome || 'Item').trim(),
+    ...sysFields,
+    link: sanitizeUrl(it.link),
+    ...(it.imageUrl ? { imageUrl: sanitizeUrl(it.imageUrl) || undefined } : {}),
+    apoiadores: deduplicateSupporters(Array.isArray(it.apoiadores) ? it.apoiadores : []),
+    trollinsInvestidos: typeof it.trollinsInvestidos === 'number' && Number.isFinite(it.trollinsInvestidos)
+      ? Math.max(0, Math.floor(it.trollinsInvestidos))
+      : 0,
+    trollinsDoados: rawDonated,
+    ...(doacoesTrollins ? { doacoesTrollins } : {}),
+  };
 }
 
 function formatPhone(raw: string): string {
@@ -381,10 +517,16 @@ function sanitizePackage(pkg: any): any {
   const itens = Array.isArray(pkg.itens) ? pkg.itens.map((it: any) => {
     const itemNorm = normalizeProductType(it.tipo || it.produto, it.sistema);
     const cat = it.categoria || it.tipo || itemNorm.tipo || 'Não informada';
+    const sysFields = normalizeMaterialSystemFields({
+      sistema: it.sistema || itemNorm.sistema || '',
+      sistemaId: it.sistemaId,
+      sistemaOriginal: it.sistemaOriginal,
+      sistemaPrecisaRevisao: it.sistemaPrecisaRevisao,
+    });
     return {
       id: it.id || `it-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       nome: String(it.nome || 'Item').trim(),
-      sistema: it.sistema || norm.sistema || 'Foundry VTT Geral',
+      ...sysFields,
       categoria: cat,
       tipo: it.tipo || itemNorm.tipo,
       link: sanitizeUrl(it.link),
@@ -393,10 +535,15 @@ function sanitizePackage(pkg: any): any {
     };
   }) : [];
 
+  const pkgSysMeta = derivePackageSystemMeta(itens, pkg.sistema || norm.sistema);
+
   return {
     id: pkg.id || `pack-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     titulo: String(pkg.titulo || 'Pacote sem título').trim(),
-    sistema: pkg.sistema || norm.sistema || 'Foundry VTT Geral',
+    sistema: pkgSysMeta.sistema,
+    sistemasIds: pkgSysMeta.sistemasIds.length > 0
+      ? pkgSysMeta.sistemasIds
+      : (Array.isArray(pkg.sistemasIds) ? pkg.sistemasIds : []),
     tipo: pkg.tipo || norm.tipo,
     descricao: String(pkg.descricao || '').trim(),
     imageUrl: sanitizeUrl(pkg.imageUrl) || undefined,
@@ -472,15 +619,17 @@ function readBinData(binId: string): any {
   if (!Array.isArray(data.items)) data.items = [];
   if (!Array.isArray(data.solicitacoes)) data.solicitacoes = [];
   
-  // Preserva pacotes existentes e incorpora itens históricos do catálogo apenas se não existirem
+  // Preserva pacotes existentes e incorpora itens históricos do catálogo apenas na base oficial inicializada sem restauração
   const cleaned = (data.packages as any[]).filter((p: any) => !['pack-3', 'pack-4', 'pack-5'].includes(p?.id));
   const pkgMap = new Map<string, any>();
   for (const p of cleaned) {
     if (p && p.id) pkgMap.set(p.id, p);
   }
-  for (const hp of HISTORICAL_CATALOG_PACKAGES) {
-    if (!pkgMap.has(hp.id)) {
-      pkgMap.set(hp.id, hp);
+  if (binId === 'trolls-rpg-oficial' && !data.skipHistoricalSeed) {
+    for (const hp of HISTORICAL_CATALOG_PACKAGES) {
+      if (!pkgMap.has(hp.id)) {
+        pkgMap.set(hp.id, hp);
+      }
     }
   }
   data.packages = Array.from(pkgMap.values()).map(sanitizePackage);
@@ -489,8 +638,8 @@ function readBinData(binId: string): any {
     try {
       data.updatedAt = new Date().toISOString();
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-      const devMirrorPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
-      if (filePath !== devMirrorPath) {
+      if (binId === 'trolls-rpg-oficial') {
+        const devMirrorPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
         fs.writeFileSync(devMirrorPath, JSON.stringify({ ...data, id: 'trolls-rpg-dev' }, null, 2), 'utf-8');
       }
       console.log(`[Trollins] Ativação inicial concluída e persistida em ${binId}.json.`);
@@ -501,13 +650,14 @@ function readBinData(binId: string): any {
   return data;
 }
 
-function writeBinData(binId: string, data: any): void {
+function writeBinData(binId: string, data: any, options?: { allowShrink?: boolean }): void {
   const targetBin = sanitizeBinId(binId);
   const filePath = path.join(BINS_DIR, `${targetBin}.json`);
   data.updatedAt = new Date().toISOString();
 
   // Trava de Segurança Anti-Regressão: impede que operações acidentais reduzam dados
-  if (fs.existsSync(filePath)) {
+  // (explicitamente contornável apenas pela rota autenticada de restauração de backup no modo replace)
+  if (!options?.allowShrink && fs.existsSync(filePath)) {
     try {
       const existingContent = fs.readFileSync(filePath, 'utf-8');
       const existing = JSON.parse(existingContent);
@@ -540,16 +690,16 @@ function writeBinData(binId: string, data: any): void {
     }
   }
 
-  // Grava na base persistente oficial
+  // Grava na base persistente alvo
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
 
-  // Mantém espelho trolls-rpg-dev.json sempre sincronizado de forma idêntica
-  try {
-    const devMirrorPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
-    if (filePath !== devMirrorPath) {
+  // Mantém espelho trolls-rpg-dev.json sincronizado apenas quando a gravação ocorre na base oficial
+  if (targetBin === 'trolls-rpg-oficial') {
+    try {
+      const devMirrorPath = path.join(BINS_DIR, 'trolls-rpg-dev.json');
       fs.writeFileSync(devMirrorPath, JSON.stringify({ ...data, id: 'trolls-rpg-dev' }, null, 2), 'utf-8');
-    }
-  } catch (e) {}
+    } catch (e) {}
+  }
 }
 
 // ==================== REST API ENDPOINTS ====================
@@ -945,11 +1095,18 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
           return res.status(403).json({ error: 'Você só pode editar sugestões enviadas por você mesmo.' });
         }
 
-        data.items[existingIdx] = {
+        const editedSysFields = normalizeMaterialSystemFields({
+          sistema: item.sistema || existing.sistema || '',
+          sistemaId: item.sistemaId ?? (item.sistema && item.sistema === existing.sistema ? existing.sistemaId : undefined),
+          sistemaOriginal: item.sistemaOriginal,
+          sistemaPrecisaRevisao: item.sistemaPrecisaRevisao ?? false,
+        });
+
+        data.items[existingIdx] = sanitizeItemRecord({
           ...existing,
           nome: String(item.nome).trim(),
           produto: item.produto || existing.produto,
-          sistema: item.sistema || existing.sistema,
+          ...editedSysFields,
           descricao: String(item.descricao || '').trim(),
           link: sanitizeUrl(item.link),
           imageUrl: sanitizeUrl(item.imageUrl) || undefined,
@@ -960,7 +1117,7 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
           trollinsInvestidos: typeof existing.trollinsInvestidos === 'number' ? existing.trollinsInvestidos : 0,
           trollinsDoados: typeof existing.trollinsDoados === 'number' ? existing.trollinsDoados : 0,
           ...(Array.isArray(existing.doacoesTrollins) ? { doacoesTrollins: existing.doacoesTrollins } : {}),
-        };
+        });
         writeBinData(binId, data);
         return res.json({ success: true, item: data.items[existingIdx] });
       }
@@ -1033,12 +1190,19 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
 
       const nowIso = new Date().toISOString();
       const newItemId = `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-      const newItem = {
+      const newItemSysFields = normalizeMaterialSystemFields({
+        sistema: item.sistema || 'Foundry VTT Geral',
+        sistemaId: item.sistemaId,
+        sistemaOriginal: item.sistemaOriginal,
+        sistemaPrecisaRevisao: item.sistemaPrecisaRevisao ?? false,
+      });
+
+      const newItem = sanitizeItemRecord({
         id: newItemId,
         data: item.data || nowIso.split('T')[0],
         nome: String(item.nome).trim(),
         produto: item.produto || 'Material para VTT',
-        sistema: item.sistema || 'Foundry VTT Geral',
+        ...newItemSysFields,
         descricao: String(item.descricao || '').trim(),
         link: sanitizeUrl(item.link),
         imageUrl: sanitizeUrl(item.imageUrl) || undefined,
@@ -1055,7 +1219,7 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
         trollinsDoados: 0,
         doacoesTrollins: [],
         ...(clientRequestId ? { clientRequestId } : {}),
-      };
+      });
 
       let updatedBalance = 0;
       let updatedLedger: any[] = [];
@@ -2622,19 +2786,31 @@ app.get('/api/admin/export-backup', (req: Request, res: Response) => {
     const binId = sanitizeBinId(rawBinId, req);
     const data = readBinData(binId);
 
-    const exportPayload = {
+    const safeUsers = stripSecretsDeep(Array.isArray(data.users) ? data.users : []);
+    const safeItems = stripSecretsDeep(Array.isArray(data.items) ? data.items : []);
+    const safePackages = stripSecretsDeep(Array.isArray(data.packages) ? data.packages : []);
+    const safeSolicitacoes = stripSecretsDeep(Array.isArray(data.solicitacoes) ? data.solicitacoes : []);
+    const safeRegrasConfig = data.regrasConfig ? stripSecretsDeep(data.regrasConfig) : null;
+    const safeTrollinsMeta = data.trollinsMeta ? stripSecretsDeep(data.trollinsMeta) : null;
+    const usersVersion = data.usersVersion || USERS_VERSION;
+    const binName = data.name || `A Ponte dos Trolls - ${binId}`;
+
+    const exportPayload = stripSecretsDeep({
       formatVersion: '2.0.0',
       exportedAt: new Date().toISOString(),
       sourceEnvironment: isDevEnvironment(req) ? 'development' : 'production',
       binId,
+      name: binName,
+      usersVersion,
+      ...(typeof data.exchangeRate === 'number' ? { exchangeRate: data.exchangeRate } : {}),
       counts: {
-        users: Array.isArray(data.users) ? data.users.length : 0,
-        items: Array.isArray(data.items) ? data.items.length : 0,
-        packages: Array.isArray(data.packages) ? data.packages.length : 0,
-        solicitacoes: Array.isArray(data.solicitacoes) ? data.solicitacoes.length : 0,
+        users: safeUsers.length,
+        items: safeItems.length,
+        packages: safePackages.length,
+        solicitacoes: safeSolicitacoes.length,
       },
       disclaimer: {
-        images: 'URLs e referências de imagens são links externos e não contêm os arquivos binários originais.',
+        images: 'URLs e referências de imagens (/uploads/... e links externos) são ponteiros no JSON; os arquivos binários em disco ou no Google Drive exigem backup separado.',
         auth: 'Contas do Firebase Authentication não são geradas nem exportadas nesta estrutura JSON.',
         security: 'Senhas, chaves de API, credenciais de serviço e tokens de sessão são estritamente omitidos por segurança.',
       },
@@ -2642,24 +2818,29 @@ app.get('/api/admin/export-backup', (req: Request, res: Response) => {
         rawFilesNotIncluded: true,
         firebaseAuthNotIncluded: true,
         secretsNotIncluded: true,
-        explanation: 'Imagens são URLs externas; Contas Firebase Auth não estão incluídas; Credenciais e segredos são excluídos.'
+        explanation: 'Imagens (/uploads e externas) e pastas do Drive são referências; contas Firebase Auth não estão incluídas; credenciais e segredos são excluídos.',
       },
-      users: data.users || [],
-      items: data.items || [],
-      packages: data.packages || [],
-      solicitacoes: data.solicitacoes || [],
-      regrasConfig: data.regrasConfig || null,
-      trollinsMeta: data.trollinsMeta || null,
+      users: safeUsers,
+      items: safeItems,
+      packages: safePackages,
+      solicitacoes: safeSolicitacoes,
+      regrasConfig: safeRegrasConfig,
+      trollinsMeta: safeTrollinsMeta,
       data: {
-        users: data.users || [],
-        items: data.items || [],
-        packages: data.packages || [],
-        solicitacoes: data.solicitacoes || [],
-        regrasConfig: data.regrasConfig || null,
-        usersVersion: data.usersVersion || USERS_VERSION,
-        trollinsMeta: data.trollinsMeta || null,
+        id: data.id || binId,
+        name: binName,
+        createdAt: data.createdAt || undefined,
+        updatedAt: data.updatedAt || undefined,
+        users: safeUsers,
+        items: safeItems,
+        packages: safePackages,
+        solicitacoes: safeSolicitacoes,
+        regrasConfig: safeRegrasConfig,
+        usersVersion,
+        trollinsMeta: safeTrollinsMeta,
+        ...(typeof data.exchangeRate === 'number' ? { exchangeRate: data.exchangeRate } : {}),
       },
-    };
+    });
 
     return res.json(exportPayload);
   } catch (err: any) {
@@ -2676,7 +2857,6 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
       return res.status(400).json({ valid: false, errors: ['Arquivo inválido: o conteúdo deve ser um objeto JSON válido.'] });
     }
 
-    const payload = backupData.data || backupData;
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -2704,15 +2884,13 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
         }
         userIds.add(u.id);
       }
-      // Proteção de escalação de privilégio: não permite que usuários comuns venham com isMaster: true
       if (u.isMaster && u.id !== 'usr-master' && u.email !== 'pontedostrolls@gmail.com') {
-        warnings.push(`Tentativa de elevação administrativa detectada e bloqueada: privilégio Mestre revogado para ${nome} (${u.id}).`);
-        u.isMaster = false;
+        warnings.push(`Tentativa de elevação administrativa detectada: privilégio Mestre será revogado para ${nome} (${u.id}) na restauração.`);
       }
     });
 
     if (duplicateUserIds.length > 0) {
-      warnings.push(`IDs de usuários duplicados encontrados: ${duplicateUserIds.slice(0, 5).join(', ')}...`);
+      warnings.push(`IDs de usuários duplicados encontrados (${duplicateUserIds.length}): serão deduplicados na restauração.`);
     }
 
     // 2. Validar Itens / Sugestões
@@ -2737,7 +2915,7 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
     });
 
     if (duplicateItemIds.length > 0) {
-      warnings.push(`IDs de sugestões duplicadas encontrados: ${duplicateItemIds.slice(0, 5).join(', ')}...`);
+      warnings.push(`IDs de sugestões duplicadas encontrados (${duplicateItemIds.length}): serão deduplicados na restauração.`);
     }
 
     // 3. Validar Pacotes
@@ -2766,7 +2944,9 @@ app.post('/api/admin/validate-backup', (req: Request, res: Response) => {
     }
 
     // 4. Validar Solicitações
-    const solicitacoes = Array.isArray(payload.solicitacoes) ? payload.solicitacoes : [];
+    const solicitacoes = Array.isArray(backupData.solicitacoes)
+      ? backupData.solicitacoes
+      : (Array.isArray(backupData.data?.solicitacoes) ? backupData.data.solicitacoes : []);
 
     const isValid = errors.length === 0;
 
@@ -2800,12 +2980,13 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
     return res.status(403).json({ error: 'Apenas o Mestre autenticado pode restaurar backups.' });
   }
 
-  const backupData = req.body.backupData || req.body.payload;
-  const mode = req.body.mode || 'replace';
-  if (!backupData || typeof backupData !== 'object') {
+  const rawBackupData = req.body.backupData || req.body.payload;
+  const mode = req.body.mode === 'merge' ? 'merge' : 'replace';
+  if (!rawBackupData || typeof rawBackupData !== 'object') {
     return res.status(400).json({ error: 'Dados do backup inválidos ou ausentes.' });
   }
 
+  const backupData = stripSecretsDeep(rawBackupData);
   const rawBinId = (req.body.binId as string) || 'trolls-rpg-oficial';
   const binId = sanitizeBinId(rawBinId, req);
 
@@ -2828,31 +3009,36 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
         'utf-8'
       );
 
-      // 2. Extrair e sanitizar dados do backup
+      // 2. Extrair, sanitizar e deduplicar dados do backup
       const payload = backupData.data || backupData;
-      let incomingUsers = Array.isArray(backupData.users) ? backupData.users : (Array.isArray(backupData.data?.users) ? backupData.data.users : []);
-      let incomingItems = Array.isArray(backupData.items) ? backupData.items : (Array.isArray(backupData.data?.items) ? backupData.data.items : []);
-      let incomingPackages = Array.isArray(backupData.packages) ? backupData.packages : (Array.isArray(backupData.data?.packages) ? backupData.data.packages : []);
-      let incomingSolicitacoes = Array.isArray(backupData.solicitacoes) ? backupData.solicitacoes : (Array.isArray(backupData.data?.solicitacoes) ? backupData.data.solicitacoes : []);
+      const rawIncomingUsers = Array.isArray(backupData.users) ? backupData.users : (Array.isArray(backupData.data?.users) ? backupData.data.users : []);
+      const rawIncomingItems = Array.isArray(backupData.items) ? backupData.items : (Array.isArray(backupData.data?.items) ? backupData.data.items : []);
+      const rawIncomingPackages = Array.isArray(backupData.packages) ? backupData.packages : (Array.isArray(backupData.data?.packages) ? backupData.data.packages : []);
+      const rawIncomingSolicitacoes = Array.isArray(backupData.solicitacoes) ? backupData.solicitacoes : (Array.isArray(backupData.data?.solicitacoes) ? backupData.data.solicitacoes : []);
 
-      // Sanitizar pacotes
-      incomingPackages = incomingPackages.map(sanitizePackage);
+      // Deduplicar e sanitizar pacotes, sugestões, solicitações
+      let incomingPackages = deduplicateById(rawIncomingPackages.map(sanitizePackage));
+      let incomingItems = deduplicateById(rawIncomingItems.map(sanitizeItemRecord));
+      let incomingSolicitacoes = deduplicateById(rawIncomingSolicitacoes);
 
-      // Prevenir elevação indevida de privilégios: apenas usr-master pode ser isMaster
-      // Preservar saldos e extratos de Trollins quando presentes no backup
-      incomingUsers = incomingUsers.map((u: any) => {
-        const isMasterAcc = u.id === 'usr-master' || (u.email && u.email.toLowerCase() === 'pontedostrolls@gmail.com');
+      // Prevenir elevação indevida de privilégios e preservar saldos (inclusive 0) e extratos deduplicados
+      let incomingUsers = deduplicateById(rawIncomingUsers.map((u: any) => {
+        const isMasterAcc = u.id === 'usr-master' || (u.email && String(u.email).toLowerCase() === 'pontedostrolls@gmail.com');
         return {
           ...u,
           isMaster: isMasterAcc,
           ...(isMasterAcc
             ? { trollinsSaldo: 0, trollinsExtrato: [] }
             : {
-                ...(typeof u.trollinsSaldo === 'number' ? { trollinsSaldo: Math.max(0, Math.floor(u.trollinsSaldo)) } : {}),
-                ...(Array.isArray(u.trollinsExtrato) ? { trollinsExtrato: u.trollinsExtrato } : {}),
+                ...(typeof u.trollinsSaldo === 'number' && Number.isFinite(u.trollinsSaldo)
+                  ? { trollinsSaldo: Math.max(0, Math.floor(u.trollinsSaldo)) }
+                  : {}),
+                ...(Array.isArray(u.trollinsExtrato)
+                  ? { trollinsExtrato: deduplicateLedger(u.trollinsExtrato) }
+                  : {}),
               }),
         };
-      });
+      }));
 
       // Garante que o Mestre oficial sempre existe e está ativo
       if (!incomingUsers.some((u: any) => u.id === 'usr-master')) {
@@ -2871,24 +3057,47 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
       }
 
       const incomingTrollinsMeta = backupData.trollinsMeta || payload.trollinsMeta || null;
-      let finalTrollinsMeta = incomingTrollinsMeta;
+      const incomingRegrasConfig = backupData.regrasConfig !== undefined
+        ? backupData.regrasConfig
+        : (payload.regrasConfig !== undefined ? payload.regrasConfig : undefined);
+      const incomingExchangeRate = typeof backupData.exchangeRate === 'number'
+        ? backupData.exchangeRate
+        : (typeof payload.exchangeRate === 'number' ? payload.exchangeRate : undefined);
+      const incomingName = backupData.name || payload.name || currentData.name || `A Ponte dos Trolls - ${binId}`;
+      const incomingCreatedAt = payload.createdAt || currentData.createdAt || new Date().toISOString();
+
+      let finalTrollinsMeta = incomingTrollinsMeta
+        ? {
+            ...incomingTrollinsMeta,
+            awardedPackageIds: Array.from(new Set(Array.isArray(incomingTrollinsMeta.awardedPackageIds) ? incomingTrollinsMeta.awardedPackageIds : [])),
+          }
+        : null;
       let finalUsers = incomingUsers;
       let finalItems = incomingItems;
       let finalPackages = incomingPackages;
       let finalSolicitacoes = incomingSolicitacoes;
 
-      // 3. Aplicar modo de mesclagem se solicitado
+      // 3. Aplicar modo de mesclagem se solicitado (totalmente idempotente em reimportações)
       if (mode === 'merge') {
         const userMap = new Map<string, any>();
         (currentData.users || []).forEach((u: any) => { if (u && u.id) userMap.set(u.id, u); });
         incomingUsers.forEach((u: any) => {
           if (u && u.id) {
             const existing = userMap.get(u.id) || {};
+            const isMasterAcc = isMasterUser(u);
+            const mergedExtrato = isMasterAcc
+              ? []
+              : deduplicateLedger([
+                  ...(Array.isArray(u.trollinsExtrato) ? u.trollinsExtrato : []),
+                  ...(Array.isArray(existing.trollinsExtrato) ? existing.trollinsExtrato : []),
+                ]);
             userMap.set(u.id, {
               ...existing,
               ...u,
-              trollinsSaldo: typeof u.trollinsSaldo === 'number' ? u.trollinsSaldo : existing.trollinsSaldo,
-              trollinsExtrato: Array.isArray(u.trollinsExtrato) ? u.trollinsExtrato : existing.trollinsExtrato,
+              trollinsSaldo: isMasterAcc
+                ? 0
+                : (typeof u.trollinsSaldo === 'number' ? u.trollinsSaldo : (existing.trollinsSaldo ?? 0)),
+              trollinsExtrato: mergedExtrato,
             });
           }
         });
@@ -2896,7 +3105,27 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
 
         const itemMap = new Map<string, any>();
         (currentData.items || []).forEach((it: any) => { if (it && it.id) itemMap.set(it.id, it); });
-        incomingItems.forEach((it: any) => { if (it && it.id) itemMap.set(it.id, { ...(itemMap.get(it.id) || {}), ...it }); });
+        incomingItems.forEach((it: any) => {
+          if (it && it.id) {
+            const existing = itemMap.get(it.id);
+            if (existing) {
+              itemMap.set(it.id, sanitizeItemRecord({
+                ...existing,
+                ...it,
+                apoiadores: deduplicateSupporters([
+                  ...(Array.isArray(it.apoiadores) ? it.apoiadores : []),
+                  ...(Array.isArray(existing.apoiadores) ? existing.apoiadores : []),
+                ]),
+                doacoesTrollins: deduplicateDonations([
+                  ...(Array.isArray(it.doacoesTrollins) ? it.doacoesTrollins : []),
+                  ...(Array.isArray(existing.doacoesTrollins) ? existing.doacoesTrollins : []),
+                ]),
+              }));
+            } else {
+              itemMap.set(it.id, it);
+            }
+          }
+        });
         finalItems = Array.from(itemMap.values());
 
         const pkgMap = new Map<string, any>();
@@ -2905,12 +3134,13 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
           if (p && p.id) {
             const existing = pkgMap.get(p.id);
             if (existing) {
-              pkgMap.set(p.id, {
+              pkgMap.set(p.id, sanitizePackage({
                 ...existing,
                 ...p,
                 apoiadores: p.apoiadores?.length ? p.apoiadores : existing.apoiadores,
                 pagamentos: Object.keys(p.pagamentos || {}).length ? p.pagamentos : existing.pagamentos,
-              });
+                solicitacoesAcesso: p.solicitacoesAcesso?.length ? p.solicitacoesAcesso : existing.solicitacoesAcesso,
+              }));
             } else {
               pkgMap.set(p.id, p);
             }
@@ -2923,35 +3153,49 @@ app.post('/api/admin/restore-backup', async (req: Request, res: Response) => {
         incomingSolicitacoes.forEach((s: any) => { if (s && s.id) solMap.set(s.id, { ...(solMap.get(s.id) || {}), ...s }); });
         finalSolicitacoes = Array.from(solMap.values());
 
-        if (currentData.trollinsMeta || incomingTrollinsMeta) {
+        if (currentData.trollinsMeta || finalTrollinsMeta) {
           const awardedSet = new Set<string>([
             ...(currentData.trollinsMeta?.awardedPackageIds || []),
-            ...(incomingTrollinsMeta?.awardedPackageIds || []),
+            ...(finalTrollinsMeta?.awardedPackageIds || []),
           ]);
           finalTrollinsMeta = {
-            activatedAt: incomingTrollinsMeta?.activatedAt || currentData.trollinsMeta?.activatedAt || new Date().toISOString(),
-            version: incomingTrollinsMeta?.version || currentData.trollinsMeta?.version || 1,
+            activatedAt: finalTrollinsMeta?.activatedAt || currentData.trollinsMeta?.activatedAt || new Date().toISOString(),
+            version: finalTrollinsMeta?.version || currentData.trollinsMeta?.version || 1,
             awardedPackageIds: Array.from(awardedSet),
           };
         }
       }
 
-      // 4. Gravar atomicamente no arquivo bin (preserva saldos/ativação se já presentes no backup; ativa apenas se backup for pré-Trollins)
-      const newBinData: any = {
+      // 4. Gravar atomicamente no arquivo bin preservando estado vazio ([]), saldo zero (0) e metadados
+      const hasExplicitTrollinsData =
+        Boolean(finalTrollinsMeta?.activatedAt) ||
+        String(backupData.formatVersion || '').startsWith('2.') ||
+        finalUsers.some(
+          (u: any) => !isMasterUser(u) && (typeof u.trollinsSaldo === 'number' || Array.isArray(u.trollinsExtrato))
+        );
+
+      const newBinData: any = stripSecretsDeep({
         id: binId,
-        name: `A Ponte dos Trolls - ${binId}`,
+        name: incomingName,
+        createdAt: incomingCreatedAt,
         updatedAt: new Date().toISOString(),
-        usersVersion: payload.usersVersion || currentData.usersVersion || USERS_VERSION,
+        usersVersion: payload.usersVersion || backupData.usersVersion || currentData.usersVersion || USERS_VERSION,
         items: finalItems,
         users: finalUsers,
         packages: finalPackages,
         solicitacoes: finalSolicitacoes,
-        regrasConfig: payload.regrasConfig || currentData.regrasConfig,
+        skipHistoricalSeed: mode === 'replace' ? true : Boolean(currentData.skipHistoricalSeed),
+        ...(incomingRegrasConfig !== undefined
+          ? (incomingRegrasConfig ? { regrasConfig: incomingRegrasConfig } : {})
+          : (currentData.regrasConfig ? { regrasConfig: currentData.regrasConfig } : {})),
+        ...(typeof incomingExchangeRate === 'number'
+          ? { exchangeRate: incomingExchangeRate }
+          : (typeof currentData.exchangeRate === 'number' ? { exchangeRate: currentData.exchangeRate } : {})),
         ...(finalTrollinsMeta ? { trollinsMeta: finalTrollinsMeta } : {}),
-      };
+      });
 
-      ensureTrollinsActivated(newBinData);
-      writeBinData(binId, newBinData);
+      ensureTrollinsActivated(newBinData, undefined, { skipInitialCredit: hasExplicitTrollinsData });
+      writeBinData(binId, newBinData, { allowShrink: mode === 'replace' });
 
       if (binId === 'trolls-rpg-oficial') {
         fs.writeFileSync(path.join(BINS_DIR, 'trolls-rpg-oficial.json.immutable-backup'), JSON.stringify(newBinData, null, 2), 'utf-8');
@@ -3035,18 +3279,25 @@ app.put('/api/bin/:binId', async (req: Request, res: Response) => {
         };
       });
 
-      const payload: any = {
+      const payload: any = stripSecretsDeep({
         id: binId,
         name: body.name || existingData.name || `A Ponte dos Trolls - ${binId}`,
+        ...(existingData.createdAt ? { createdAt: existingData.createdAt } : {}),
         updatedAt: new Date().toISOString(),
         usersVersion: body.usersVersion || existingData.usersVersion || USERS_VERSION,
         items: itemsToSave,
         users: usersToSave,
         packages: packagesToSave,
         solicitacoes: solicitacoesToSave,
+        ...(body.skipHistoricalSeed !== undefined
+          ? { skipHistoricalSeed: Boolean(body.skipHistoricalSeed) }
+          : (existingData.skipHistoricalSeed ? { skipHistoricalSeed: true } : {})),
+        ...(typeof body.exchangeRate === 'number'
+          ? { exchangeRate: body.exchangeRate }
+          : (typeof existingData.exchangeRate === 'number' ? { exchangeRate: existingData.exchangeRate } : {})),
         ...(body.trollinsMeta || existingData.trollinsMeta ? { trollinsMeta: body.trollinsMeta || existingData.trollinsMeta } : {}),
         ...(regrasConfigToSave ? { regrasConfig: regrasConfigToSave } : {}),
-      };
+      });
 
       writeBinData(binId, payload);
       return res.json({

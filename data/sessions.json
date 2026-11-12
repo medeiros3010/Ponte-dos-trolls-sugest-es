@@ -1,29 +1,110 @@
 [
   {
-    "id": "0e2ea3dd855cd80e575b19a4622f31b5c2f2016cea428f4605fb244e313db5a2",
+    "id": "5129f1d96827caa7b926be481f62475d1e3a9af381ec5af564b340ae2fe1143f",
     "userId": "usr-master",
     "nome": "Ponte dos Trolls",
     "isMaster": true,
-    "createdAt": 1794373247653,
-    "expiresAt": 1794394847653,
-    "ip": "2804:814:4056:1600:2989:7ffb:d923:b2c4"
-  },
-  {
-    "id": "f7f4fe12229ee7ad28445d0b2155171668e660e0cc33e5d96671058e7844d706",
-    "userId": "usr-master",
-    "nome": "Ponte dos Trolls",
-    "isMaster": true,
-    "createdAt": 1794374713553,
-    "expiresAt": 1794396313553,
+    "createdAt": 1794520979232,
+    "expiresAt": 1794542579232,
     "ip": "127.0.0.1"
   },
   {
-    "id": "f95fa08762fd8ee226d14105d197e2ba8a16239223d8f811f1ea4fb297613707",
+    "id": "40b1975724d13381f10346a2e6d5ac61afee36ba7413c3ad36461eaadf1000c2",
+    "userId": "u-bruno",
+    "nome": "Bruno ZeroSaldo",
+    "isMaster": false,
+    "createdAt": 1794520979308,
+    "expiresAt": 1794693779308,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "76c5a24996518119c7d90e271f70e56cf69b5914471a44c0d7419409bb01fc7b",
+    "userId": "u-alice",
+    "nome": "Alice Aventureira",
+    "isMaster": false,
+    "createdAt": 1794520979321,
+    "expiresAt": 1794693779321,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "1873e2364945f3420f9265f2473734855adcfaf8a48836c9017c2b1c5e8a02c7",
     "userId": "usr-master",
     "nome": "Ponte dos Trolls",
     "isMaster": true,
-    "createdAt": 1794374764734,
-    "expiresAt": 1794396364734,
+    "createdAt": 1794520979342,
+    "expiresAt": 1794542579342,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "b1f89aa2b3124425a4206c53808d7dd7dd9ff5635d3ccc352b28ff03cd3e03c0",
+    "userId": "usr-master",
+    "nome": "Ponte dos Trolls",
+    "isMaster": true,
+    "createdAt": 1794521031233,
+    "expiresAt": 1794542631233,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "e4fec90bd25e665a523e9908f9bba0e52ee29265ccd5fc48496ef2aefe07c58a",
+    "userId": "u-bruno",
+    "nome": "Bruno ZeroSaldo",
+    "isMaster": false,
+    "createdAt": 1794521031335,
+    "expiresAt": 1794693831335,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "3e48d58f03bd314cc3bc847b881bc8bd542c77ead4ca0681492bedc252fec725",
+    "userId": "u-alice",
+    "nome": "Alice Aventureira",
+    "isMaster": false,
+    "createdAt": 1794521031355,
+    "expiresAt": 1794693831355,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "17f7571f6b82c44687b028d18f50c032a626a67a7a02c68893d978e45a59f962",
+    "userId": "usr-master",
+    "nome": "Ponte dos Trolls",
+    "isMaster": true,
+    "createdAt": 1794521031383,
+    "expiresAt": 1794542631383,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "2b5ebf39a4fe1b203d3795f1cf5695243331d7cc1efd5c490952895b0e846764",
+    "userId": "usr-master",
+    "nome": "Ponte dos Trolls",
+    "isMaster": true,
+    "createdAt": 1794521058896,
+    "expiresAt": 1794542658896,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "10a75014b85300f8d356024c3552df17db0ff433e885f51054be8115daf13f39",
+    "userId": "u-bruno",
+    "nome": "Bruno ZeroSaldo",
+    "isMaster": false,
+    "createdAt": 1794521058963,
+    "expiresAt": 1794693858963,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "c0b9bf3f579dfa453eba891d03bb5396d95e8dd3c6f09533bb7e7fd1f0c5365f",
+    "userId": "u-alice",
+    "nome": "Alice Aventureira",
+    "isMaster": false,
+    "createdAt": 1794521058974,
+    "expiresAt": 1794693858974,
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "960e87abdee52797062c096a8e420f0ff17750a6c7985c4bc2eab17cc2e66810",
+    "userId": "usr-master",
+    "nome": "Ponte dos Trolls",
+    "isMaster": true,
+    "createdAt": 1794521058993,
+    "expiresAt": 1794542658993,
     "ip": "127.0.0.1"
   }
 ]

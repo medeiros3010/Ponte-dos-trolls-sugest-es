@@ -413,20 +413,25 @@ export const HISTORICAL_CATALOG_PACKAGES: FundingPackage[] = (catalogoRaw as any
   const cota = typeof p.valorCota === 'number' ? p.valorCota : (parseFloat(p.valorCota) || 0);
   const aquisicao = typeof p.precoAquisicao === 'number' ? p.precoAquisicao : (parseFloat(p.precoAquisicao) || cota);
   const subItens: PackageSubItem[] = Array.isArray(p.itens)
-    ? p.itens.map((it: any, idx: number) => ({
-        id: `${p.id}-it-${idx + 1}`,
-        nome: String(it.nome || 'Item').trim(),
-        sistema: it.sistema || p.sistema || 'Diversos / VTT',
-        tipo: 'Material para VTT',
-        link: it.link || '',
-        precoBRL: 0,
-      }))
+    ? p.itens.map((it: any, idx: number) =>
+        normalizeMaterialSystemFields({
+          id: `${p.id}-it-${idx + 1}`,
+          nome: String(it.nome || 'Item').trim(),
+          sistema: it.sistema || '',
+          tipo: 'Material para VTT' as const,
+          link: it.link || '',
+          precoBRL: 0,
+        })
+      )
     : [];
+
+  const pkgSysMeta = derivePackageSystemMeta(subItens, p.sistema || '');
 
   return {
     id: p.id,
     titulo: String(p.titulo || '').trim(),
-    sistema: p.sistema || 'Diversos / Foundry VTT',
+    sistema: pkgSysMeta.sistema,
+    sistemasIds: pkgSysMeta.sistemasIds,
     tipo: 'Material para VTT',
     descricao: String(p.descricao || '').trim(),
     itens: subItens,

@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { UserProfile, ItemRPG, FundingPackage } from '../types';
+import { UserProfile, ItemRPG, FundingPackage, MembershipApplication } from '../types';
+import { RulesConfig } from '../data/rulesAndQuestions';
 import { exportFullDataToCSV } from '../utils/helpers';
-import { apiExportBackup, apiValidateBackup, apiRestoreBackup } from '../utils/cloudStorage';
+import { apiExportBackup, apiValidateBackup, apiRestoreBackup, USERS_VERSION } from '../utils/cloudStorage';
 import {
   X,
   Download,
@@ -22,6 +23,9 @@ interface ExportDataModalProps {
   users: UserProfile[];
   items: ItemRPG[];
   packages: FundingPackage[];
+  applications?: MembershipApplication[];
+  rulesConfig?: RulesConfig;
+  exchangeRate?: number;
   binId: string;
   onRestoreSuccess: (restoredData: any) => void;
   onToast: (msg: string) => void;
@@ -45,6 +49,9 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
   users,
   items,
   packages,
+  applications = [],
+  rulesConfig,
+  exchangeRate,
   binId,
   onRestoreSuccess,
   onToast,
@@ -76,32 +83,47 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
     try {
       setIsExporting(true);
       let payload: any;
+      const effectivePass = masterPassword.trim() || undefined;
       try {
-        payload = await apiExportBackup(binId);
-      } catch (e) {
-        // Fallback para montagem no cliente caso o servidor esteja offline
-        console.warn('Fallback para exportação no cliente:', e);
+        payload = await apiExportBackup(binId, effectivePass);
+      } catch (e: any) {
+        const msg = String(e?.message || '');
+        if (msg.includes('Mestre') || msg.includes('403') || msg.includes('401')) {
+          throw e;
+        }
+        // Fallback offline apenas se o servidor estiver realmente inacessível
+        console.warn('Fallback para exportação no cliente (servidor inacessível):', e);
         payload = {
           formatVersion: '2.0.0',
           exportedAt: new Date().toISOString(),
           sourceEnvironment: typeof window !== 'undefined' && window.location.hostname.includes('ais-dev') ? 'development' : 'production',
           binId,
+          usersVersion: USERS_VERSION,
+          ...(typeof exchangeRate === 'number' ? { exchangeRate } : {}),
           counts: {
             users: users.length,
             items: items.length,
             packages: packages.length,
-            solicitacoes: 0,
+            solicitacoes: applications.length,
           },
           disclaimer: {
-            images: 'URLs e referências de imagens são links externos e não contêm os arquivos binários originais.',
+            images: 'URLs e referências de imagens (/uploads/... e links externos) são ponteiros no JSON; os arquivos binários em disco ou no Google Drive exigem backup separado.',
             auth: 'Contas do Firebase Authentication não são geradas nem exportadas nesta estrutura JSON.',
             security: 'Senhas, chaves de API, credenciais de serviço e tokens de sessão são estritamente omitidos por segurança.',
           },
+          users,
+          items,
+          packages,
+          solicitacoes: applications,
+          regrasConfig: rulesConfig || null,
           data: {
             users,
             items,
             packages,
-            solicitacoes: [],
+            solicitacoes: applications,
+            regrasConfig: rulesConfig || null,
+            usersVersion: USERS_VERSION,
+            ...(typeof exchangeRate === 'number' ? { exchangeRate } : {}),
           },
         };
       }
@@ -447,9 +469,9 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
                 <span>O que este backup inclui e o que é omitido:</span>
               </div>
               <ul className="space-y-0.5 pl-3 list-disc">
-                <li>Preserva IDs, relações, pagamentos, histórico de acervo e saldos/extrato de Trollins com estado de ativação.</li>
-                <li><strong>Arquivos e Imagens:</strong> Links do Google Drive e capas são referências (URLs), não os arquivos originais.</li>
-                <li><strong>Segurança:</strong> Contas do Firebase Auth, senhas e tokens de sessão são estritamente omitidos.</li>
+                <li>Preserva IDs, relações, strikes, solicitações, pagamentos, histórico de acervo e saldos/extrato de Trollins com trava anti-duplicidade.</li>
+                <li><strong>Arquivos e Imagens:</strong> Links do Google Drive/lojas e caminhos <code className="font-mono">/uploads/</code> são referências (os arquivos externos e da pasta de uploads exigem backup separado).</li>
+                <li><strong>Segurança:</strong> Contas do Firebase Auth, senhas, chaves de API e tokens de sessão não são incluídos no JSON.</li>
               </ul>
             </div>
 

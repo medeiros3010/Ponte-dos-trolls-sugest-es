@@ -397,20 +397,8 @@ export default function App() {
           if (Array.isArray(cloudData.items)) {
             setItems(cloudData.items);
           }
-          if (Array.isArray(cloudData.packages) && cloudData.packages.length > 0) {
-            const cleanPackages = cloudData.packages.filter(
-              (p: any) => p && !['pack-3', 'pack-4', 'pack-5'].includes(p?.id)
-            );
-            const pkgMap = new Map<string, FundingPackage>();
-            for (const p of cleanPackages) {
-              pkgMap.set(p.id, p);
-            }
-            for (const hp of HISTORICAL_CATALOG_PACKAGES) {
-              if (!pkgMap.has(hp.id)) {
-                pkgMap.set(hp.id, hp);
-              }
-            }
-            setPackages(Array.from(pkgMap.values()));
+          if (Array.isArray(cloudData.packages)) {
+            setPackages(cloudData.packages);
           }
           if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
             setUsers(cloudData.users);
@@ -421,8 +409,13 @@ export default function App() {
               if (!fresh) return prev;
               const merged: UserProfile = {
                 ...prev,
+                nome: fresh.nome || prev.nome,
                 telefone: fresh.telefone || prev.telefone,
                 email: fresh.email || prev.email,
+                status: fresh.status || prev.status,
+                strikes: fresh.strikes !== undefined ? fresh.strikes : prev.strikes,
+                solicitacaoId:
+                  fresh.solicitacaoId !== undefined ? fresh.solicitacaoId : prev.solicitacaoId,
                 trollinsSaldo:
                   typeof fresh.trollinsSaldo === 'number' ? fresh.trollinsSaldo : prev.trollinsSaldo,
                 trollinsExtrato: Array.isArray(fresh.trollinsExtrato)
@@ -438,6 +431,9 @@ export default function App() {
           }
           if (cloudData.regrasConfig) {
             setRulesConfig(cloudData.regrasConfig);
+          }
+          if (typeof cloudData.exchangeRate === 'number' && cloudData.exchangeRate > 0) {
+            setExchangeRate(cloudData.exchangeRate);
           }
         }
       } catch (err) {
@@ -1152,8 +1148,20 @@ export default function App() {
         if (fresh) {
           const merged = {
             ...currentUser,
-            trollinsSaldo: fresh.trollinsSaldo,
-            trollinsExtrato: fresh.trollinsExtrato,
+            nome: fresh.nome || currentUser.nome,
+            telefone: fresh.telefone || currentUser.telefone,
+            email: fresh.email || currentUser.email,
+            status: fresh.status || currentUser.status,
+            strikes: fresh.strikes !== undefined ? fresh.strikes : currentUser.strikes,
+            solicitacaoId:
+              fresh.solicitacaoId !== undefined ? fresh.solicitacaoId : currentUser.solicitacaoId,
+            trollinsSaldo:
+              typeof fresh.trollinsSaldo === 'number'
+                ? fresh.trollinsSaldo
+                : currentUser.trollinsSaldo,
+            trollinsExtrato: Array.isArray(fresh.trollinsExtrato)
+              ? fresh.trollinsExtrato
+              : currentUser.trollinsExtrato,
           };
           setCurrentUser(merged);
           saveStoredCurrentUser(merged);
@@ -1162,6 +1170,8 @@ export default function App() {
     }
     if (backupData.packages && Array.isArray(backupData.packages)) {
       setPackages(backupData.packages);
+      const validPkgIds = new Set(backupData.packages.map((p: any) => p?.id).filter(Boolean));
+      setCart((prev) => prev.filter((id) => validPkgIds.has(id)));
     }
     if (backupData.solicitacoes && Array.isArray(backupData.solicitacoes)) {
       setApplications(backupData.solicitacoes);
@@ -1172,6 +1182,9 @@ export default function App() {
       setRulesConfig(backupData.regrasConfig);
     } else if (backupData.rulesConfig) {
       setRulesConfig(backupData.rulesConfig);
+    }
+    if (typeof backupData.exchangeRate === 'number' && backupData.exchangeRate > 0) {
+      setExchangeRate(backupData.exchangeRate);
     }
     showToast('Estado da aplicação atualizado com os dados restaurados!');
   };
@@ -1548,6 +1561,9 @@ export default function App() {
           users={users}
           items={items}
           packages={packages}
+          applications={applications}
+          rulesConfig={rulesConfig}
+          exchangeRate={exchangeRate}
           binId={binId}
           onRestoreSuccess={handleRestoreBackup}
           onToast={showToast}

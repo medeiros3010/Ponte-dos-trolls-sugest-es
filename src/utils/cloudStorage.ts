@@ -131,6 +131,7 @@ export interface CloudPayloadData {
   regrasConfig?: RulesConfig;
   usersVersion?: string;
   trollinsMeta?: TrollinsMeta;
+  exchangeRate?: number;
 }
 
 export async function fetchCloudData(
@@ -221,6 +222,7 @@ export async function fetchCloudData(
       regrasConfig: data.regrasConfig,
       usersVersion: data.usersVersion,
       trollinsMeta: data.trollinsMeta,
+      ...(typeof data.exchangeRate === 'number' ? { exchangeRate: data.exchangeRate } : {}),
     };
   } catch (err) {
     console.error('fetchCloudData error:', err);
@@ -1212,14 +1214,18 @@ export async function apiFetchMemberAcervo(
   return data;
 }
 
-function normalizeCloudItems(rawList: any[]): ItemRPG[] {
+export function normalizeCloudItems(rawList: any[]): ItemRPG[] {
   return rawList.map((row, idx) => {
     const rawValor = row.valor ? String(row.valor) : '';
     const rawAutor = row.sugestaoDe ? String(row.sugestaoDe) : (row.sugeridoPorNome || 'Membro do Grupo');
 
     let status: ItemStatus = 'Sugestão';
     const sLower = String(row.status || '').toLowerCase();
-    if (sLower.includes('financiado') || sLower.includes('drive') || sLower.includes('finalizado')) {
+    if (sLower === 'arquivado') {
+      status = 'Arquivado';
+    } else if (sLower === 'em pacote') {
+      status = 'Em Pacote';
+    } else if (sLower.includes('financiado') || sLower.includes('drive') || sLower.includes('finalizado')) {
       status = 'Finalizados';
     } else if (sLower.includes('em financiamento') || sLower.includes('vaquinha') || sLower.includes('andamento')) {
       status = 'Em Financiamento';
@@ -1249,7 +1255,7 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
       sugeridoPorNome: rawAutor,
       sugeridoPorTelefone: row.sugeridoPorTelefone || '',
       sugeridoPorEmail: row.sugeridoPorEmail || '',
-      moeda: rawValor.includes('R$') ? 'BRL' : (row.moeda || 'USD'),
+      moeda: (row.moeda === 'BRL' || rawValor.includes('R$')) ? 'BRL' : 'USD',
       valorNumerico: typeof row.valorNumerico === 'number'
         ? row.valorNumerico
         : (parseFloat(rawValor.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0),
@@ -1264,11 +1270,12 @@ function normalizeCloudItems(rawList: any[]): ItemRPG[] {
         ? Math.max(0, Math.floor(row.trollinsDoados))
         : 0,
       ...(Array.isArray(row.doacoesTrollins) ? { doacoesTrollins: row.doacoesTrollins } : {}),
+      ...(row.clientRequestId ? { clientRequestId: String(row.clientRequestId) } : {}),
     };
   });
 }
 
-function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
+export function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
   return rawList.map((pkg, idx) => {
     let status: 'Financiamento' | 'Catálogo' = 'Financiamento';
     const sLower = String(pkg.status || '').toLowerCase();
@@ -1303,7 +1310,7 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
             sistema: it.sistema || pkg.sistema || 'Foundry VTT Geral',
             categoria: it.categoria || it.tipo || itemNorm.tipo || 'Não informada',
             tipo: it.tipo || itemNorm.tipo,
-            link: it.link || pkg.linkLoja || '',
+            link: it.link !== undefined ? it.link : (pkg.linkLoja || ''),
             precoBRL: typeof it.precoBRL === 'number' ? it.precoBRL : (parseFloat(it.precoBRL) || 0),
             imageUrl: it.imageUrl || undefined,
           };
@@ -1342,6 +1349,7 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
         data: a.data,
         pagamentoInformado: isPaid,
         dataPagamentoInformado: payDate,
+        ...(a.isPosteriorBuyer ? { isPosteriorBuyer: true } : {}),
       };
     }) : [];
 
@@ -1356,11 +1364,16 @@ function normalizeCloudPackages(rawList: any[]): FundingPackage[] {
       valorTotalBRL,
       minimoParticipantes,
       valorMaximoPorPessoa,
-      valorCatalogoBRL: typeof pkg.valorCatalogoBRL === 'number' ? pkg.valorCatalogoBRL : valorTotalBRL,
-      dataFinalizar: pkg.dataFinalizar || '2026-03-25',
-      dataPagamento: pkg.dataPagamento || '2026-03-30',
+      valorCatalogoBRL: typeof pkg.valorCatalogoBRL === 'number'
+        ? pkg.valorCatalogoBRL
+        : (typeof pkg.valorCota === 'number' ? pkg.valorCota : (typeof pkg.precoAquisicao === 'number' ? pkg.precoAquisicao : valorTotalBRL)),
+      ...(typeof pkg.valorCota === 'number' ? { valorCota: pkg.valorCota } : {}),
+      ...(typeof pkg.precoAquisicao === 'number' ? { precoAquisicao: pkg.precoAquisicao } : {}),
+      dataFinalizar: pkg.dataFinalizar !== undefined ? pkg.dataFinalizar : '2026-03-25',
+      dataPagamento: pkg.dataPagamento !== undefined ? pkg.dataPagamento : '2026-03-30',
       linkLoja: pkg.linkLoja || '',
       linkDrive: pkg.linkDrive || '',
+      ...(Array.isArray(pkg.links) ? { links: pkg.links } : {}),
       itensInclusos: itensInclusos.length > 0 ? itensInclusos : itens.map((it: PackageSubItem) => it.nome),
       sugestoesIds: Array.isArray(pkg.sugestoesIds) ? pkg.sugestoesIds : [],
       status,
@@ -1527,7 +1540,9 @@ export function localValidateBackup(backupData: any): {
     warnings.push(`IDs de pacotes duplicados encontrados (${duplicatePkgIds.length}): serão deduplicados na restauração.`);
   }
 
-  const solicitacoes = Array.isArray(payload.solicitacoes) ? payload.solicitacoes : [];
+  const solicitacoes = Array.isArray(backupData.solicitacoes)
+    ? backupData.solicitacoes
+    : (Array.isArray(backupData.data?.solicitacoes) ? backupData.data.solicitacoes : []);
 
   return {
     valid: errors.length === 0,

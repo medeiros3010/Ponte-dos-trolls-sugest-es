@@ -1,3 +1,5 @@
+import { OFFICIAL_RPG_SYSTEM_LEGENDS } from '../utils/rpgSystems';
+
 export type ItemStatus = 'Sugestão' | 'Em Financiamento' | 'Finalizados' | 'Em Pacote' | 'Arquivado';
 
 export type SugestoesCategory = 'Sugestão' | 'Finalizados';
@@ -131,7 +133,10 @@ export interface ItemRPG {
   data: string; // YYYY-MM-DD
   nome: string;
   produto: ProductType;
+  sistemaId?: string;
   sistema: string;
+  sistemaOriginal?: string;
+  sistemaPrecisaRevisao?: boolean;
   descricao: string;
   link: string;
   imageUrl?: string;
@@ -154,7 +159,10 @@ export interface ItemRPG {
 export interface PackageSubItem {
   id: string;
   nome: string;
+  sistemaId?: string;
   sistema: string;
+  sistemaOriginal?: string;
+  sistemaPrecisaRevisao?: boolean;
   categoria?: string;
   tipo?: ProductType;
   link: string;
@@ -166,6 +174,7 @@ export interface FundingPackage {
   id: string;
   titulo: string;
   sistema?: string;
+  sistemasIds?: string[];
   tipo?: ProductType;
   descricao?: string;
   imageUrl?: string; // Imagem principal de capa do pacote
@@ -195,21 +204,7 @@ export interface FundingPackage {
   finalizadoEm?: string;
 }
 
-export const SISTEMAS_PADRAO: string[] = [
-  'PF2E',
-  'DnD5e',
-  'SWADE',
-  'Forbidden Land',
-  'Cthulhu',
-  'Symbaroum',
-  'Dragonbane',
-  'Draw Steel',
-  'Delta Green',
-  'Mork Borg',
-  'Tormenta20',
-  'Foundry VTT Geral',
-  'Outro',
-];
+export const SISTEMAS_PADRAO: string[] = OFFICIAL_RPG_SYSTEM_LEGENDS.map((l) => l.nome);
 
 export const MASTER_ADMIN_NAME = 'Ponte dos Trolls';
 
@@ -227,7 +222,7 @@ export function normalizeProductType(oldType: string | undefined, currentSistema
 } {
   const raw = String(oldType || '').trim();
   const rawLower = raw.toLowerCase();
-  let sistema = currentSistema || 'Foundry VTT Geral';
+  let sistema = currentSistema ? String(currentSistema).trim() : '';
 
   if (!raw) {
     return { tipo: 'Outros', sistema };

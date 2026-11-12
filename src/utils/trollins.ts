@@ -202,7 +202,8 @@ export function ensureTrollinsActivated(
     items?: any[];
     trollinsMeta?: TrollinsMeta;
   },
-  nowIso: string = new Date().toISOString()
+  nowIso: string = new Date().toISOString(),
+  options?: { skipInitialCredit?: boolean }
 ): { activatedNow: boolean } {
   const users = Array.isArray(data.users) ? data.users : [];
   const packages = Array.isArray(data.packages) ? data.packages : [];
@@ -225,7 +226,7 @@ export function ensureTrollinsActivated(
     (u: any) => !isMasterUser(u) && Array.isArray(u.trollinsExtrato) && u.trollinsExtrato.length > 0
   );
 
-  if (alreadyHasMeta || alreadyHasAnyLedger) {
+  if (alreadyHasMeta || alreadyHasAnyLedger || options?.skipInitialCredit) {
     if (!data.trollinsMeta) {
       const catalogIds = packages
         .filter((p: any) => p && p.status === 'Catálogo' && p.id)
