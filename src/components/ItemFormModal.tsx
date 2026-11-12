@@ -40,7 +40,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   // Fixed Author details (Read-only)
   const authorName = isEditing
     ? itemToEdit?.sugeridoPorNome || 'Membro da Ponte'
-    : currentUser?.nome || 'Você';
+    : currentUser?.nome || 'Membro da Ponte';
 
   const authorPhone = isEditing
     ? itemToEdit?.sugeridoPorTelefone || ''

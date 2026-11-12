@@ -38,6 +38,7 @@ import { CandidateReviewModal } from './CandidateReviewModal';
 import { MemberAcervoModal } from './MemberAcervoModal';
 import { WelcomeMessageModal } from './WelcomeMessageModal';
 import { RulesConfig } from '../data/rulesAndQuestions';
+import { formatPhone } from '../utils/helpers';
 import { RankBadgeIcon } from './RankBadge';
 
 interface MembrosViewProps {
@@ -317,7 +318,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     onAddUser({
       nome: cleanName,
       email: newEmail.trim(),
-      telefone: cleanPhone,
+      telefone: formatPhone(cleanPhone),
       dataEntrada: newDataEntrada || new Date().toISOString().split('T')[0],
       status: 'aprovado',
       strikes: [],
@@ -335,7 +336,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
     setMemberToEdit(member);
     setEditName(member.nome);
     setEditEmail(member.email || '');
-    setEditPhone(member.telefone || '');
+    setEditPhone(member.telefone ? formatPhone(member.telefone) : '');
   };
 
   const handleSaveEditMember = (e: React.FormEvent) => {
@@ -352,7 +353,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
       ...memberToEdit,
       nome: cleanName,
       email: editEmail.trim(),
-      telefone: editPhone.trim(),
+      telefone: editPhone.trim() ? formatPhone(editPhone.trim()) : '',
     });
 
     onToast(`Dados de ${cleanName} atualizados!`);
@@ -717,7 +718,7 @@ export const MembrosView: React.FC<MembrosViewProps> = ({
                       <Phone className="w-3.5 h-3.5 text-[#716016] shrink-0" />
                       <span>
                         {isMaster || currentUser.id === member.id
-                          ? member.telefone || 'Sem telefone'
+                          ? formatPhone(member.telefone) || 'Sem telefone'
                           : member.telefone
                           ? '(xx) xxxxx-xxxx'
                           : 'Sem telefone'}

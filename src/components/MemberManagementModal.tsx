@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { UserProfile } from '../types';
 import { Users, UserPlus, Trash2, Search, X, Shield, Phone, Mail, Calendar, AlertTriangle, Check, Plus, Minus, UserCheck } from 'lucide-react';
-import { formatDateDisplay } from '../utils/helpers';
+import { formatDateDisplay, formatPhone } from '../utils/helpers';
 
 interface MemberManagementModalProps {
   isOpen: boolean;
@@ -77,7 +77,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
     onAddUser({
       nome: newName.trim(),
       email: newEmail.trim(),
-      telefone: newPhone.trim(),
+      telefone: formatPhone(newPhone.trim()),
       dataEntrada: newDataEntrada || new Date().toISOString().split('T')[0],
       createdAt: new Date().toISOString(),
       strikes: 0,
@@ -309,7 +309,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#71634D]">
                         <span className="text-[#302414] flex items-center gap-1 font-mono">
                           <Phone className="w-3 h-3 text-[#716016]" />
-                          {u.telefone || 'Sem telefone'}
+                          {formatPhone(u.telefone) || 'Sem telefone'}
                         </span>
                         {u.email && (
                           <span className="flex items-center gap-1">

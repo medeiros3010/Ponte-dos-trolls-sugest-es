@@ -20,6 +20,7 @@ import {
   RulesConfig,
   MembershipQuestion,
 } from '../data/rulesAndQuestions';
+import { formatPhone } from '../utils/helpers';
 
 export interface ApplicationDraft {
   step: 1 | 2 | 3 | 4;
@@ -102,20 +103,19 @@ export const NewMemberApplicationModal: React.FC<NewMemberApplicationModalProps>
 
   // Mask helper para telefone
   const handlePhoneChange = (val: string) => {
-    const raw = val.replace(/[^\d+()\s-]/g, '');
-    const digits = val.replace(/\D/g, '');
-    if (digits.length <= 11) {
-      if (digits.length > 2 && digits.length <= 6) {
-        setTelefone(`(${digits.slice(0, 2)}) ${digits.slice(2)}`);
-      } else if (digits.length > 6 && digits.length <= 10) {
-        setTelefone(`(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`);
-      } else if (digits.length > 10) {
-        setTelefone(`(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`);
-      } else {
-        setTelefone(digits);
-      }
+    let digits = val.replace(/\D/g, '');
+    if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+      digits = digits.slice(2);
+    }
+    digits = digits.substring(0, 11);
+    if (digits.length > 2 && digits.length <= 6) {
+      setTelefone(`(${digits.slice(0, 2)}) ${digits.slice(2)}`);
+    } else if (digits.length > 6 && digits.length <= 10) {
+      setTelefone(`(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`);
+    } else if (digits.length > 10) {
+      setTelefone(`(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`);
     } else {
-      setTelefone(raw);
+      setTelefone(digits);
     }
   };
 

@@ -4,20 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
-      // Suprime avisos benignos de desconexão de WebSocket do HMR desativado no ambiente de preview
-      window.addEventListener('unhandledrejection', function(event) {
-        var reason = event && (event.reason || event);
-        var msg = (reason && reason.message) || String(reason || '');
-        if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1) {
-          event.preventDefault();
-        }
-      });
-      window.addEventListener('error', function(event) {
-        var msg = (event && event.message) || '';
-        if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('[vite] failed to connect') !== -1) {
-          event.preventDefault();
-        }
-      });
+      // Suprime avisos e erros benignos de desconexao de WebSocket do HMR desativado no ambiente de preview
+      (function() {
+        var origConsoleError = console.error;
+        console.error = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var str = args.map(function(a) { return (a && a.message) || String(a || ''); }).join(' ');
+          if (str.indexOf('WebSocket') !== -1 || str.indexOf('websocket') !== -1 || str.indexOf('[vite] failed to connect') !== -1) {
+            return;
+          }
+          origConsoleError.apply(console, arguments);
+        };
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event && (event.reason || event);
+          var msg = (reason && reason.message) || String(reason || '');
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1 || msg.indexOf('[vite] failed to connect') !== -1) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+          }
+        }, true);
+        window.addEventListener('error', function(event) {
+          var msg = (event && event.message) || '';
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1 || msg.indexOf('[vite] failed to connect') !== -1) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+          }
+        }, true);
+      })();
     </script>
     <title>Central de Compras Coletivas RPG</title>
     <meta name="description" content="Central de vaquinhas, rateios e financiamentos coletivos de materiais digitais e módulos Foundry VTT para grupos de RPG." />

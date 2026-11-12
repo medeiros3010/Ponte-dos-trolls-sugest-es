@@ -13,6 +13,7 @@ import {
   Info,
 } from 'lucide-react';
 import { normalizeWhatsAppNumber } from './InviteFriendModal';
+import { formatPhone } from '../utils/helpers';
 
 interface WelcomeMemberData {
   nome: string;
@@ -258,7 +259,7 @@ Bem-vindo(a) à Ponte dos Trolls! 👊🐉`;
                   Telefone Cadastrado:
                 </span>
                 <span className="text-xs font-mono font-bold text-[#302414]">
-                  {member.telefone || '(Sem telefone informado)'}
+                  {formatPhone(member.telefone) || '(Sem telefone informado)'}
                 </span>
               </div>
             </div>

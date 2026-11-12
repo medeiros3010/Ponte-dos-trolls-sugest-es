@@ -339,6 +339,27 @@ function sanitizeUrl(url: any): string {
   return '';
 }
 
+function formatPhone(raw: string): string {
+  if (!raw) return '';
+  let numbers = String(raw).replace(/\D/g, '');
+  if (numbers.startsWith('55') && (numbers.length === 12 || numbers.length === 13)) {
+    numbers = numbers.slice(2);
+  }
+  if (numbers.length === 11) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+  }
+  if (numbers.length === 10) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  }
+  if (numbers.length === 9) {
+    return `${numbers.slice(0, 5)}-${numbers.slice(5)}`;
+  }
+  if (numbers.length === 8) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4)}`;
+  }
+  return String(raw).trim();
+}
+
 function sanitizePackage(pkg: any): any {
   if (!pkg || typeof pkg !== 'object') return pkg;
   const norm = normalizeProductType(pkg.tipo || pkg.produto, pkg.sistema);
@@ -613,6 +634,15 @@ app.post('/api/auth/member-login', async (req: Request, res: Response) => {
     });
   }
 
+  // Se o usuário digitou um número completo com DDD (>= 10 dígitos), atualiza o cadastro do membro para garantir consistência
+  if (enteredDigits.length >= 10) {
+    const formattedLoginPhone = formatPhone(String(userPhone).trim());
+    if (savedDigits.length < enteredDigits.length || !user.telefone || user.telefone !== formattedLoginPhone) {
+      user.telefone = formattedLoginPhone;
+      writeBinData(cleanBinId, data);
+    }
+  }
+
   const { token } = createSession(user.id, user.nome, Boolean(user.isMaster), ip);
 
   const isProd = process.env.NODE_ENV === 'production';
@@ -822,14 +852,10 @@ app.get('/api/bin/:binId', (req: Request, res: Response) => {
 
 // ==================== OPERAÇÕES ATÔMICAS DE SUGESTÕES ====================
 
-// POST /api/bin/:binId/item - Criar ou editar sugestão (determinado pelo autor autenticado)
+// POST /api/bin/:binId/item - Criar ou editar sugestão (qualquer usuário comum pode publicar sugestões)
 app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
   const binId = sanitizeBinId(req.params.binId);
   const session = getSession(req);
-  if (!session) {
-    return res.status(401).json({ error: 'Autenticação necessária para registrar sugestões.' });
-  }
-
   const { item } = req.body;
   if (!item || !item.nome) {
     return res.status(400).json({ error: 'Dados da sugestão são obrigatórios.' });
@@ -841,13 +867,21 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
       data.items = Array.isArray(data.items) ? data.items : [];
 
       if (item.id) {
-        // Edição: apenas o criador ou o Mestre podem editar
+        // Edição: apenas o criador original ou o Mestre podem editar
         const existingIdx = data.items.findIndex((it: any) => it.id === item.id);
         if (existingIdx === -1) {
           return res.status(404).json({ error: 'Sugestão não encontrada para edição.' });
         }
         const existing = data.items[existingIdx];
-        if (!session.isMaster && existing.sugeridoPorId && existing.sugeridoPorId !== session.userId) {
+        const isMaster = checkMasterPermission(req, req.body && req.body.adminPassword);
+        const currentUserId = session?.userId || (req.headers['x-user-id'] as string) || item.sugeridoPorId;
+        const currentUserName = session?.nome || item.sugeridoPorNome;
+
+        const isAuthor =
+          Boolean(existing.sugeridoPorId && currentUserId && existing.sugeridoPorId === currentUserId) ||
+          Boolean(existing.sugeridoPorNome && currentUserName && existing.sugeridoPorNome.toLowerCase() === String(currentUserName).toLowerCase());
+
+        if (!isMaster && !isAuthor) {
           return res.status(403).json({ error: 'Você só pode editar sugestões enviadas por você mesmo.' });
         }
 
@@ -862,32 +896,54 @@ app.post('/api/bin/:binId/item', async (req: Request, res: Response) => {
           moeda: item.moeda === 'USD' ? 'USD' : 'BRL',
           valorNumerico: typeof item.valorNumerico === 'number' ? item.valorNumerico : (parseFloat(item.valorNumerico) || 0),
           observacaoValor: item.observacaoValor ? String(item.observacaoValor).trim() : undefined,
-          status: session.isMaster && item.status ? item.status : existing.status,
+          status: isMaster && item.status ? item.status : existing.status,
         };
         writeBinData(binId, data);
         return res.json({ success: true, item: data.items[existingIdx] });
       }
 
-      // Criação: vincula estritamente à identidade da sessão
+      // Criação: qualquer usuário comum pode publicar sugestões livremente
+      // Se o usuário estiver identificado no sistema, sua identidade é preservada e vinculada à sugestão
+      const authorId =
+        session?.userId ||
+        item.sugeridoPorId ||
+        (req.headers['x-user-id'] as string) ||
+        `usr-${Date.now()}`;
+
+      const authorName =
+        (session?.nome && session.nome.trim()) ||
+        (item.sugeridoPorNome && String(item.sugeridoPorNome).trim()) ||
+        'Membro da Ponte';
+
+      const authorPhone =
+        (session as any)?.telefone ||
+        (item.sugeridoPorTelefone ? String(item.sugeridoPorTelefone).trim() : undefined);
+
+      const authorEmail =
+        (session as any)?.email ||
+        (item.sugeridoPorEmail ? String(item.sugeridoPorEmail).trim() : ((req.headers['x-user-email'] as string) || undefined));
+
       const newItem = {
         id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        data: new Date().toISOString().split('T')[0],
+        data: item.data || new Date().toISOString().split('T')[0],
         nome: String(item.nome).trim(),
         produto: item.produto || 'Material para VTT',
         sistema: item.sistema || 'Foundry VTT Geral',
         descricao: String(item.descricao || '').trim(),
         link: sanitizeUrl(item.link),
         imageUrl: sanitizeUrl(item.imageUrl) || undefined,
-        sugeridoPorId: session.userId,
-        sugeridoPorNome: session.nome,
+        sugeridoPorId: authorId,
+        sugeridoPorNome: authorName,
+        sugeridoPorTelefone: authorPhone,
+        sugeridoPorEmail: authorEmail,
         moeda: item.moeda === 'USD' ? 'USD' : 'BRL',
         valorNumerico: typeof item.valorNumerico === 'number' ? item.valorNumerico : (parseFloat(item.valorNumerico) || 0),
         observacaoValor: item.observacaoValor ? String(item.observacaoValor).trim() : undefined,
         status: 'Sugestão',
         apoiadores: [
           {
-            id: session.userId,
-            nome: session.nome,
+            id: authorId,
+            nome: authorName,
             data: new Date().toISOString(),
           },
         ],
@@ -908,10 +964,15 @@ app.post('/api/bin/:binId/item/:itemId/apoio', async (req: Request, res: Respons
   const binId = sanitizeBinId(req.params.binId);
   const itemId = req.params.itemId;
   const session = getSession(req);
-  if (!session) {
+  const bodyUser = req.body && req.body.user;
+  const userId = session?.userId || bodyUser?.id || (req.headers['x-user-id'] as string);
+  const userNome = session?.nome || bodyUser?.nome || (req.headers['x-user-name'] as string);
+  const isMaster = session?.isMaster || bodyUser?.isMaster || req.headers['x-is-master'] === 'true';
+
+  if (!userId || !userNome) {
     return res.status(401).json({ error: 'Você precisa estar identificado para apoiar sugestões.' });
   }
-  if (session.isMaster) {
+  if (isMaster) {
     return res.status(403).json({ error: 'O Mestre não apoia nem retira apoio de sugestões.' });
   }
 
@@ -926,14 +987,14 @@ app.post('/api/bin/:binId/item/:itemId/apoio', async (req: Request, res: Respons
       }
 
       item.apoiadores = Array.isArray(item.apoiadores) ? item.apoiadores : [];
-      const exists = item.apoiadores.some((a: any) => a.id === session.userId || a.nome.toLowerCase() === session.nome.toLowerCase());
+      const exists = item.apoiadores.some((a: any) => a.id === userId || (a.nome && a.nome.toLowerCase() === userNome.toLowerCase()));
 
       if (exists) {
-        item.apoiadores = item.apoiadores.filter((a: any) => a.id !== session.userId && a.nome.toLowerCase() !== session.nome.toLowerCase());
+        item.apoiadores = item.apoiadores.filter((a: any) => a.id !== userId && (!a.nome || a.nome.toLowerCase() !== userNome.toLowerCase()));
       } else {
         item.apoiadores.push({
-          id: session.userId,
-          nome: session.nome,
+          id: userId,
+          nome: userNome,
           data: new Date().toISOString(),
         });
       }
@@ -1402,7 +1463,7 @@ app.post('/api/bin/:binId/user/update-profile', async (req: Request, res: Respon
         ...(existingUser || { id: userId, createdAt: new Date().toISOString() }),
         id: userId,
         nome: trimmedNome,
-        telefone: String(telefone || '').trim(),
+        telefone: telefone ? formatPhone(String(telefone).trim()) : '',
         email: String(email || '').trim(),
         // Preserva privilégios e strikes originais
         isMaster: isMaster && req.body.isMaster !== undefined ? Boolean(req.body.isMaster) : Boolean(existingUser?.isMaster),

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { UserProfile, MASTER_ADMIN_NAME } from '../types';
 import { Users, Shield, Phone, CheckCircle2, Search, KeyRound, AlertTriangle, Scroll, Loader2 } from 'lucide-react';
 import { apiMasterLogin, apiMemberLogin, getInitialBinId } from '../utils/cloudStorage';
+import { formatPhone } from '../utils/helpers';
 
 interface UserAuthModalProps {
   isOpen: boolean;
@@ -108,9 +109,19 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
     try {
       setIsLoggingIn(true);
       const effectiveBin = binId || getInitialBinId();
+      const formattedInputPhone = formatPhone(existingUserPhone.trim());
       const res = await apiMemberLogin(matchedUser.id, existingUserPhone.trim(), effectiveBin);
       if (res && res.user) {
-        onSelectExistingUser(res.user);
+        const effectivePhone =
+          enteredDigits.length >= 10
+            ? formattedInputPhone
+            : (res.user.telefone ? formatPhone(res.user.telefone) : formattedInputPhone);
+
+        const effectiveUser = {
+          ...res.user,
+          telefone: effectivePhone,
+        };
+        onSelectExistingUser(effectiveUser, res.user.email, effectivePhone);
       }
     } catch (err: any) {
       setExistingUserError(err.message || 'Erro ao autenticar membro. Verifique o número digitado.');

@@ -57,7 +57,7 @@ export const SEED_USERS: UserProfile[] = [
   { id: "u_53", nome: "rodrigo alcides", telefone: "98618-3767", email: "dgmaster.falhacritica@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
   { id: "u_54", nome: "Dilson", telefone: "32 8823-3302", email: "d-san_@hotmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
   { id: "u_55", nome: "Paulo Soares", telefone: "11993383940", email: "Paulo.scamargo@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
-  { id: "u_56", nome: "Julio Cesar Gomes de Oliveira", telefone: "7 9941-8816", email: "julio.cesar1989@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
+  { id: "u_56", nome: "Julio Cesar Gomes de Oliveira", telefone: "(47) 9941-8816", email: "julio.cesar1989@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
   { id: "u_57", nome: "Thiago Savin", telefone: "2198692-9689", email: "thiagosavin@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
   { id: "u_58", nome: "Carlos B", telefone: "74 8102-6116", email: "josecar.bsf@gmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },
   { id: "u_59", nome: "~Rafael Fidalgo", telefone: "9957-5127", email: "rafaelmaradona@hotmail.com", status: "aprovado", createdAt: "2026-02-15", strikes: [] },

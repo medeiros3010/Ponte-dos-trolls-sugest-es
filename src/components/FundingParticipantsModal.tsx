@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { getUserRank, getUserAcquiredPackages } from '../utils/ranksAndAcquisitions';
 import { RankBadgeIcon } from './RankBadge';
+import { formatPhone } from '../utils/helpers';
 
 interface FundingParticipantsModalProps {
   isOpen: boolean;
@@ -292,7 +293,7 @@ export const FundingParticipantsModal: React.FC<FundingParticipantsModalProps> =
                           {p.telefone && (
                             <span className="flex items-center gap-1 font-mono">
                               <Phone className="w-3 h-3 text-[#716016]" />
-                              <span>{p.telefone}</span>
+                              <span>{formatPhone(p.telefone)}</span>
                             </span>
                           )}
                           {p.email && (

@@ -10,7 +10,7 @@ import {
   MembershipApplication,
 } from './types';
 import { SEED_ITEMS, SEED_USERS, SEED_PACKAGES, HISTORICAL_CATALOG_PACKAGES } from './data/seedData';
-import { DEFAULT_EXCHANGE_RATE } from './utils/helpers';
+import { DEFAULT_EXCHANGE_RATE, formatPhone } from './utils/helpers';
 import {
   getInitialBinId,
   saveBinId,
@@ -480,16 +480,17 @@ export default function App() {
     setIsBulletinOpen(false);
     setEntryModalState('closed');
 
+    const finalPhone = (updatedPhone || user.telefone) ? formatPhone(updatedPhone || user.telefone) : '';
     const updatedUser: UserProfile = {
       ...user,
       email: updatedEmail || user.email || '',
-      telefone: updatedPhone || user.telefone || '',
+      telefone: finalPhone,
       status: 'aprovado',
     };
     setCurrentUser(updatedUser);
     saveStoredCurrentUser(updatedUser);
 
-    const hasChanges = (updatedEmail && updatedEmail !== user.email) || (updatedPhone && updatedPhone !== user.telefone);
+    const hasChanges = (updatedEmail && updatedEmail !== user.email) || (updatedPhone && updatedPhone !== user.telefone) || (finalPhone && finalPhone !== user.telefone);
     if (hasChanges) {
       const nextUsers = users.map((u) => (u.id === user.id ? updatedUser : u));
       setUsers(nextUsers);
@@ -510,11 +511,15 @@ export default function App() {
   };
 
   const handleUpdateCurrentUser = async (updatedUser: UserProfile) => {
-    setCurrentUser(updatedUser);
-    saveStoredCurrentUser(updatedUser);
+    const formattedUser: UserProfile = {
+      ...updatedUser,
+      telefone: updatedUser.telefone ? formatPhone(updatedUser.telefone) : '',
+    };
+    setCurrentUser(formattedUser);
+    saveStoredCurrentUser(formattedUser);
 
     // Atualiza lista de usuários
-    const nextUsers = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+    const nextUsers = users.map((u) => (u.id === formattedUser.id ? formattedUser : u));
     setUsers(nextUsers);
 
     // Propaga novo nome em todos os apoiadores de pacotes vinculados ao mesmo ID (Requirement 1)

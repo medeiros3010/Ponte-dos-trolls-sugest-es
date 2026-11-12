@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { MembershipApplication } from '../types';
 import { DEFAULT_QUESTIONS, LEGACY_QUESTIONS_V1, RulesConfig } from '../data/rulesAndQuestions';
+import { formatPhone } from '../utils/helpers';
 
 interface CandidateReviewModalProps {
   isOpen: boolean;
@@ -157,7 +158,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                 <span className="text-[#71634D] block">WhatsApp:</span>
                 <span className="font-bold text-[#302414] flex items-center gap-1">
                   <Phone className="w-3 h-3 text-[#48551F]" />
-                  <span>{application.telefone}</span>
+                  <span>{formatPhone(application.telefone)}</span>
                 </span>
               </div>
               <div className="sm:col-span-2 md:col-span-3">

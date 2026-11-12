@@ -22,7 +22,7 @@ import {
   Sun,
   Shield as ShieldIcon,
 } from 'lucide-react';
-import { formatDateDisplay } from '../utils/helpers';
+import { formatDateDisplay, formatPhone } from '../utils/helpers';
 import { getUserAcquiredPackages, getUserRank } from '../utils/ranksAndAcquisitions';
 import { RankBadgeIcon } from './RankBadge';
 
@@ -50,7 +50,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   initialEditMode = false,
 }) => {
   const [nome, setNome] = useState(currentUser.nome || '');
-  const [phone, setPhone] = useState(currentUser.telefone || '');
+  const [phone, setPhone] = useState(currentUser.telefone ? formatPhone(currentUser.telefone) : '');
   const [email, setEmail] = useState(currentUser.email || '');
   const [isEditing, setIsEditing] = useState(initialEditMode);
   const [nameError, setNameError] = useState('');
@@ -58,7 +58,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setNome(currentUser.nome || '');
-      setPhone(currentUser.telefone || '');
+      setPhone(currentUser.telefone ? formatPhone(currentUser.telefone) : '');
       setEmail(currentUser.email || '');
       setIsEditing(initialEditMode);
       setNameError('');
@@ -94,7 +94,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const strikes = Array.isArray(currentUser.strikes) ? currentUser.strikes.length : (currentUser.strikes || 0);
 
   const handlePhoneMask = (val: string) => {
-    const digits = val.replace(/\D/g, '').substring(0, 11);
+    let digits = val.replace(/\D/g, '');
+    if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+      digits = digits.slice(2);
+    }
+    digits = digits.substring(0, 11);
     let formatted = digits;
     if (digits.length > 2 && digits.length <= 6) {
       formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
@@ -114,10 +118,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       return;
     }
 
+    const cleanPhone = phone.trim() ? formatPhone(phone.trim()) : '';
+
     const updated: UserProfile = {
       ...currentUser,
       nome: cleanNome,
-      telefone: phone.trim(),
+      telefone: cleanPhone,
       email: email.trim(),
     };
 
@@ -242,7 +248,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#F8EDD5] border border-[#D6C296]">
                   <span className="text-[10px] text-[#71634D] block font-semibold">WhatsApp (Senha):</span>
-                  <span className="font-bold text-[#48551F] block">{currentUser.telefone || 'Não informado'}</span>
+                  <span className="font-bold text-[#48551F] block">{formatPhone(currentUser.telefone) || 'Não informado'}</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#F8EDD5] border border-[#D6C296]">
                   <span className="text-[10px] text-[#71634D] block font-semibold">E-mail Drive:</span>
