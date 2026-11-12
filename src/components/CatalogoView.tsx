@@ -1222,12 +1222,13 @@ export const CatalogoView: React.FC<CatalogoViewProps> = ({
                           </div>
                           {it.link && (
                             <a
-                              href={it.link}
+                              href={it.link.startsWith('http') ? it.link : `https://${it.link}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[#48551F] hover:underline flex items-center gap-1 text-[11px] shrink-0"
+                              className="text-[#48551F] hover:underline flex items-center gap-1 text-[11px] font-semibold shrink-0"
+                              title={`Acessar link do material: ${it.nome}`}
                             >
-                              <span>Ver link original</span>
+                              <span>Acessar Material</span>
                               <ExternalLink className="w-3 h-3" />
                             </a>
                           )}

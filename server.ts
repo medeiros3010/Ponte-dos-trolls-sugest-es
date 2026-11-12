@@ -332,11 +332,17 @@ function sanitizeBinId(id: string, _req?: Request): string {
 
 function sanitizeUrl(url: any): string {
   if (!url || typeof url !== 'string') return '';
-  const trimmed = url.trim();
-  if (trimmed.startsWith('https://') || trimmed.startsWith('http://') || trimmed.startsWith('/uploads/')) {
-    return trimmed;
+  let trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('/uploads/')) return trimmed;
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    if (trimmed.includes('.') && !trimmed.startsWith('/')) {
+      trimmed = 'https://' + trimmed;
+    } else {
+      return '';
+    }
   }
-  return '';
+  return trimmed;
 }
 
 function formatPhone(raw: string): string {

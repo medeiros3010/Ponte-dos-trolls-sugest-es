@@ -547,10 +547,11 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                             {pkg.itens.map((it) => {
                               const cat = it.categoria || it.tipo || 'Não informada';
                               const sis = it.sistema || pkg.sistema || 'Foundry VTT Geral';
+                              const itemUrl = it.link ? (it.link.startsWith('http') ? it.link : `https://${it.link}`) : '';
                               return (
                                 <div
                                   key={it.id}
-                                  className="text-xs text-[#55482e] flex flex-wrap items-center justify-between gap-1.5 bg-[#FAF4E6] px-2.5 py-1 rounded-lg border border-[#E3D1AC]"
+                                  className="text-xs text-[#55482e] flex flex-wrap items-center justify-between gap-1.5 bg-[#FAF4E6] px-2.5 py-1.5 rounded-lg border border-[#E3D1AC]"
                                 >
                                   <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#EDE2CA] text-[#55482e] border border-[#D5C49F] font-bold shrink-0">
@@ -561,11 +562,25 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                                     </span>
                                     <span className="font-medium text-[#302414] truncate">{it.nome}</span>
                                   </div>
-                                  {typeof it.precoBRL === 'number' && it.precoBRL > 0 && (
-                                    <span className="font-mono text-[11px] font-bold text-[#71634D] shrink-0">
-                                      R$ {it.precoBRL.toFixed(2).replace('.', ',')}
-                                    </span>
-                                  )}
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {itemUrl && (
+                                      <a
+                                        href={itemUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-[11px] font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                                        title={`Acessar link de "${it.nome}" em nova aba`}
+                                      >
+                                        <span>Acessar Material</span>
+                                        <ExternalLink className="w-3 h-3" />
+                                      </a>
+                                    )}
+                                    {typeof it.precoBRL === 'number' && it.precoBRL > 0 && (
+                                      <span className="font-mono text-[11px] font-bold text-[#71634D]">
+                                        R$ {it.precoBRL.toFixed(2).replace('.', ',')}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })}

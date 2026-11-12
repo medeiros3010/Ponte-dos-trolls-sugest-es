@@ -188,6 +188,12 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       return;
     }
 
+    const cleanLink = subLink.trim()
+      ? (subLink.trim().startsWith('http://') || subLink.trim().startsWith('https://')
+          ? subLink.trim()
+          : `https://${subLink.trim()}`)
+      : '';
+
     if (editingSubItemId) {
       setItens((prev) =>
         prev.map((it) =>
@@ -198,7 +204,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                 sistema: subSistema,
                 categoria: subCategoria,
                 tipo: (subCategoria as ProductType) || it.tipo || 'Material para VTT',
-                link: subLink.trim(),
+                link: cleanLink,
                 precoBRL: preco,
                 imageUrl: subImageUrl.trim() || undefined,
               }
@@ -214,7 +220,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
         sistema: subSistema,
         categoria: subCategoria,
         tipo: (subCategoria as ProductType) || 'Material para VTT',
-        link: subLink.trim(),
+        link: cleanLink,
         precoBRL: preco,
         imageUrl: subImageUrl.trim() || undefined,
       };
@@ -262,6 +268,12 @@ export const PackageModal: React.FC<PackageModalProps> = ({
       const cleanSubPreco = subPreco.replace(',', '.').trim();
       const parsedSubPreco = parseFloat(cleanSubPreco);
       if (!isNaN(parsedSubPreco) && parsedSubPreco >= 0) {
+        const cleanAutoLink = subLink.trim()
+          ? (subLink.trim().startsWith('http://') || subLink.trim().startsWith('https://')
+              ? subLink.trim()
+              : `https://${subLink.trim()}`)
+          : '';
+
         if (editingSubItemId) {
           finalItens = finalItens.map((it) =>
             it.id === editingSubItemId
@@ -271,7 +283,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                   sistema: subSistema,
                   categoria: subCategoria,
                   tipo: (subCategoria as ProductType) || it.tipo || 'Material para VTT',
-                  link: subLink.trim(),
+                  link: cleanAutoLink,
                   precoBRL: parsedSubPreco,
                   imageUrl: subImageUrl.trim() || undefined,
                 }
@@ -284,7 +296,7 @@ export const PackageModal: React.FC<PackageModalProps> = ({
             sistema: subSistema,
             categoria: subCategoria,
             tipo: (subCategoria as ProductType) || 'Material para VTT',
-            link: subLink.trim(),
+            link: cleanAutoLink,
             precoBRL: parsedSubPreco,
             imageUrl: subImageUrl.trim() || undefined,
           };
@@ -595,6 +607,18 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                             {cat}
                           </span>
                           <span className="font-medium text-[#302414] truncate">{it.nome}</span>
+                          {it.link && (
+                            <a
+                              href={it.link.startsWith('http') ? it.link : `https://${it.link}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#48551F] hover:underline inline-flex items-center gap-0.5 text-[10px] font-semibold bg-[#E4ECCF] px-1.5 py-0.5 rounded border border-[#C2D4A3] shrink-0"
+                              title={`Link do material: ${it.link}`}
+                            >
+                              <span>Link</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
@@ -715,6 +739,23 @@ export const PackageModal: React.FC<PackageModalProps> = ({
                       ))}
                     </select>
                   </div>
+                </div>
+
+                {/* 3. Link de Acesso ao Material (Opcional) */}
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#71634D] mb-1">
+                    Link de Acesso ao Material (Opcional)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/... ou loja oficial do produto"
+                    value={subLink}
+                    onChange={(e) => setSubLink(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-[#F8EDD5] border border-[#C6AD78] rounded-lg text-xs text-[#302414] placeholder-[#8c7b64] focus:outline-none focus:border-[#48551F]"
+                  />
+                  <p className="text-[10px] text-[#71634D] mt-0.5">
+                    Link individual para consulta e acesso dos usuários (Google Drive, Foundry VTT Store, etc.).
+                  </p>
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
