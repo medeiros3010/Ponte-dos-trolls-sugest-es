@@ -295,47 +295,187 @@ export function parseSpreadsheetText(rawText: string): ItemRPG[] {
   return parsedItems;
 }
 
-export function generatePackageWhatsAppAnnouncement(pkg: FundingPackage): string {
-  const valorTotalStr = pkg.valorTotalBRL.toFixed(2).replace('.', ',');
-  const valorMaxStr = (pkg.valorMaximoPorPessoa || (pkg.valorTotalBRL / (pkg.minimoParticipantes || 1))).toFixed(2).replace('.', ',');
-  const dataFinalizarBR = formatDateDisplay(pkg.dataFinalizar);
-  const dataPagamentoBR = formatDateDisplay(pkg.dataPagamento);
+/**
+ * Validação de dados obrigatórios para Divulgação de Financiamento Aberto
+ */
+export function validateFundingOpenInfo(pkg: FundingPackage): string[] {
+  const missing: string[] = [];
+  if (!pkg.valorTotalBRL || pkg.valorTotalBRL <= 0) {
+    missing.push('Valor total do pacote');
+  }
+  if (!pkg.minimoParticipantes || pkg.minimoParticipantes <= 0) {
+    missing.push('Quantidade mínima de participantes');
+  }
+  if (!pkg.dataFinalizar || !pkg.dataFinalizar.trim()) {
+    missing.push('Data limite para adesão');
+  }
+  if (!pkg.dataPagamento || !pkg.dataPagamento.trim()) {
+    missing.push('Data limite para pagamento');
+  }
+  if ((!pkg.itens || pkg.itens.length === 0) && (!pkg.itensInclusos || pkg.itensInclusos.length === 0)) {
+    missing.push('Materiais inclusos no pacote');
+  }
+  return missing;
+}
+
+/**
+ * Validação de dados obrigatórios para Aviso de Pagamento Aberto
+ */
+export function validatePaymentOpenInfo(pkg: FundingPackage): string[] {
+  const missing: string[] = [];
+  if (!pkg.dataPagamento || !pkg.dataPagamento.trim()) {
+    missing.push('Prazo final para pagamento (data de pagamento)');
+  }
+  const totalCotistas = (pkg.apoiadores || []).length;
+  if (totalCotistas === 0 && (!pkg.valorFinalPorParticipante || pkg.valorFinalPorParticipante <= 0)) {
+    missing.push('Valor por participante');
+  }
+  return missing;
+}
+
+/**
+ * Gera mensagem oficial para WhatsApp: "Copiar Divulgação — Financiamento Aberto"
+ */
+export function generateFundingOpenAnnouncement(pkg: FundingPackage): string {
+  const valorTotalStr = (pkg.valorTotalBRL || 0).toFixed(2).replace('.', ',');
+  const metaMinima = pkg.minimoParticipantes && pkg.minimoParticipantes > 0 ? pkg.minimoParticipantes : 35;
+  
+  // Arredonda para cima ao centavo para não apresentar valor inferior ao necessário
+  const valorMaximoIndividual = Math.ceil(((pkg.valorTotalBRL || 0) / metaMinima) * 100) / 100;
+  const valorMaxStr = valorMaximoIndividual.toFixed(2).replace('.', ',');
+
+  const dataAdesao = pkg.dataFinalizar ? formatDateDisplay(pkg.dataFinalizar) : 'A definir no site';
+  const dataPagamento = pkg.dataPagamento ? formatDateDisplay(pkg.dataPagamento) : 'A definir no site';
 
   let itensTexto = '';
   if (pkg.itens && pkg.itens.length > 0) {
-    itensTexto = pkg.itens.map((it: PackageSubItem) => `📜 *${it.nome} (${it.sistema})*\n🔗 ${it.link || 'Sem link'}`).join('\n\n');
+    itensTexto = pkg.itens
+      .map((it: PackageSubItem) => {
+        const sis = it.sistema || pkg.sistema || 'Foundry VTT Geral';
+        const cat = it.categoria || it.tipo || 'Material para VTT';
+        const link = it.link?.trim()
+          ? (it.link.trim().startsWith('http') ? it.link.trim() : `https://${it.link.trim()}`)
+          : '';
+        const lines = [it.nome, `${sis} / ${cat}`];
+        if (link) {
+          lines.push(link);
+        }
+        return lines.join('\n');
+      })
+      .join('\n\n');
   } else if (pkg.itensInclusos && pkg.itensInclusos.length > 0) {
-    itensTexto = pkg.itensInclusos.map((it: string) => `📜 *${it}*`).join('\n');
+    itensTexto = pkg.itensInclusos
+      .map((name: string) => `${name}\n${pkg.sistema || 'Foundry VTT Geral'} / ${pkg.tipo || 'Material para VTT'}`)
+      .join('\n\n');
   } else {
-    itensTexto = `📜 *${pkg.titulo}*`;
+    itensTexto = `${pkg.titulo}\n${pkg.sistema || 'Foundry VTT Geral'} / ${pkg.tipo || 'Material para VTT'}`;
   }
 
-  const apoiadores = pkg.apoiadores || [];
-  let listaParticipantes = 'Nenhum ainda. Seja o primeiro a participar!';
-  if (apoiadores.length > 0) {
-    listaParticipantes = apoiadores
-      .map((ap: Apoiador, i: number) => `${i + 1} - ${ap.nome}${ap.telefone ? ` (${ap.telefone})` : ''}`)
-      .join('\n');
-  }
+  return `🚨 *NOVO FINANCIAMENTO COLETIVO ABERTO!*
 
-  return `*NOVO FINANCIAMENTO COLETIVO ABERTO!*
-📦 *Pacote de materiais:* ${pkg.titulo}
+📦 *Pacote de materiais:*
 
 ${itensTexto}
 
 💰 *Valor total do pacote:* R$ ${valorTotalStr}
 
-📌 A compra SÓ será realizada caso *>>> ${pkg.minimoParticipantes} pessoas <<<* aderirem.
-*O valor individual será NO MÁXIMO de R$ ${valorMaxStr} por pessoa.*
+📌 A compra *SÓ será realizada caso ${metaMinima} pessoas aderirem.*
+
+💵 O valor individual será de *NO MÁXIMO R$ ${valorMaxStr}* por participante.
 
 📋 *REGRAS IMPORTANTES DO FINANCIAMENTO*
-⏳ *Prazo para colocar o nome na lista:* até ${dataFinalizarBR}
-⏳ *Prazo para Pagamento:* até ${dataPagamentoBR}
-⚠️ *Atenção:* Pagamentos fora do prazo receberão 1 "strike". Ao acumular 3 strikes, o membro será removido do grupo de financiamento.
 
-✍️ *Participantes confirmados (${apoiadores.length}):*
-${listaParticipantes}`;
+⏳ Prazo para colocar o nome na lista: 5 dias a partir da abertura.
+
+📅 *Data limite para adesão:* ${dataAdesao}
+
+⏳ Prazo para pagamento: 5 dias após o encerramento.
+
+📅 *Data limite para pagamento:* ${dataPagamento}
+
+⚠️ *Atenção:*
+
+Pagamentos fora do prazo receberão 1 "strike". Ao acumular 3 strikes, o membro será removido do grupo de financiamentos por 1 ano, com possibilidade de retorno apenas após análise da ADM.
+
+Essa medida garante a organização e o respeito com o grupo e seus prazos.
+
+🌉 *Como participar?*
+
+Acesse o site oficial da Ponte dos Trolls:
+
+https://ponte-dos-trolls.ai.studio/
+
+Entre com seu usuário e número de celular e inscreva-se na aba *Financiamentos*.
+
+📂 *Como os arquivos serão enviados?*
+
+Somente os participantes que contribuírem com a compra receberão acesso aos materiais adquiridos.`;
 }
+
+/**
+ * Gera mensagem oficial para WhatsApp: "Copiar Aviso — Pagamento Aberto"
+ */
+export function generatePaymentOpenAnnouncement(pkg: FundingPackage): string {
+  let materiaisTexto = '';
+  if (pkg.itens && pkg.itens.length > 0) {
+    materiaisTexto = pkg.itens.map((it: PackageSubItem) => `• ${it.nome}`).join('\n');
+  } else if (pkg.itensInclusos && pkg.itensInclusos.length > 0) {
+    materiaisTexto = pkg.itensInclusos.map((name: string) => `• ${name}`).join('\n');
+  } else {
+    materiaisTexto = `• ${pkg.titulo}`;
+  }
+
+  // No aviso de pagamento, utilizar o valor individual efetivamente definido para aquela etapa, sem recalcular com base na meta mínima
+  const totalCotistas = (pkg.apoiadores || []).length;
+  const cotaReal = totalCotistas > 0 ? (pkg.valorTotalBRL || 0) / totalCotistas : (pkg.valorTotalBRL || 0);
+  const valorIndividual = typeof pkg.valorFinalPorParticipante === 'number' && pkg.valorFinalPorParticipante > 0
+    ? pkg.valorFinalPorParticipante
+    : cotaReal;
+  const valorIndividualStr = valorIndividual.toFixed(2).replace('.', ',');
+
+  const dataLimite = pkg.dataPagamento ? formatDateDisplay(pkg.dataPagamento) : 'A definir no site';
+
+  return `💰 *FINANCIAMENTO COLETIVO — PAGAMENTO LIBERADO!*
+
+📦 *Pacote de materiais:*
+
+${materiaisTexto}
+
+✅ O financiamento atingiu a quantidade necessária de participantes e agora está oficialmente na etapa de pagamento!
+
+💵 *Valor por participante:* R$ ${valorIndividualStr}
+
+📅 *Prazo final para pagamento:* ${dataLimite}
+
+🌉 *COMO REALIZAR O PAGAMENTO?*
+
+Todo o processo de pagamento agora é realizado através do nosso site oficial:
+
+https://ponte-dos-trolls.ai.studio/
+
+1. Acesse o site com seu usuário e número de celular.
+2. Entre na aba *Financiamentos*.
+3. Localize o financiamento em andamento.
+4. Consulte as informações e instruções de pagamento disponíveis.
+5. Após realizar o pagamento, *CONFIRME O PAGAMENTO PELO PRÓPRIO SITE!*
+
+⚠️ *ATENÇÃO: A CONFIRMAÇÃO DO PAGAMENTO É OBRIGATÓRIA!*
+
+Não basta apenas realizar o pagamento. É necessário registrar a confirmação no site para que a administração possa acompanhar e validar sua participação.
+
+⏳ *Sobre atrasos:*
+
+Pagamentos fora do prazo receberão 1 "strike". Ao acumular 3 strikes, o membro será removido do grupo de financiamentos por 1 ano, com possibilidade de retorno apenas após análise da ADM.
+
+📂 *Entrega dos materiais:*
+
+O acesso aos materiais adquiridos será disponibilizado exclusivamente aos participantes que contribuírem com o financiamento.
+
+Agradecemos a participação de todos! ⚔️`;
+}
+
+// Retrocompatibilidade se referenciado em algum ponto
+export const generatePackageWhatsAppAnnouncement = generateFundingOpenAnnouncement;
 
 export function generateCatalogBuyMessage(pkg: FundingPackage, user: UserProfile): string {
   const valorPacote = (pkg.valorCatalogoBRL || pkg.valorTotalBRL).toFixed(2).replace('.', ',');

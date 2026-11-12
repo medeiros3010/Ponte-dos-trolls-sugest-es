@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FundingPackage } from '../types';
-import { X, Copy, Check, Share2, CreditCard } from 'lucide-react';
-import { formatDateDisplay } from '../utils/helpers';
+import { X, Copy, Check, Share2, CreditCard, AlertTriangle } from 'lucide-react';
+import { generatePaymentOpenAnnouncement, validatePaymentOpenInfo } from '../utils/helpers';
 
 interface PaymentOpenNoticeModalProps {
   isOpen: boolean;
@@ -20,34 +20,15 @@ export const PaymentOpenNoticeModal: React.FC<PaymentOpenNoticeModalProps> = ({
 
   if (!isOpen || !packageItem) return null;
 
-  const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://pontedostrolls.com.br';
-  const packageLink = `${siteOrigin}/?view=financiamento&packageId=${packageItem.id}`;
-
-  const dataLimiteFormatada = packageItem.dataPagamento
-    ? formatDateDisplay(packageItem.dataPagamento)
-    : 'data informada no site';
-
-  // Build message strictly matching prompt template for payment stage
-  const messageLines: string[] = [
-    '💰 PAGAMENTO ABERTO!',
-    '',
-    `📦 ${packageItem.titulo}`,
-    '',
-    'O financiamento atingiu a meta e entrou na etapa de pagamento.',
-    '',
-    'Acesse o site do Ponte dos Trolls para consultar o valor da sua cota, os dados do Pix e confirmar o envio do seu comprovante:',
-    '',
-    `🌐 ${packageLink}`,
-    '',
-    `⚠️ Atenção ao prazo: realize o pagamento e anexe o comprovante até ${dataLimiteFormatada} para garantir sua participação.`,
-    '',
-    'Qualquer dúvida, fale com o Mestre da Ponte! 🎲⚔️',
-  ];
-
-  const fullMessage = messageLines.join('\n');
+  const fullMessage = generatePaymentOpenAnnouncement(packageItem);
+  const missingInfo = validatePaymentOpenInfo(packageItem);
 
   const handleCopy = async () => {
     try {
+      if (missingInfo.length > 0) {
+        onToast(`Atenção: ${missingInfo.join(', ')} pendente(s) no cadastro deste financiamento.`);
+      }
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(fullMessage);
       } else {
@@ -86,10 +67,10 @@ export const PaymentOpenNoticeModal: React.FC<PaymentOpenNoticeModalProps> = ({
             </div>
             <div>
               <h2 className="font-rpg text-base sm:text-lg font-bold text-[#F8EDD5]">
-                Aviso de Pagamento Aberto
+                Aviso — Pagamento Aberto
               </h2>
               <p className="text-[11px] text-[#cfc4a6]">
-                Mensagem oficial para notificar os cotistas sobre a abertura do pagamento
+                Mensagem oficial pronta para convocação de pagamento no WhatsApp
               </p>
             </div>
           </div>
@@ -104,17 +85,26 @@ export const PaymentOpenNoticeModal: React.FC<PaymentOpenNoticeModalProps> = ({
 
         {/* Content */}
         <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs text-[#302414]">
-          <p className="text-[11px] text-[#71634D] leading-relaxed">
-            Esta mensagem direciona os cotistas para a página oficial do pacote no site, protegendo dados bancários e valores individuais conforme as regras de segurança da comunidade.
-          </p>
+          
+          {missingInfo.length > 0 && (
+            <div className="p-3 rounded-xl bg-[#FEF3C7] border border-[#F59E0B]/60 text-[#78350F] text-[11px] flex items-start gap-2 shadow-xs">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-[#D97706] mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-bold">Informação(ões) pendente(s) no cadastro:</p>
+                <p className="leading-relaxed">
+                  {missingInfo.join(', ')}. Recomendamos conferir a data limite nas opções de cobrança antes de enviar a cobrança.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="font-bold text-[#302414] text-xs flex items-center gap-1.5">
                 <Share2 className="w-3.5 h-3.5 text-[#48551F]" />
-                <span>Prévia da Mensagem:</span>
+                <span>Prévia da Mensagem (Formato WhatsApp):</span>
               </label>
-              <span className="text-[10px] text-[#71634D]">Formato oficial para WhatsApp</span>
+              <span className="text-[10px] text-[#71634D]">Valor individual fixado da etapa de cobrança</span>
             </div>
 
             <div className="p-4 bg-[#FAF4E6] border border-[#C6AD78] rounded-xl font-mono text-[11.5px] leading-relaxed text-[#2c2214] whitespace-pre-wrap select-all shadow-inner max-h-72 overflow-y-auto">
@@ -141,12 +131,12 @@ export const PaymentOpenNoticeModal: React.FC<PaymentOpenNoticeModalProps> = ({
             {copied ? (
               <>
                 <Check className="w-4 h-4 text-[#a8d363]" />
-                <span>Mensagem Copiada!</span>
+                <span>Aviso Copiado!</span>
               </>
             ) : (
               <>
                 <Copy className="w-4 h-4" />
-                <span>Copiar Mensagem</span>
+                <span>Copiar Aviso de Pagamento</span>
               </>
             )}
           </button>

@@ -29,13 +29,21 @@ import {
   AlertTriangle,
   Share2,
 } from 'lucide-react';
-import { formatDateDisplay, extractPaidMemberEmails } from '../utils/helpers';
+import {
+  formatDateDisplay,
+  extractPaidMemberEmails,
+  generateFundingOpenAnnouncement,
+  generatePaymentOpenAnnouncement,
+  validateFundingOpenInfo,
+  validatePaymentOpenInfo,
+} from '../utils/helpers';
 import { EditPackageImageModal } from './EditPackageImageModal';
 import { ConfigurePaymentModal } from './ConfigurePaymentModal';
 import { PaymentInstructionsModal } from './PaymentInstructionsModal';
 import { FundingParticipantsModal } from './FundingParticipantsModal';
 import { CompletedPurchaseNoticeModal } from './CompletedPurchaseNoticeModal';
 import { PaymentOpenNoticeModal } from './PaymentOpenNoticeModal';
+import { FundingOpenNoticeModal } from './FundingOpenNoticeModal';
 import { PageBanner } from './PageBanner';
 
 interface FinanciamentoViewProps {
@@ -112,13 +120,73 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
 
   // Copied Pix Feedback per package card
   const [copiedPixId, setCopiedPixId] = useState<string | null>(null);
+  const [copiedNoticeKey, setCopiedNoticeKey] = useState<string | null>(null);
 
   // Undo Payment State (Informei por engano — desfazer)
   const [undoPaymentPkg, setUndoPaymentPkg] = useState<FundingPackage | null>(null);
   const [isUndoingPayment, setIsUndoingPayment] = useState(false);
   const [undoLockedInfo, setUndoLockedInfo] = useState<{ pkg: FundingPackage; reason: string } | null>(null);
+  const [noticeFundingOpenPkg, setNoticeFundingOpenPkg] = useState<FundingPackage | null>(null);
   const [noticePaymentOpenPkg, setNoticePaymentOpenPkg] = useState<FundingPackage | null>(null);
   const [noticeCompletedPurchasePkg, setNoticeCompletedPurchasePkg] = useState<FundingPackage | null>(null);
+
+  const handleCopyFundingOpen = async (pkg: FundingPackage) => {
+    const missing = validateFundingOpenInfo(pkg);
+    if (missing.length > 0) {
+      onToast(`Atenção: ${missing.join(', ')} pendente(s) no cadastro.`);
+    }
+
+    const msg = generateFundingOpenAnnouncement(pkg);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(msg);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = msg;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedNoticeKey(`${pkg.id}-open`);
+      onToast('Divulgação de financiamento aberto copiada para o WhatsApp!');
+      setTimeout(() => setCopiedNoticeKey(null), 3000);
+    } catch (err) {
+      console.error('Falha ao copiar:', err);
+      setNoticeFundingOpenPkg(pkg);
+    }
+  };
+
+  const handleCopyPaymentOpen = async (pkg: FundingPackage) => {
+    const missing = validatePaymentOpenInfo(pkg);
+    if (missing.length > 0) {
+      onToast(`Atenção: ${missing.join(', ')} pendente(s) no cadastro.`);
+    }
+
+    const msg = generatePaymentOpenAnnouncement(pkg);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(msg);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = msg;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedNoticeKey(`${pkg.id}-pay`);
+      onToast('Aviso de pagamento aberto copiado para o WhatsApp!');
+      setTimeout(() => setCopiedNoticeKey(null), 3000);
+    } catch (err) {
+      console.error('Falha ao copiar:', err);
+      setNoticePaymentOpenPkg(pkg);
+    }
+  };
 
   const handleRequestUndoPayment = (pkg: FundingPackage) => {
     // Se o acesso já foi liberado no drive ou se o pacote foi para o Catálogo, orienta a falar com o Mestre
@@ -355,6 +423,47 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                   {/* Ações do Mestre no Ribbon */}
                   {isMaster && (
                     <div className="flex items-center gap-2">
+                      {/* Botão de Copiar Mensagem de Divulgação ou Aviso de Pagamento conforme a etapa */}
+                      {isColeta ? (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyFundingOpen(pkg)}
+                          className="px-2.5 py-1 rounded-lg bg-black/20 hover:bg-black/30 text-[#322105] text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                          title="Copiar mensagem pronta de divulgação para WhatsApp"
+                        >
+                          {copiedNoticeKey === `${pkg.id}-open` ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-[#1e3a12]" />
+                              <span>Divulgação Copiada!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="w-3.5 h-3.5" />
+                              <span>Copiar Divulgação</span>
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPaymentOpen(pkg)}
+                          className="px-2.5 py-1 rounded-lg bg-[#282D13]/80 hover:bg-[#282D13] text-[#F8EDD5] border border-[#C6AD78]/60 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                          title="Copiar aviso oficial de pagamento aberto para WhatsApp"
+                        >
+                          {copiedNoticeKey === `${pkg.id}-pay` ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-[#a8d363]" />
+                              <span>Aviso Copiado!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="w-3.5 h-3.5 text-[#d4a538]" />
+                              <span>Copiar Aviso de Pagamento</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+
                       <button
                         onClick={() => onEditPackage(pkg)}
                         className="p-1 rounded hover:bg-black/15 transition-colors cursor-pointer"
@@ -425,7 +534,18 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                               <span>Copiar E-mails Pagos</span>
                             </button>
 
-                            {!isColeta && (
+                            {isColeta ? (
+                              <button
+                                onClick={() => {
+                                  setActiveMenuId(null);
+                                  setNoticeFundingOpenPkg(pkg);
+                                }}
+                                className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
+                              >
+                                <Share2 className="w-3.5 h-3.5 text-[#716016]" />
+                                <span>Copiar Divulgação — Financiamento Aberto</span>
+                              </button>
+                            ) : (
                               <button
                                 onClick={() => {
                                   setActiveMenuId(null);
@@ -434,7 +554,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                                 className="w-full px-3 py-1.5 text-xs text-left font-medium flex items-center gap-2 hover:bg-[#EFE3C8] transition-colors cursor-pointer"
                               >
                                 <Share2 className="w-3.5 h-3.5 text-[#716016]" />
-                                <span>Copiar aviso de pagamento aberto</span>
+                                <span>Copiar Aviso — Pagamento Aberto</span>
                               </button>
                             )}
 
@@ -681,11 +801,29 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                             </button>
                             <button
                               type="button"
+                              onClick={() => handleCopyFundingOpen(pkg)}
+                              className="w-full sm:w-auto py-3 px-4 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs sm:text-sm font-bold text-[#302414] flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+                              title="Copiar mensagem pronta de divulgação para WhatsApp"
+                            >
+                              {copiedNoticeKey === `${pkg.id}-open` ? (
+                                <>
+                                  <Check className="w-4 h-4 text-[#48551F]" />
+                                  <span>Divulgação Copiada!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Share2 className="w-4 h-4 text-[#716016]" />
+                                  <span>Copiar Divulgação</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => setViewingParticipantsPkg(pkg)}
-                              className="w-full sm:w-auto py-3 px-4 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] border border-[#C6AD78] text-xs sm:text-sm font-bold text-[#302414] flex items-center justify-center gap-1.5 cursor-pointer"
+                              className="w-full sm:w-auto py-3 px-4 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] border border-[#C6AD78] text-xs sm:text-sm font-semibold text-[#302414] flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <Users className="w-4 h-4 text-[#716016]" />
-                              <span>Gerenciar participantes ({totalCotistas})</span>
+                              <span>Participantes ({totalCotistas})</span>
                             </button>
                           </div>
                         ) : (
@@ -787,6 +925,24 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                             <div className="flex flex-wrap items-center gap-2 shrink-0">
                               <button
                                 type="button"
+                                onClick={() => handleCopyPaymentOpen(pkg)}
+                                className="px-3.5 py-2 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+                                title="Copiar aviso oficial de pagamento aberto para WhatsApp"
+                              >
+                                {copiedNoticeKey === `${pkg.id}-pay` ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 text-[#48551F]" />
+                                    <span>Aviso Copiado!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Share2 className="w-3.5 h-3.5 text-[#716016]" />
+                                    <span>Copiar Aviso de Pagamento</span>
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => onMoveToCatalog(pkg)}
                                 className="px-3.5 py-2 rounded-xl bg-[#48551F] hover:bg-[#59672A] text-[#F8EDD5] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all"
                                 title="Finalizar este financiamento e transferir para o Catálogo de Produtos"
@@ -806,7 +962,7 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleCopyPaidEmails(pkg)}
-                                className="px-3 py-2 rounded-xl bg-[#EADBBE] hover:bg-[#E2D1A8] text-[#302414] border border-[#C6AD78] text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                className="px-3 py-2 rounded-xl bg-[#FAF4E6] hover:bg-[#F3E7CC] text-[#302414] border border-[#C6AD78] text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
                                 title="Copiar e-mails de quem já pagou para liberar acesso no Google Drive"
                               >
                                 <Mail className="w-3.5 h-3.5 text-[#716016]" />
@@ -1165,6 +1321,16 @@ export const FinanciamentoView: React.FC<FinanciamentoViewProps> = ({
               setNoticePaymentOpenPkg(updatedPkg);
             }
           }}
+          onToast={onToast}
+        />
+      )}
+
+      {/* Modal de Divulgação de Financiamento Aberto */}
+      {noticeFundingOpenPkg && (
+        <FundingOpenNoticeModal
+          isOpen={Boolean(noticeFundingOpenPkg)}
+          packageItem={noticeFundingOpenPkg}
+          onClose={() => setNoticeFundingOpenPkg(null)}
           onToast={onToast}
         />
       )}
